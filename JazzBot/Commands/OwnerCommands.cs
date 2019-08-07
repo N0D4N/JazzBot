@@ -185,8 +185,17 @@ namespace JazzBot.Commands
 		[Description("Изменить статус бота на сообщение о новом обновлении")]
 		public async Task UpdateBot(CommandContext context)
 		{
-			await context.Client.UpdateStatusAsync(new DiscordActivity($"J!update, новое обновление {DateTime.Now.ToString("dd.MM.yyyy")}"), UserStatus.Online)
+			string updatePresence = $"J!update, новое обновление {DateTime.Now.ToString("dd.MM.yyyy")}";
+			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
+			var db = new DatabaseContext();
+			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == context.Client.CurrentUser.Id);
+			config.Presence = updatePresence;
+			db.Configs.Update(config);
+			if (await db.SaveChangesAsync() <= 0)
+				throw new CustomJBException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
+
+			
 		}
 
 		[Command("Nickname")]
