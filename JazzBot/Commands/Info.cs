@@ -48,9 +48,8 @@ namespace JazzBot.Commands
 
 			var embed = new DiscordEmbedBuilder
 			{
-				Title = context.Client.CurrentUser.Username,
-				Url = "https://github.com/N0D4N/JazzBot",
-				Description = $"{context.Client.CurrentUser.Username} - создан на C# c помощью библиотеки {Formatter.MaskedUrl("DSharpPlus", new Uri("https://github.com/DSharpPlus/DSharpPlus"))}",
+
+				Description = $"{Formatter.MaskedUrl(context.Client.CurrentUser.Username, new Uri("https://github.com/N0D4N/JazzBot"))} - создан на C# c помощью библиотеки {Formatter.MaskedUrl("DSharpPlus", new Uri("https://github.com/DSharpPlus/DSharpPlus"))}",
 				Color = DiscordColor.Black,
 				Timestamp = DateTimeOffset.Now,
 				ThumbnailUrl = context.Client.CurrentUser.AvatarUrl
