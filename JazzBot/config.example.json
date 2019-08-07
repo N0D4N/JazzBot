@@ -1,0 +1,31 @@
+{
+  "Discord": {
+    "Token": "token_here",
+    "Prefixes": [
+      "J!",
+      "//",
+      "++",
+      "j!"
+    ],
+    "CoverArtsChannelID": 11111111111111111,
+    "ErrorChannelID": 11111111111111111,
+    "ReportChannelID": 11111111111111111,
+    "RequestChannelID": 11111111111111111
+  },
+
+  "Database": {
+    "EntityFrameworkConnectionString": "connection_string_here"
+  },
+
+  "Lavalink": {
+    "Password": "your_password",
+    "Hostname": "localhost",
+    "Port": 2333
+  },
+
+  "Miscellaneous": {
+    "PathToDirectoryWithPlaylists": "your_path_here",
+    "PlaylistLink": "your_link_here",
+    "UpdateLink": "another_link_here"
+  }
+}

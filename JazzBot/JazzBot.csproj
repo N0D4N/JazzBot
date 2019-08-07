@@ -3,21 +3,42 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <StartupObject>JazzBot.Program</StartupObject>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>N0D4N</Authors>
+    <Company />
+    <Description>C# Discord music bot</Description>
+    <SignAssembly>false</SignAssembly>
+    <ApplicationIcon></ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+    <NoWarn>1701</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <OutputPath />
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00600" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00600" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00600" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00600" />
-	<PackageReference Include="DuoVia.FuzzyStrings" Version="2.0.1" />
-    <PackageReference Include="EPPlus.Core" Version="1.5.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="EPPlus" Version="4.5.3.2" />
+    <PackageReference Include="F23.StringSimilarity" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="taglib" Version="2.1.0" />
-
   </ItemGroup>
+
 
 </Project>
