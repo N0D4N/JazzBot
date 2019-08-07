@@ -95,7 +95,7 @@ namespace JazzBot.Commands
 						text = await sr.ReadLineAsync();
 						if (text == null)
 							break;
-						TagLib.File songfile = TagLib.File.Create(text);
+						File songfile = File.Create(text);
 						songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name});
 					}
 					sr.Close();
@@ -232,7 +232,7 @@ namespace JazzBot.Commands
 					infoWorksheet.Cells[4, 1].Value = "Длина всех плейлистов";
 					infoWorksheet.Cells.AutoFitColumns(1, 40);
 
-					//Значение заполним после того как узнаем длину каждого плейлиста и добавим их
+					//We will pass value here after we would know length of every playlist and get the sum
 					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Инфо-страница заполнена", DateTime.Now);
 
 					//Filling info for each playlist in DB
@@ -240,7 +240,7 @@ namespace JazzBot.Commands
 					{
 						TimeSpan plDuration = TimeSpan.Zero;
 
-						client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Начато запись в таблицу {playlist}", DateTime.Now);
+						client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Начата запись в таблицу {playlist}", DateTime.Now);
 
 						ExcelWorksheet playlistWorksheet = package.Workbook.Worksheets.Add(playlist);
 						playlistWorksheet.Cells[2, 1].Value = "№";
