@@ -1,0 +1,362 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Lavalink;
+using JazzBot.Attributes;
+using JazzBot.Commands;
+using JazzBot.Data;
+using JazzBot.Enums;
+using JazzBot.Services;
+using JazzBot.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+
+namespace JazzBot
+{
+	public sealed class Program
+	{
+		public DiscordClient Client { get; private set; }
+		public CommandsNextExtension Commands { get; private set; }
+		public InteractivityExtension interactivity;
+		public LavalinkExtension Lavalink { get; private set; }
+		public LavalinkNodeConnection LavalinkNode { get; set; }
+		public static JazzBotConfig Cfgjson { get; private set; }
+
+		public Bot Bot { get; set; }
+
+		private IServiceProvider Services { get; set; }
+
+		private string LogName { get; set; } = null;
+
+		public static void Main(string[] args)
+		{
+			var prog = new Program();
+			prog.RunBotAsync().GetAwaiter().GetResult();
+
+		}
+
+		public async Task RunBotAsync()
+		{
+			var json = "";
+			var file = new FileInfo(@"..\..\..\config.json");
+			if (!file.Exists)
+				file = new FileInfo("config.json");
+			using (var fs = File.OpenRead(file.FullName))
+			using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+				json = sr.ReadToEnd();
+
+			Cfgjson = JsonConvert.DeserializeObject<JazzBotConfig>(json);
+
+			Console.WriteLine("Конфиг загружен");
+
+			var cfg = new DiscordConfiguration
+			{
+				Token = Cfgjson.Discord.Token,
+				TokenType = TokenType.Bot,
+
+				AutoReconnect = true,
+				LogLevel = LogLevel.Debug,
+				UseInternalLogHandler = true
+			};
+
+			Client = new DiscordClient(cfg);
+
+			Client.Ready += this.Client_Ready;
+			Client.GuildAvailable += this.Client_GuildAvailable;
+			Client.ClientErrored += this.Client_ClientError;
+			Client.SocketClosed += this.Socket_Closed;
+			Client.SocketErrored += this.Socket_Error;
+			Client.VoiceServerUpdated += this.Voice_VoiceServerUpdate;
+			Client.MessageReactionAdded += this.Client_ReactionAdded;
+			Bot = new Bot(Cfgjson, this.Client);
+
+			this.Services = new ServiceCollection()
+				.AddSingleton(this.Client)
+				.AddSingleton(this.Bot)
+				.AddSingleton<MusicService>()
+				.AddSingleton(new LavalinkService(Cfgjson, this.Client))
+				.AddSingleton(this)
+				.BuildServiceProvider(true);
+
+
+			var ccfg = new CommandsNextConfiguration
+			{
+				StringPrefixes = Cfgjson.Discord.Prefixes,
+
+				EnableDefaultHelp = true,
+
+				CaseSensitive = false,
+
+				EnableDms = false,
+
+				EnableMentionPrefix = true,
+
+				Services = this.Services
+			};
+
+			this.Commands = Client.UseCommandsNext(ccfg);
+
+
+
+			this.Commands.CommandExecuted += this.Commands_CommandExecuted;
+			this.Commands.CommandErrored += this.Commands_CommandErrored;
+
+
+			this.Commands.RegisterCommands<Ungrupped>();
+			this.Commands.RegisterCommands<MusicCommands>();
+			this.Commands.RegisterCommands<OwnerCommands>();
+			this.Commands.RegisterCommands<TagCommands>();
+			this.Commands.RegisterCommands<Info>();
+			this.Commands.SetHelpFormatter<JazzBotHelpFormatter>();
+
+			var icfg = new InteractivityConfiguration
+			{
+				Timeout = TimeSpan.FromSeconds(60)
+			};
+			interactivity = Client.UseInteractivity(icfg);
+
+			this.Lavalink = Client.UseLavalink();
+
+
+			await Client.ConnectAsync();
+
+			await Task.Delay(-1);
+		}
+
+
+
+		private Task Socket_Closed(SocketCloseEventArgs e)
+		{
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Socket was closed with message - '\"{e.CloseMessage}'\" and code - '\"{e.CloseCode}", DateTime.Now);
+			return Task.CompletedTask;
+		}
+
+		private Task Socket_Error(SocketErrorEventArgs e)
+		{
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"Socket was errored with exception - '\"{e.Exception.Message}'\"", DateTime.Now);
+			return Task.CompletedTask;
+		}
+
+		private Task Voice_VoiceServerUpdate(VoiceServerUpdateEventArgs e)
+		{
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Voice server in {e.Guild.Name} changed to {e.Endpoint}", DateTime.Now);
+			return Task.CompletedTask;
+		}
+
+
+		private async Task Client_Ready(ReadyEventArgs e)
+		{
+
+			Console.Title = e.Client.CurrentUser.Username;
+
+			if (this.LogName == null)
+				this.LogName = e.Client.CurrentUser.Username;
+
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, "Бот готов к работе.", DateTime.Now);
+
+			var db = new DatabaseContext();
+
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == e.Client.CurrentUser.Id);
+			if (config == null)
+			{
+				config = new Data.Configs
+				{
+					Id = e.Client.CurrentUser.Id,
+					Presence = "Music"
+				};
+				await db.Configs.AddAsync(config);
+				if (await db.SaveChangesAsync() <= 0)
+					throw new CustomJBException("Не удалось обновить БД", ExceptionType.DatabaseException);
+				await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
+
+			}
+			else
+			{
+				if (e.Client.CurrentUser.Presence?.Activity?.Name == null)
+					await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
+
+			}
+			db.Dispose();
+		}
+
+		private async Task Client_ClientError(ClientErrorEventArgs e)
+		{
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+
+
+			var chn = Bot.ErrorChannel;
+
+			var ex = e.Exception;
+			while (ex is AggregateException)
+				ex = ex.InnerException;
+
+			await chn.SendMessageAsync(embed: EmbedTemplates.ErrorEmbed()
+				.WithTitle("Exception")
+				.WithDescription($"Exception occured: {ex.GetType()}: {e.Exception.Message}")).ConfigureAwait(false);
+		}
+
+		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) //Allows owner of the bot delete bot's messages by adding reaction to a message
+		{
+			var msg = await e.Channel.GetMessageAsync(e.Message.Id).ConfigureAwait(false);
+			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || msg.Author.Id != e.Client.CurrentUser.Id)
+				return;
+			var deleteEmoji = DiscordEmoji.FromName(e.Client, ":no_entry_sign:");
+			if (e.Emoji.GetDiscordName() != deleteEmoji.GetDiscordName())
+				return;
+
+			await msg.DeleteAsync().ConfigureAwait(false);
+		}
+
+		private Task Client_GuildAvailable(GuildCreateEventArgs e)
+		{
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Доступен сервер: {e.Guild.Name}", DateTime.Now);
+			return Task.CompletedTask;
+		}
+
+		private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
+		{
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+			return Task.CompletedTask;
+		}
+
+		private async Task Commands_CommandErrored(CommandErrorEventArgs e)
+		{
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+
+
+			var ex = e.Exception;
+			while (ex is AggregateException)
+				ex = ex.InnerException;
+
+			if (ex is ChecksFailedException exep) //Check if exception is result of command prechecks 
+			{
+
+
+				var failedchecks = exep.FailedChecks.First();
+				if (failedchecks is RequireBotPermissionsAttribute reqbotperm) //Bot is lacking permissions
+				{
+					string permissionsLacking = reqbotperm.Permissions.ToPermissionString();
+					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithTitle($"{emoji} Боту не хватает прав")
+						.WithDescription(permissionsLacking)).ConfigureAwait(false);
+					return;
+				}
+				if (failedchecks is RequireUserPermissionsAttribute requserperm) //User is lacking permissions
+				{
+					string permissionsLacking = requserperm.Permissions.ToPermissionString();
+					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithTitle($"{emoji} Вам не хватает прав")
+						.WithDescription(permissionsLacking)).ConfigureAwait(false);
+					return;
+				}
+
+				if (failedchecks is RequireOwnerAttribute reqowner) //User is not owner of the bot
+				{
+					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+					.WithTitle($"{emoji} Команда доступна только владельцу")).ConfigureAwait(false);
+					return;
+				}
+
+				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission) //User is not owner or don't have permissions
+				{
+					string permissionsLacking = ownerOrPermission.Permissions.ToPermissionString();
+					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithTitle($"{emoji} Вы не являетесь владельцем или вам не хватает прав")
+						.WithDescription(permissionsLacking)).ConfigureAwait(false);
+					return;
+				}
+
+				if (failedchecks is CooldownAttribute cooldown) //Command shouldn't be executed so fast
+				{
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithDescription($"Вы пытаетесь использовать команду слишком часто, таймер - " +
+								$"не больше {cooldown.MaxUses} раз в {cooldown.Reset.TotalMinutes} минут")).ConfigureAwait(false);
+					return;
+				}
+			}
+			else if (ex is ArgumentException argEx) //In most cases exception caused by user that inputted wrong info 
+			{
+				StringBuilder description = new StringBuilder($"Произошла ошибка, скорее всего, связанная с данными вводимыми пользователями, с сообщением: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
+				if (!string.IsNullOrEmpty(argEx.ParamName))
+					description.AppendLine($"Название параметра {Formatter.InlineCode(argEx.ParamName)}.");
+				await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+					.WithTitle("Argument exception")
+					.WithDescription(description.ToString())).ConfigureAwait(false);
+				return;
+			}
+			else if (ex is CustomJBException jbex)
+			{
+				switch (jbex.ExceptionType)
+				{
+					case ExceptionType.DatabaseException:
+						var embedDB = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Database exception")
+							.WithDescription($"Произошла ошибка связанная с работой БД с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
+						await e.Context.RespondAsync(embed: embedDB).ConfigureAwait(false);
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: embedDB).ConfigureAwait(false);
+						break;
+
+					case ExceptionType.PlaylistException:
+						var embedPL = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Playlist exception")
+							.WithDescription($"Произошла ошибка с работой плейлистов (скорее всего плейлиста не существует) с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
+						await e.Context.RespondAsync(embed: embedPL).ConfigureAwait(false);
+						break;
+
+					case ExceptionType.ForInnerPurposes:
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Inner Purposes Exception")
+							.WithDescription($"Произошла внутренняя ошибка с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+						break;
+
+					case ExceptionType.Unknown:
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Неизвестная или дефолтная ошибка")
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+						break;
+
+					case ExceptionType.Default:
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Неизвестная или дефолтная ошибка")
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+						break;
+					default:
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle("Неизвестная или дефолтная ошибка")
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+						break;
+				}
+			}
+			else if (ex is CommandNotFoundException commandNotFoundException)
+			{
+				//Ignore
+				return;
+			}
+			else
+			{
+				var embed = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+					.WithTitle("Произошла непредвиденная ошибка в работе команды")
+					.WithDescription($"Message: \n{Formatter.InlineCode(ex.Message)}\n в \n{Formatter.InlineCode(ex.Source)}");
+				await e.Context.RespondAsync(embed: embed).ConfigureAwait(false);
+				await this.Bot.ErrorChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+			}
+
+		}
+
+	}
+}
