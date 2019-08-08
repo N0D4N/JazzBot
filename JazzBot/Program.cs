@@ -74,8 +74,6 @@ namespace JazzBot
 			Client.Ready += this.Client_Ready;
 			Client.GuildAvailable += this.Client_GuildAvailable;
 			Client.ClientErrored += this.Client_ClientError;
-			Client.SocketClosed += this.Socket_Closed;
-			Client.SocketErrored += this.Socket_Error;
 			Client.VoiceServerUpdated += this.Voice_VoiceServerUpdate;
 			Client.MessageReactionAdded += this.Client_ReactionAdded;
 			Bot = new Bot(Cfgjson, this.Client);
@@ -133,19 +131,6 @@ namespace JazzBot
 			await Task.Delay(-1);
 		}
 
-
-
-		private Task Socket_Closed(SocketCloseEventArgs e)
-		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Socket was closed with message - '\"{e.CloseMessage}'\" and code - '\"{e.CloseCode}", DateTime.Now);
-			return Task.CompletedTask;
-		}
-
-		private Task Socket_Error(SocketErrorEventArgs e)
-		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"Socket was errored with exception - '\"{e.Exception.Message}'\"", DateTime.Now);
-			return Task.CompletedTask;
-		}
 
 		private Task Voice_VoiceServerUpdate(VoiceServerUpdateEventArgs e)
 		{
