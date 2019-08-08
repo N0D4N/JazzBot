@@ -156,11 +156,12 @@ namespace JazzBot
 
 		private async Task Client_Ready(ReadyEventArgs e)
 		{
-
-			Console.Title = e.Client.CurrentUser.Username;
-
 			if (this.LogName == null)
 				this.LogName = e.Client.CurrentUser.Username;
+
+			Console.Title = this.LogName;
+
+			
 
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, "Бот готов к работе.", DateTime.Now);
 
