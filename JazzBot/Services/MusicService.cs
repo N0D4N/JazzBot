@@ -12,7 +12,7 @@ namespace JazzBot.Services
 		private LavalinkService Lavalink { get; }
 
 		/// <summary>
-		/// Music data for <see cref="DiscordGuild"/> bot is in
+		/// Music data for <see cref="DiscordGuild"/> bot is in.
 		/// </summary>
 		public ConcurrentDictionary<ulong, GuildMusicData> MusicData { get; }
 		private Program CurrentProgram { get; }

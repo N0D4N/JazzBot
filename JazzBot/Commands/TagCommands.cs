@@ -252,7 +252,10 @@ namespace JazzBot.Commands
 				if (tagsNames.Length > 2048)
 				{
 					List<string> tags = tagsArray.OrderBy(x => x.Name).Select(x => $"{Formatter.InlineCode(x.Name)},").ToList();
-					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1); //Deleting last coma
+
+					// Deleting last coma.
+					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1); 
+
 					tagsNames = this.TagNamesNormalizer(tags); /*string.Join(", ", tagsArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());*/
 					var interactivity = context.Client.GetInteractivity();
 					var tagsPaginated = interactivity.GeneratePagesInEmbed(tagsNames, SplitType.Character, embedrespond);
@@ -430,8 +433,8 @@ namespace JazzBot.Commands
 				await context.RespondAsync("На данном сервере нет тегов").ConfigureAwait(false);
 				return;
 			}
-			//I know next region is written in very stupid way but i dont know how to actually improve it
-			//TODO: FIX IT
+			// I know next region is written in very stupid way but i dont know how to actually improve it.
+			// TODO: FIX IT.
 			#region stupid
 			List<TagsOwner> tagsOwners = new List<TagsOwner>();
 			foreach(var owner in serverTags.Select(x=>x.OwnerID).Distinct())

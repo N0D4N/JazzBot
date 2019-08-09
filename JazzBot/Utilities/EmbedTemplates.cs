@@ -6,12 +6,12 @@ using DSharpPlus.Entities;
 namespace JazzBot.Utilities
 {
 	/// <summary>
-	/// Class with predefined <see cref="DiscordEmbedBuilder"/>
+	/// Class with predefined <see cref="DiscordEmbedBuilder"/>.
 	/// </summary>
 	static class EmbedTemplates
 	{
 		/// <summary>
-		/// Create <see cref="DiscordEmbedBuilder"/> with predefined <see cref="DiscordColor"/> and <see cref="DiscordEmbedFooter"/> indicating which member triggered this embed
+		/// Create <see cref="DiscordEmbedBuilder"/> with predefined <see cref="DiscordColor"/> and <see cref="DiscordEmbedFooter"/> indicating which member triggered this embed.
 		/// </summary>
 		/// <param name="executedBy">Member which executed command</param>
 		/// <param name="currentMember">Current member of the guild, is needed for <see cref="Helpers.ExtendedColor(DiscordMember, DiscordMember)"/></param>
@@ -30,7 +30,7 @@ namespace JazzBot.Utilities
 		}
 
 		/// <summary>
-		/// General <see cref="DiscordEmbedBuilder"/> for errors
+		/// General <see cref="DiscordEmbedBuilder"/> for errors.
 		/// </summary>
 		public static DiscordEmbedBuilder ErrorEmbed()
 		{
@@ -42,7 +42,7 @@ namespace JazzBot.Utilities
 		}
 
 		/// <summary>
-		/// <see cref="DiscordEmbedBuilder"/> for errors happened in commmands
+		/// <see cref="DiscordEmbedBuilder"/> for errors happened in commmands.
 		/// </summary>
 		/// <param name="member">Member which tried executing <see cref="Command"/> which failed</param>
 		/// <param name="command">Command in which error happened</param>

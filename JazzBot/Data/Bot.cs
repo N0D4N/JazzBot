@@ -8,32 +8,32 @@ namespace JazzBot.Data
 	public sealed class Bot
 	{
 		/// <summary>
-		/// Path to directory where playlists are stored
+		/// Path to directory where playlists are stored.
 		/// </summary>
 		public string PathToDirectoryWithPlaylists { get; }
 
 		/// <summary>
-		/// Connection string to database for Entity Framework
+		/// Connection string to database for Entity Framework.
 		/// </summary>
 		public string EFconstring { get; }
 
 		/// <summary>
-		/// Channel where all unexpected or important errors and exceptions should be posted
+		/// Channel where all unexpected or important errors and exceptions should be posted.
 		/// </summary>
 		public DiscordChannel ErrorChannel { get; private set; }
 
 		/// <summary>
-		/// Channel where all requests should be posted
+		/// Channel where all requests should be posted.
 		/// </summary>
 		public DiscordChannel RequestChannel { get; private set; }
 
 		/// <summary>
-		/// Channel where all user-reports should be posted
+		/// Channel where all user-reports should be posted.
 		/// </summary>
 		public DiscordChannel ReportChannel { get; private set; }
 
 		/// <summary>
-		/// Channel where coverarts for songs should be posted
+		/// Channel where coverarts for songs should be posted.
 		/// </summary>
 		public DiscordChannel CoverArtsChannel { get; private set; }
 

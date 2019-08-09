@@ -3,17 +3,17 @@
 	public sealed class PlayNextElement
 	{
 		/// <summary>
-		/// Path to song
+		/// Path to song.
 		/// </summary>
 		public string PathToFile { get; }
 
 		/// <summary>
-		/// Title of the song
+		/// Title of the song.
 		/// </summary>
 		public string Title { get; }
 
 		/// <summary>
-		/// Coefficient of similarity of this song to song that should be played
+		/// Coefficient of similarity of this song to song that should be played.
 		/// </summary>
 		public double Coefficient { get; set; }
 

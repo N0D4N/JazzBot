@@ -6,12 +6,12 @@ namespace JazzBot.Services
 	public class DatabaseContext : DbContext
 	{
 		/// <summary>
-		/// Guilds in which bot is in
+		/// Guilds in which bot is in.
 		/// </summary>
 		public DbSet<DGuild> Guilds { get; set; }
 
 		/// <summary>
-		/// Playlists
+		/// Playlists.
 		/// </summary>
 		public DbSet<Songs> Playlist { get; set; }
 

@@ -218,7 +218,7 @@ namespace JazzBot.Commands
 
 					ExcelWorksheet infoWorksheet = package.Workbook.Worksheets.Add("Info");
 
-					//Filling infoworksheet
+					// Filling infoworksheet.
 					infoWorksheet.Cells[1, 1].Value = "Big Daddy's Playlist";
 					infoWorksheet.Cells[1, 1, 1, 10].Merge = true;
 					infoWorksheet.Cells[1, 1, 1, 10].Style.Font.Bold = true;
@@ -232,10 +232,10 @@ namespace JazzBot.Commands
 					infoWorksheet.Cells[4, 1].Value = "Длина всех плейлистов";
 					infoWorksheet.Cells.AutoFitColumns(1, 40);
 
-					//We will pass value here after we would know length of every playlist and get the sum
+					// We will pass value here after we would know length of every playlist and get the sum.
 					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Инфо-страница заполнена", DateTime.Now);
 
-					//Filling info for each playlist in DB
+					// Filling info for each playlist in DB.
 					foreach(var playlist in db.Playlist.Select(x=>x.PlaylistName).Distinct())
 					{
 						TimeSpan plDuration = TimeSpan.Zero;

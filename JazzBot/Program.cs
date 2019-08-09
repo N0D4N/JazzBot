@@ -191,7 +191,10 @@ namespace JazzBot
 				.WithDescription($"Exception occured: {ex.GetType()}: {e.Exception.Message}")).ConfigureAwait(false);
 		}
 
-		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) //Allows owner of the bot delete bot's messages by adding reaction to a message
+		/// <summary>
+		/// Allows owner of the bot delete bot's messages by adding reaction to a message.
+		/// </summary>
+		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) 
 		{
 			var msg = await e.Channel.GetMessageAsync(e.Message.Id).ConfigureAwait(false);
 			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || msg.Author.Id != e.Client.CurrentUser.Id)
@@ -224,12 +227,14 @@ namespace JazzBot
 			while (ex is AggregateException)
 				ex = ex.InnerException;
 
-			if (ex is ChecksFailedException exep) //Check if exception is result of command prechecks 
+			// Check if exception is result of command prechecks.
+			if (ex is ChecksFailedException exep)  
 			{
 
 
 				var failedchecks = exep.FailedChecks.First();
-				if (failedchecks is RequireBotPermissionsAttribute reqbotperm) //Bot is lacking permissions
+				// Bot is lacking permissions.
+				if (failedchecks is RequireBotPermissionsAttribute reqbotperm) 
 				{
 					string permissionsLacking = reqbotperm.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -238,7 +243,9 @@ namespace JazzBot
 						.WithDescription(permissionsLacking)).ConfigureAwait(false);
 					return;
 				}
-				if (failedchecks is RequireUserPermissionsAttribute requserperm) //User is lacking permissions
+
+				// User is lacking permissions.
+				if (failedchecks is RequireUserPermissionsAttribute requserperm) 
 				{
 					string permissionsLacking = requserperm.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -249,7 +256,8 @@ namespace JazzBot
 					return;
 				}
 
-				if (failedchecks is RequireOwnerAttribute reqowner) //User is not owner of the bot
+				// User is not owner of the bot.
+				if (failedchecks is RequireOwnerAttribute reqowner) 
 				{
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
 					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
@@ -257,7 +265,8 @@ namespace JazzBot
 					return;
 				}
 
-				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission) //User is not owner or don't have permissions
+				// User is not owner or don't have permissions.
+				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission) 
 				{
 					string permissionsLacking = ownerOrPermission.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -267,7 +276,8 @@ namespace JazzBot
 					return;
 				}
 
-				if (failedchecks is CooldownAttribute cooldown) //Command shouldn't be executed so fast
+				// Command shouldn't be executed so fast.
+				if (failedchecks is CooldownAttribute cooldown) 
 				{
 					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 						.WithDescription($"Вы пытаетесь использовать команду слишком часто, таймер - " +
@@ -275,7 +285,8 @@ namespace JazzBot
 					return;
 				}
 			}
-			else if (ex is ArgumentException argEx) //In most cases exception caused by user that inputted wrong info 
+			// In most cases exception caused by user that inputted wrong info.
+			else if (ex is ArgumentException argEx)  
 			{
 				StringBuilder description = new StringBuilder($"Произошла ошибка, скорее всего, связанная с данными вводимыми пользователями, с сообщением: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
 				if (!string.IsNullOrEmpty(argEx.ParamName))
@@ -330,12 +341,12 @@ namespace JazzBot
 			}
 			else if (ex is CommandNotFoundException commandNotFoundException)
 			{
-				//Ignore
+				// Ignore.
 				return;
 			}
 			else if (ex is InvalidOperationException invOpEx && invOpEx.Message == "No matching subcommands were found, and this group is not executable.")
 			{
-				//Ignore
+				// Ignore.
 				return;
 			}
 			else

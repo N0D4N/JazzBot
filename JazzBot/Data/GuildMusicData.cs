@@ -16,77 +16,77 @@ using File = TagLib.File;
 namespace JazzBot.Data
 {
 	/// <summary>
-	/// Music data for <see cref="DiscordGuild"/>
+	/// Music data for <see cref="DiscordGuild"/>.
 	/// </summary>
 	public sealed class GuildMusicData
 	{
 		/// <summary>
-		/// Shows if something is played in this guild
+		/// Shows if something is played in this guild.
 		/// </summary>
 		public bool IsPlaying { get; set; } = false; //Not used probably should delete it
 
 		/// <summary>
-		/// Current song of type <see cref="TagLib.File"/> needed to showing what song is playing now
+		/// Current song of type <see cref="TagLib.File"/> needed to showing what song is playing now.
 		/// </summary>
 		public File CurrentSong { get; set; } = null;
 
 		/// <summary>
-		/// Path to current song
+		/// Path to current song.
 		/// </summary>
 		public string PathToCurrentSong { get; set; }
 
 		/// <summary>
-		/// Seed of the current guild playlist
+		/// Seed of the current guild playlist.
 		/// </summary>
 		public int Seed { get; set; }
 
 		/// <summary>
-		/// Guild for which this data is stored
+		/// Guild for which this data is stored.
 		/// </summary>
 		public DiscordGuild Guild { get; }
 
 		/// <summary>
-		/// Id of current song in playlist table
+		/// Id of current song in playlist table.
 		/// </summary>
 		public int IdOfCurrentSong { get; set; }
 
 		/// <summary>
-		/// Name of current playlist
+		/// Name of current playlist.
 		/// </summary>
 		public string PlaylistName { get; set; } //Not used for now
 
 		/// <summary>
-		/// Message that shows detailed info about current playing song
+		/// Message that shows detailed info about current playing song.
 		/// </summary>
 		public DiscordMessage PlayingMessage { get; set; }
 
 		/// <summary>
-		/// Voice channel in which music is playing
+		/// Voice channel in which music is playing.
 		/// </summary>
 		private DiscordChannel PlayingChannel => this.LavalinkConnection.Channel;
 
 		/// <summary>
-		/// Lavalink service
+		/// Lavalink service.
 		/// </summary>
 		private LavalinkService Lavalink { get; }
 
 		/// <summary>
-		/// Lavalink connection in this guild
+		/// Lavalink connection in this guild.
 		/// </summary>
 		private LavalinkGuildConnection LavalinkConnection { get; set; }
 
 		/// <summary>
-		/// List that stores songs that should be played after currently playing song
+		/// List that stores songs that should be played after currently playing song.
 		/// </summary>
 		private Stack<string> PlayNextStack { get; set; }
 
 		/// <summary>
-		/// Current song of type <see cref="LavalinkTrack"/> used for <see cref="LavalinkGuildConnection"/>
+		/// Current song of type <see cref="LavalinkTrack"/> used for <see cref="LavalinkGuildConnection"/>.
 		/// </summary>
 		private LavalinkTrack Track { get; set; } // Not used for now
 
 		/// <summary>
-		/// Current bot program
+		/// Current bot program.
 		/// </summary>
 		private Program CurrentProgram { get; }
 
@@ -105,7 +105,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Get current song info from database and optionally changes its id
+		/// Get current song info from database and optionally changes its id.
 		/// </summary>
 		/// <param name="updateID">Specifies if id of current song should be changed</param>
 		/// <returns></returns>
@@ -135,7 +135,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Updates info about this <see cref="DiscordGuild"/> in database
+		/// Updates info about this <see cref="DiscordGuild"/> in database.
 		/// </summary>
 		private void UpdateDB()
 		{
@@ -160,7 +160,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Starts playback
+		/// Starts playback.
 		/// </summary>
 		/// <param name="track"> Track that should be played </param>
 		public void Play(LavalinkTrack track)
@@ -173,12 +173,13 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>
+		/// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>.
 		/// </summary>
 		/// <returns><see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/></returns>
 		public async Task<LavalinkTrack> GetSong()
 		{
-			if (this.PlayNextStack.Any())// Songs in PlayNextList have higher priority than default playback
+			// Songs in PlayNextList have higher priority than default playback.
+			if (this.PlayNextStack.Any())
 			{
 				string path = this.PlayNextStack.Pop();
 				var result = await this.Lavalink.LavalinkNode.GetTracksAsync(new FileInfo(path)).ConfigureAwait(false);
@@ -193,7 +194,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Skips currently playing song
+		/// Skips currently playing song.
 		/// </summary>
 		/// <returns></returns>
 		public void Skip() //Not used now
@@ -208,7 +209,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Creates player in specified <see cref="DiscordChannel"/> in this <see cref="DiscordGuild"/>
+		/// Creates player in specified <see cref="DiscordChannel"/> in this <see cref="DiscordGuild"/>.
 		/// </summary>
 		/// <param name="channel">Voice channel in which player should be created</param>
 		/// <returns></returns>
@@ -221,7 +222,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Destroys player in this <see cref="DiscordGuild"/>
+		/// Destroys player in this <see cref="DiscordGuild"/>.
 		/// </summary>
 		/// <returns></returns>
 		public async Task DestroyPlayerAsync()
@@ -241,7 +242,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Shuffles playlist in this guild
+		/// Shuffles playlist in this guild.
 		/// </summary>
 		public void Shuffle()
 		{
@@ -252,7 +253,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Stops playback
+		/// Stops playback.
 		/// </summary>
 		public void Stop()
 		{
@@ -263,7 +264,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Changes playlist in this guild
+		/// Changes playlist in this guild.
 		/// </summary>
 		/// <param name="playlistName">New playlist</param>
 		/// <returns></returns>
@@ -291,7 +292,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Creates detailed info about currently playing  song
+		/// Creates detailed info about currently playing  song.
 		/// </summary>
 		/// <returns><see cref="DiscordEmbed"/> with info about currently playing song</returns>
 		public async Task<DiscordEmbed> NowPlayingEmbedAsync()
@@ -315,15 +316,17 @@ namespace JazzBot.Data
 			{
 				embed.ThumbnailUrl = this.CurrentSong.Tag.Comment;
 			}
-			else if (this.CurrentSong.Tag.Pictures?.Any() == true ) // Checking if cover art is present to this file
+			// Checking if cover art is present to this file.
+			else if (this.CurrentSong.Tag.Pictures?.Any() == true ) 
 			{
 				var msg = await this.CurrentProgram.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(this.CurrentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
 				this.CurrentSong.Tag.Comment = msg.Attachments[0].Url;
 				this.CurrentSong.Save();
 				embed.ThumbnailUrl = this.CurrentSong.Tag.Comment;
 			}
-
-			if (ulong.TryParse(this.CurrentSong.Tag.FirstComposer, out ulong requestedById)) // Checking if this song was requested to add by some user
+				
+			// Checking if this song was requested to add by some user.
+			if (ulong.TryParse(this.CurrentSong.Tag.FirstComposer, out ulong requestedById)) 
 			{
 				var user = await this.CurrentProgram.Client.GetUserAsync(requestedById).ConfigureAwait(false);
 				embed.Author = new DiscordEmbedBuilder.EmbedAuthor()
@@ -336,7 +339,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Checks if <see cref="PlayingMessage"/> is last in its channel
+		/// Checks if <see cref="PlayingMessage"/> is last in its channel.
 		/// </summary>
 		private bool IsMessageLast()
 		{
@@ -344,7 +347,7 @@ namespace JazzBot.Data
 		}
 
 		/// <summary>
-		/// Adds song to <see cref="PlayNextStack"/>
+		/// Adds song to <see cref="PlayNextStack"/>.
 		/// </summary>
 		/// <param name="path">Path to song</param>
 		public void EnqueueToPlayNext(string path)

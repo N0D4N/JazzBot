@@ -17,7 +17,7 @@ namespace JazzBot.Utilities
 		}
 
 		/// <summary>
-		/// Get pseudorandom number within <paramref name="maxValue"/> and <paramref name="maxValue"/> bounds
+		/// Get pseudorandom number within <paramref name="maxValue"/> and <paramref name="maxValue"/> bounds.
 		/// </summary>
 		/// <param name="minValue">Lower bound</param>
 		/// <param name="maxValue">Higher bound</param>
@@ -67,7 +67,7 @@ namespace JazzBot.Utilities
 
 		
 		/// <summary>
-		/// Get extended color for <see cref="DiscordMember"
+		/// Get extended color for <see cref="DiscordMember".
 		/// </summary>
 		/// <param name="member">Member from which color gets</param>
 		/// <param name="currentMember">Current member of the guild</param>

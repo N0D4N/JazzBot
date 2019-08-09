@@ -8,13 +8,13 @@ using DSharpPlus.CommandsNext.Attributes;
 namespace JazzBot.Attributes
 {
 	/// <summary>
-	/// Specifies that command or group of commands can only be executed by owner of the bot or user with specified permissions
+	/// Specifies that command or group of commands can only be executed by owner of the bot or user with specified permissions.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 	public sealed class OwnerOrPermissionAttribute : CheckBaseAttribute
 	{
 		/// <summary>
-		/// Permissions needed to execute command
+		/// Permissions needed to execute command.
 		/// </summary>
 		public Permissions Permissions { get; private set; }
 

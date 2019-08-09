@@ -49,12 +49,14 @@ namespace JazzBot.Commands
 		[Description("Выбирает случайное число между данными двумя целыми числами")]
 		public async Task Roll(CommandContext context, [Description("Нижняя граница")] int? min = null, [Description("Верхняя граница")] int? max = null)
 		{
-			if (min == null) //No arguments were provided
+			// No arguments were provided.
+			if (min == null) 
 			{
 				min = 1;
 				max = 10;
 			}
-			else if (max == null) //Only one argument were provided, so it will be maximum and minimum will be default "1"
+			// Only one argument were provided, so it will be maximum and minimum will be default "1".
+			else if (max == null) 
 			{
 				max = min.Value;
 				min = 1;
@@ -87,7 +89,8 @@ namespace JazzBot.Commands
 			string userString = $"{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
 			string reasonString = string.IsNullOrWhiteSpace(reason) ? " отсутствует" : $": {reason}";
 
-			if (context.Guild.Members.TryGetValue(id, out var member))// Member is still in the guild
+			// Member is still in the guild.
+			if (context.Guild.Members.TryGetValue(id, out var member)) 
 			{
 				if (this.MemberRolePositionAndOwnerChecker(context.Member, member))
 				{
@@ -104,7 +107,8 @@ namespace JazzBot.Commands
 				else
 					await context.RespondAsync("Вы не можете забанить пользователя с ролью выше вашей и/или владельца сервера");
 			}
-			else // Member is not in the guild
+			// Member is not in the guild.
+			else
 			{
 				try
 				{
@@ -223,7 +227,8 @@ namespace JazzBot.Commands
 		private bool MemberRolePositionAndOwnerChecker(DiscordMember memberInvoked, DiscordMember memberToBan)
 		{
 			return ((memberToBan?.Roles?.Any() == true && memberInvoked?.Roles?.Any() == true
-						&& memberInvoked.Roles.OrderByDescending(x => x.Position).First().Position > memberToBan.Roles.OrderByDescending(x => x.Position).First().Position) // Moderator have higher role than member he tries to ban
+						// Moderator have higher role than member he tries to ban.
+						&& memberInvoked.Roles.OrderByDescending(x => x.Position).First().Position > memberToBan.Roles.OrderByDescending(x => x.Position).First().Position) 
 							|| memberToBan?.Roles?.Any() != true)
 								&& !memberToBan.IsOwner;
 		}
