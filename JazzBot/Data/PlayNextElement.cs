@@ -30,10 +30,5 @@
 			this.Title = name;
 			this.Coefficient = 0.0;
 		}
-
-		//public static int CompareByCoefficient(PlayNextElement pne1, PlayNextElement pne2)
-		//{
-		//	return pne1.Coefficient.CompareTo(pne2.Coefficient);
-		//}
 	}
 }

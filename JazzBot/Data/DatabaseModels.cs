@@ -82,22 +82,6 @@ namespace JazzBot.Data
 		[NotMapped]
 		public double Numing { get; set; }
 	}
-
-	//[Table("Music")]
-	//public  class Music
-	//{
-	//	[Key]
-	//	[Column("Id")]
-	//	public int Id { get; set; }
-
-	//	[Column("PlaylistName")]
-	//	[MaxLength(25)]
-	//	public string PlaylistName { get; set; }
-
-	//	[Column("IdOfCurrentSong")]
-	//	public int IdOfCurrentSong { get; set; }
-	//}
-
 	
 	[Table("Tags")]
 	public class Tag

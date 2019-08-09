@@ -256,27 +256,12 @@ namespace JazzBot.Commands
 					// Deleting last coma.
 					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1); 
 
-					tagsNames = this.TagNamesNormalizer(tags); /*string.Join(", ", tagsArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());*/
+					tagsNames = this.TagNamesNormalizer(tags);
 					var interactivity = context.Client.GetInteractivity();
 					var tagsPaginated = interactivity.GeneratePagesInEmbed(tagsNames, SplitType.Character, embedrespond);
 					await interactivity.SendPaginatedMessageAsync
 						(context.Channel, context.User, tagsPaginated, behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis).ConfigureAwait(false);
 
-					//Tag[] fhalfArray = tagsArray.Take(tagsArray.Length / 2).ToArray();
-					//Tag[] shalfArray = tagsArray.Skip(tagsArray.Length / 2).ToArray();
-
-					//tagsNames = string.Join(", ", fhalfArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());
-					//string tags2 = string.Join(", ", shalfArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());
-					//await context.RespondAsync(embed: new DiscordEmbedBuilder
-					//{
-					//	Title = "Все теги на данном сервере",
-					//	Timestamp = DateTimeOffset.Now,
-					//	Color = context.Member.Color,
-					//	Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = $"По запросу {context.Member.Username}#{context.Member.Discriminator}", IconUrl = context.Member.AvatarUrl }
-					//}
-					//.AddField("Первая часть", tagsNames)
-					//.AddField("Вторая часть", tags2)
-					//.AddField("Количество", tagsArray.Length.ToString())).ConfigureAwait(false);
 				}
 				else
 				{

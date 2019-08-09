@@ -15,8 +15,6 @@ namespace JazzBot.Services
 		/// </summary>
 		public DbSet<Songs> Playlist { get; set; }
 
-		//public DbSet<Music> Music { get; set; }
-
 		public DbSet<Tag> Tags { get; set; }
 
 		public DbSet<Configs> Configs { get; set; }
@@ -42,13 +40,5 @@ namespace JazzBot.Services
 			
 		}
 
-		//protected override void OnModelCreating(ModelBuilder modelBuilder)
-		//{
-		//	//modelBuilder.Entity<DGuild>().Property(g => g.IdOfCurrentSong).HasDefaultValue(1);
-		//	//modelBuilder.Entity<DGuild>().Property(g => g.IsLoggingEnabled).HasDefaultValue(false);
-		//	//modelBuilder.Entity<DGuild>().Property(g => g.PlaylistName).HasDefaultValue("Jazz");
-		//	//modelBuilder.Entity<DGuild>().Property(g => g.Seed).HasDefaultValue(150);
-		//	////delBuilder.Entity<DGuild>().Property(g=> g.)
-		//}
 	}
 }

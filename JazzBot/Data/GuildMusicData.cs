@@ -203,9 +203,6 @@ namespace JazzBot.Data
 				return;
 
 			this.LavalinkConnection.Stop();
-			//await this.ChangeCurrentSong(true).ConfigureAwait(false);
-
-			//this.InternalPlay(await GetSong().ConfigureAwait(false));
 		}
 
 		/// <summary>
