@@ -333,6 +333,11 @@ namespace JazzBot
 				//Ignore
 				return;
 			}
+			else if (ex is InvalidOperationException invOpEx && invOpEx.Message == "No matching subcommands were found, and this group is not executable.")
+			{
+				//Ignore
+				return;
+			}
 			else
 			{
 				var embed = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
