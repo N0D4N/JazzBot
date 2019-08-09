@@ -88,8 +88,8 @@ namespace JazzBot.Utilities
 							return botrole.Color;
 					}
 				}
-			}		
-			return DiscordColor.Black;			
+			}
+			return RandomColor();			
 		}		
 
 		
@@ -105,7 +105,15 @@ namespace JazzBot.Utilities
 				&& (tag.Comment.StartsWith("https://media.discordapp.net/attachments/") || tag.Comment.StartsWith("https://cdn.discordapp.com/"));
 		}
 
-		
+		public static DiscordColor RandomColor()
+		{
+			var provider = new RNGCryptoServiceProvider();
+			byte[] rgb = new byte[3];
+			provider.GetNonZeroBytes(rgb);
+			return new DiscordColor(rgb[1], rgb[2], rgb[3]);
+		}
+
+
 
 		#region unused_and_old_code_i_dont_want_to_delete
 		//public static bool IsFileLocked(FileInfo file)

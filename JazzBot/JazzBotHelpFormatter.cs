@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext.Converters;
 using DSharpPlus.CommandsNext.Entities;
 using DSharpPlus.Entities;
 using JazzBot.Attributes;
+using JazzBot.Utilities;
 
 namespace JazzBot
 {
@@ -28,7 +29,7 @@ namespace JazzBot
 		{
 			this.EmbedBuilder = new DiscordEmbedBuilder()
 				.WithTitle("Help")
-				.WithColor(DiscordColor.NotQuiteBlack);
+				.WithColor(Helpers.RandomColor());
 		}
 
 		/// <summary>
