@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -205,15 +206,15 @@ namespace JazzBot.Commands
 
 		private Task<DiscordEmbed> MemberInfo(DiscordMember member, CommandContext context)
 		{
-			string roles = "";
-			if (member.Roles.Count() > 0)
+			var roles = new StringBuilder();
+			if (member.Roles.Any())
 			{
 				var roleslist = member.Roles.OrderByDescending(x => x.Position).Select(x => x.Name).ToList();
 				roleslist.Add("everyone");
-				roles = string.Join(',', roleslist.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
+				roles = roles.AppendJoin(',', roleslist.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
 			}
 			else
-				roles = Formatter.InlineCode("@everyone");
+				roles =	roles.AppendLine(Formatter.InlineCode("@everyone"));
 			return Task.FromResult(EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Информация об участнике")
 			.AddField("Пользователь", $"{ member.Username}#{member.Discriminator}", true)
@@ -221,7 +222,8 @@ namespace JazzBot.Commands
 			.AddField("Отображаемое имя", member.DisplayName, true)
 			.AddField("Аккаунт создан", $"{(DateTimeOffset.Now - member.CreationTimestamp).Days} дней назад ({member.CreationTimestamp.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
 			.AddField("Участник присоединился", $"{(DateTimeOffset.Now - member.JoinedAt).Days} дней назад ({member.JoinedAt.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
-			.AddField("Роли", roles, false).Build());
+			.AddField("Роли", roles.ToString(), false)
+			.WithThumbnailUrl(member.AvatarUrl).Build());
 		}
 
 		private bool MemberRolePositionAndOwnerChecker(DiscordMember memberInvoked, DiscordMember memberToBan)
