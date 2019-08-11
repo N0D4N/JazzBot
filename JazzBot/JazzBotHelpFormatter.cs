@@ -13,7 +13,7 @@ using JazzBot.Utilities;
 namespace JazzBot
 {
 	/// <summary>
-	/// Default CommandsNext help formatter.
+	/// Custom help formatter for CommandsNext
 	/// </summary>
 	public class JazzBotHelpFormatter : BaseHelpFormatter
 	{
@@ -21,7 +21,7 @@ namespace JazzBot
 		private Command Command { get; set; }
 
 		/// <summary>
-		/// Creates a new default help formatter.
+		/// Creates a new help formatter.
 		/// </summary>
 		/// <param name="ctx">Context in which this formatter is being invoked.</param>
 		public JazzBotHelpFormatter(CommandContext ctx)
