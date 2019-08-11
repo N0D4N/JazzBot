@@ -38,7 +38,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(memberName))
 				throw new ArgumentException("Имя пользователя не может быть пустым или состоять из пробелов", nameof(memberName));
-			var member = context.Guild.Members.Values.FirstOrDefault(x => x.DisplayName == memberName || x.Username == memberName);
+			var member = context.Guild.Members.Values.FirstOrDefault(x => x.DisplayName.Equals(memberName) || x.Username.Equals(memberName));
 			if (member != null)
 				await context.RespondAsync(embed: await this.MemberInfo(member, context).ConfigureAwait(false)).ConfigureAwait(false);
 			else
