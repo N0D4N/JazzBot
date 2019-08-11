@@ -196,14 +196,13 @@ namespace JazzBot
 		/// </summary>
 		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) 
 		{
-			var msg = await e.Channel.GetMessageAsync(e.Message.Id).ConfigureAwait(false);
-			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || msg.Author.Id != e.Client.CurrentUser.Id)
+			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || e.Message.Author.Id != e.Client.CurrentUser.Id)
 				return;
 			var deleteEmoji = DiscordEmoji.FromName(e.Client, ":no_entry_sign:");
 			if (e.Emoji.GetDiscordName() != deleteEmoji.GetDiscordName())
 				return;
 
-			await msg.DeleteAsync().ConfigureAwait(false);
+			await e.Message.DeleteAsync().ConfigureAwait(false);
 		}
 
 		private Task Client_GuildAvailable(GuildCreateEventArgs e)
