@@ -207,7 +207,7 @@ namespace JazzBot.Commands
 		private Task<DiscordEmbed> MemberInfo(DiscordMember member, CommandContext context)
 		{
 			var roles = new StringBuilder();
-			if (member.Roles.Count() > 0)
+			if (member.Roles?.Any() == true)
 			{
 				var roleslist = member.Roles.OrderByDescending(x => x.Position).Select(x => x.Name).ToList();
 				roleslist.Add("everyone");
