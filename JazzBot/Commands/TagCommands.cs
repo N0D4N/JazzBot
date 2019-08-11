@@ -31,6 +31,7 @@ namespace JazzBot.Commands
 		[Command("Create")]
 		[Description("Создает тег с заданным названием и контентом")]
 		[Aliases("make")]
+		[Cooldown(2, 180, CooldownBucketType.User)]
 		public async Task CreateAsync(CommandContext context,
 			[Description("Название тега")] string name,
 			[RemainingText, Description("Содержимое тега")] string contents)
@@ -150,6 +151,7 @@ namespace JazzBot.Commands
 		[Command("Edit")]
 		[Description("Обновляет содержимое тега")]
 		[Aliases("Modify")]
+		[Cooldown(2, 180, CooldownBucketType.User)]
 		public async Task EditTag(CommandContext context,
 			[Description("Название тега")]string name,
 			[RemainingText, Description("Новое содержимое тега")]string new_content)
@@ -239,6 +241,7 @@ namespace JazzBot.Commands
 
 		[Command("List")]
 		[Description("Показывает список тегов на этом сервере")]
+		[Cooldown(2, 600, CooldownBucketType.Channel)]
 		public async Task List(CommandContext context)
 		{
 			var db = new DatabaseContext();
@@ -378,7 +381,6 @@ namespace JazzBot.Commands
 
 		[Command("UserStats")]
 		[Description("Показывает информацию про пользователя в качестве владельца тегов")]
-
 		[Aliases("Userstat")]
 		public async Task UserStats(CommandContext context, DiscordMember member = null)
 		{

@@ -160,7 +160,7 @@ namespace JazzBot.Commands
 		[Command("ErrorReport")]
 		[Description("Если произошла ошибка и вы хотите сообщить о ней - напишите подробное(или не очень) описание ошибки и репорт будет передан соответствующим лицам")]
 		[Aliases("report")]
-		[Cooldown(1,60,CooldownBucketType.User)]
+		[Cooldown(2,120,CooldownBucketType.User)]
 		public async Task ErrorReport(CommandContext context, [RemainingText, Description("Описание ошибки")]string reportMessage)
 		{
 			if (string.IsNullOrWhiteSpace(reportMessage))
