@@ -127,8 +127,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("ExcelSheet")]
-		[Aliases("excel")]
 		[Description("Заполняет таблицу плейлистов")]
+		[Aliases("excel")]
 		public async Task ExcelSheet(CommandContext context)
 		{
 			await this.CreateExcel(context.Client);
@@ -161,8 +161,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("FixedReport")]
-		[Aliases("fixed")]
 		[Description("Сообщает юзеру что ошибка зарепорченная им была исправлена")]
+		[Aliases("fixed")]
 		public async Task FixedReport(CommandContext context, 
 			[Description("Id сервера")] ulong guildId, 
 				[Description("Id канала")]ulong channelId, 
@@ -181,8 +181,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("UpdateBot")]
-		[Aliases("updbot")]
 		[Description("Изменить статус бота на сообщение о новом обновлении")]
+		[Aliases("updbot")]
 		public async Task UpdateBot(CommandContext context)
 		{
 			string updatePresence = $"J!update, новое обновление {DateTime.Now.ToString("dd.MM.yyyy")}";
@@ -199,8 +199,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Nickname")]
-		[Aliases("nick")]
 		[Description("Присваивает боту новый никнейм на данном сервере")]
+		[Aliases("nick")]
 		public async Task Nickname(CommandContext context, [RemainingText, Description("Новый никнейм")]string nickname)
 		{
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);

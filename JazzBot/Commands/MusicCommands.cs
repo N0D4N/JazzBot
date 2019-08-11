@@ -50,8 +50,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Start")]
-		[Aliases("st", "play", "p")]
 		[Description("Подключается и начиает проигрывать песню из плейлиста гильдии")]
+		[Aliases("st", "play", "p")]
 		public async Task Start(CommandContext context)
 		{
 
@@ -65,8 +65,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Leave")]
-		[Aliases("lv", "l")]
 		[Description("Покидает голосовой канал к которому подключен")]
+		[Aliases("lv", "l")]
 		public async Task Leave(CommandContext context)
 		{
 			this.GuildMusic.Stop();
@@ -97,8 +97,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("PlayNext")]
-		[Aliases("pn", "enqueue")]
 		[Description("Ищет песню по названию и воспроизводит ее следующей")]
+		[Aliases("pn", "enqueue")]
 		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songname)
 		{
 			if (string.IsNullOrWhiteSpace(songname))

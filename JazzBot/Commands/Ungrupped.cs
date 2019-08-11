@@ -24,8 +24,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("UserInfo")]
-		[Aliases("memberinfo")]
 		[Description("Информация об этом участнике сервера")]
+		[Aliases("memberinfo")]
 		public async Task UserInfo(CommandContext context, [Description("Пользователь информацию о котором вы хотите увидеть")] DiscordMember member = null)
 		{
 			if (member == null)
@@ -46,8 +46,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Roll")]
-		[Aliases("random", "r")]
 		[Description("Выбирает случайное число между данными двумя целыми числами")]
+		[Aliases("random", "r")]
 		public async Task Roll(CommandContext context, [Description("Нижняя граница")] int? min = null, [Description("Верхняя граница")] int? max = null)
 		{
 			// No arguments were provided.
@@ -70,8 +70,8 @@ namespace JazzBot.Commands
 		
 
 		[Command("Choice")]
-		[Aliases("Pick")]
 		[Description("Выбирает случайный вариант из представленных")]
+		[Aliases("Pick")]
 		public async Task Choice(CommandContext context, [Description("Варианты среди которых нужно сделать выбор")] params string[] choices)
 		{
 			if (choices?.Any() != true)
@@ -124,8 +124,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Invite")]
-		[Aliases("inv")]
 		[Description("Ссылка с приглашением бота на ваш сервер")]
+		[Aliases("inv")]
 		public async Task Invite(CommandContext context)
 		{
 
@@ -158,8 +158,8 @@ namespace JazzBot.Commands
 		}
 
 		[Command("ErrorReport")]
-		[Aliases("report")]
 		[Description("Если произошла ошибка и вы хотите сообщить о ней - напишите подробное(или не очень) описание ошибки и репорт будет передан соответствующим лицам")]
+		[Aliases("report")]
 		[Cooldown(1,60,CooldownBucketType.User)]
 		public async Task ErrorReport(CommandContext context, [RemainingText, Description("Описание ошибки")]string reportMessage)
 		{

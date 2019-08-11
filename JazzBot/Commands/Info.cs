@@ -15,13 +15,13 @@ using Microsoft.Extensions.PlatformAbstractions;
 namespace JazzBot.Commands
 {
 	[Group("InfoCommands")]
-	[Aliases("info", "inf")]
 	[Description("Команды показывающие информацию о боте")]
+	[Aliases("info", "inf")]
 	class Info : BaseCommandModule
 	{
 		[Command("BotInfo")]
-		[Aliases("about")]
 		[Description("Показывает информацию о этом боте")]
+		[Aliases("about")]
 		public async Task BotInfo(CommandContext context)
 		{
 			var jbv = typeof(Bot)

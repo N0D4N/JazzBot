@@ -29,8 +29,8 @@ namespace JazzBot.Commands
 		private static ImmutableArray<string> ForbiddenNames { get; } = new ImmutableArray<string>() { "create", "make", "delete", "remove", "force_delete", "force_remove", "edit", "modify", "force_edit", "force_modify", "info", "list", "@everyone", "@here", "transfer", "give", "claim", "userstats", "userstat", "serverstats", "serverstat" };
 
 		[Command("Create")]
-		[Aliases("make")]
 		[Description("Создает тег с заданным названием и контентом")]
+		[Aliases("make")]
 		public async Task CreateAsync(CommandContext context,
 			[Description("Название тега")] string name,
 			[RemainingText, Description("Содержимое тега")] string contents)
@@ -377,8 +377,9 @@ namespace JazzBot.Commands
 		}
 
 		[Command("UserStats")]
-		[Aliases("Userstat")]
 		[Description("Показывает информацию про пользователя в качестве владельца тегов")]
+
+		[Aliases("Userstat")]
 		public async Task UserStats(CommandContext context, DiscordMember member = null)
 		{
 			if (member == null)
@@ -406,8 +407,8 @@ namespace JazzBot.Commands
 
 
 		[Command("ServerStats")]
-		[Aliases("serverstat")]
 		[Description("Показывает тэг-статистику на данном сервере")]
+		[Aliases("serverstat")]
 		public async Task ServerStats(CommandContext context)
 		{
 			var db = new DatabaseContext();
