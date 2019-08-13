@@ -52,13 +52,13 @@ namespace JazzBot.Commands
 				List<Songs> songs = new List<Songs>();
 				string text = "";
 				StreamReader sr = new StreamReader(file.FullName);
-				while (text != null)
+				for(int i = 1; text != null; i++)
 				{
 					text = await sr.ReadLineAsync();
 					if (text == null)
 						break;
 					File songfile = File.Create(text);
-					songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name});
+					songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name, SongId = i});
 				}
 				sr.Close();
 				sr.DiscardBufferedData();
