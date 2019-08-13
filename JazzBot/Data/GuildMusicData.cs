@@ -96,7 +96,9 @@ namespace JazzBot.Data
 			this.Guild = guild;
 			this.Lavalink = lavalink;
 			var db = new DatabaseContext();
-			var dguild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == (long)this.Guild.Id);
+
+			var gId = (long)this.Guild.Id;
+			var dguild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == gId);
 			db.Dispose();
 			this.Seed = dguild.Seed;
 			this.IdOfCurrentSong = dguild.IdOfCurrentSong;
@@ -140,7 +142,8 @@ namespace JazzBot.Data
 		private void UpdateDB()
 		{
 			var db = new DatabaseContext();
-			var guild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == (long)this.Guild.Id);
+			var gId = (long)this.Guild.Id;
+			var guild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == gId);
 			guild.IdOfCurrentSong = this.IdOfCurrentSong;
 			guild.IdOfGuild = (long)this.Guild.Id;
 			guild.PlaylistName = this.PlaylistName;
@@ -270,7 +273,8 @@ namespace JazzBot.Data
 			var db = new DatabaseContext();
 			if (await db.Playlist.Select(x => x.PlaylistName).ContainsAsync(PlaylistName).ConfigureAwait(false))
 			{
-				var guild = await db.Guilds.SingleOrDefaultAsync(x => x.IdOfGuild == (long)this.Guild.Id).ConfigureAwait(false);
+				var gId = (long)this.Guild.Id;
+				var guild = await db.Guilds.SingleOrDefaultAsync(x => x.IdOfGuild == gId).ConfigureAwait(false);
 				this.PlaylistName = playlistName;
 				guild.PlaylistName = playlistName;
 				this.Shuffle();
