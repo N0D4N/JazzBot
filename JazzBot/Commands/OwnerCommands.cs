@@ -43,34 +43,9 @@ namespace JazzBot.Commands
 			{
 				throw new ArgumentException($"Файла плейлиста {name}.txt не существует", nameof(name));
 			}
-			using (DatabaseContext database = new DatabaseContext())
-			{
-				Songs[] songsToDelete = database.Playlist.Where(s => s.PlaylistName == name).ToArray();
-				database.Playlist.RemoveRange(songsToDelete);
-				await database.SaveChangesAsync().ConfigureAwait(false);
-
-				List<Songs> songs = new List<Songs>();
-				string text = "";
-				StreamReader sr = new StreamReader(file.FullName);
-				for(int i = 1; text != null; i++)
-				{
-					text = await sr.ReadLineAsync();
-					if (text == null)
-						break;
-					File songfile = File.Create(text);
-					songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name, SongId = i});
-				}
-				sr.Close();
-				sr.DiscardBufferedData();
-				sr.Dispose();
-
-				await database.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
-
-				if (await database.SaveChangesAsync().ConfigureAwait(false) <= 0)
-					throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
-			}
-			await this.CreateExcel(context.Client);
-			await context.RespondAsync("Плейлист успешно обновлен").ConfigureAwait(false);
+			await this.UpdatePlaylist(name).ConfigureAwait(false);
+			await this.CreateExcel(context.Client).ConfigureAwait(false);
+			await context.RespondAsync($"Плейлист {name} успешно обновлен").ConfigureAwait(false);
 		}
 
 		[Command("FillAllPlaylists")]
@@ -78,34 +53,12 @@ namespace JazzBot.Commands
 		[Aliases("fillap")]
 		public async Task FillAllPlaylists(CommandContext context)
 		{
-			using (DatabaseContext database = new DatabaseContext())
+			List<Songs> songs = new List<Songs>();
+			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x=> Path.GetFileNameWithoutExtension(x.FullName)))
 			{
-				Songs[] songsToDelete = database.Playlist.ToArray();
-				database.RemoveRange(songsToDelete);
-				await database.SaveChangesAsync().ConfigureAwait(false);
-
-
-				List<Songs> songs = new List<Songs>();
-				foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles())
-				{
-					string text = "", name = file.Name.Remove(file.Name.Length - 4);
-					StreamReader sr = new StreamReader(file.FullName);
-					while (text != null)
-					{
-						text = await sr.ReadLineAsync();
-						if (text == null)
-							break;
-						File songfile = File.Create(text);
-						songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name});
-					}
-					sr.Close();
-					sr.DiscardBufferedData();
-					sr.Dispose();
-				}
-				await database.AddRangeAsync(songs).ConfigureAwait(false);
-				if (await database.SaveChangesAsync().ConfigureAwait(false) <= 0)
-					throw new CustomJBException("Не удалось сохранить изменения в БД", ExceptionType.DatabaseException);
+				await this.UpdatePlaylist(file).ConfigureAwait(false);
 			}
+			
 			await this.CreateExcel(context.Client);
 			await context.RespondAsync("Все плейлисты успешно обновлены").ConfigureAwait(false);
 		}
@@ -206,6 +159,37 @@ namespace JazzBot.Commands
 		public async Task Nickname(CommandContext context, [RemainingText, Description("Новый никнейм")]string nickname)
 		{
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);
+		}
+
+		private async Task UpdatePlaylist(string playlistName)
+		{
+			FileInfo file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
+			
+			var db = new DatabaseContext();
+			db.Playlist.RemoveRange(db.Playlist.Where(x => x.PlaylistName == playlistName));
+			if(await db.SaveChangesAsync() <= 0)
+				throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+			List<Songs> songs = new List<Songs>();
+			string text = "";
+
+			StreamReader sr = new StreamReader(file.FullName);
+			for (int i = db.Playlist.Count(); text != null; i++)
+			{
+				text = await sr.ReadLineAsync();
+				if (text == null)
+					break;
+				File songfile = File.Create(text);
+				songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+			}
+			sr.Close();
+			sr.DiscardBufferedData();
+			sr.Dispose();
+
+			await db.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
+
+			if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
+				throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+			db.Dispose();
 		}
 
 		private async Task CreateExcel(DiscordClient client)
