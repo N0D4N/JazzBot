@@ -345,7 +345,7 @@ namespace JazzBot
 				// Ignore.
 				return;
 			}
-			else if (ex is InvalidOperationException invOpEx && invOpEx.Message.Equals("No matching subcommands were found, and this group is not executable."))
+			else if (ex is InvalidOperationException invOpEx && invOpEx.Message == "No matching subcommands were found, and this group is not executable.")
 			{
 				// Ignore.
 				return;
