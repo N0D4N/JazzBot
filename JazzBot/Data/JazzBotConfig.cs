@@ -77,6 +77,21 @@ namespace JazzBot.Data
 		/// </summary>
 		[JsonProperty("EntityFrameworkConnectionString")]
 		public string EntityFrameworkConnectionString { get; private set; }
+
+		[JsonProperty("Hostname")]
+		public string Hostname { get; private set; }
+
+		[JsonProperty("Port")]
+		public int Port { get; private set; }
+
+		[JsonProperty("Database")]
+		public string Database { get; private set; }
+
+		[JsonProperty("Username")]
+		public string Username { get; private set; }
+
+		[JsonProperty("Password")]
+		public string Password { get; private set; }
 	}
 	
 	public sealed class JazzBotConfigLavalink

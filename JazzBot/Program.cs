@@ -152,12 +152,12 @@ namespace JazzBot
 
 			var db = new DatabaseContext();
 
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == e.Client.CurrentUser.Id);
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == (long) e.Client.CurrentUser.Id);
 			if (config == null)
 			{
 				config = new Data.Configs
 				{
-					Id = e.Client.CurrentUser.Id,
+					Id = (long)e.Client.CurrentUser.Id,
 					Presence = "Music"
 				};
 				await db.Configs.AddAsync(config);

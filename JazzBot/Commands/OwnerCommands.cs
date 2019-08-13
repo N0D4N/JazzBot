@@ -147,7 +147,7 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
 
 			var db = new DatabaseContext();
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == context.Client.CurrentUser.Id);
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == (long) context.Client.CurrentUser.Id);
 			config.Presence = presenceText;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)
@@ -189,7 +189,7 @@ namespace JazzBot.Commands
 			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
 			var db = new DatabaseContext();
-			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == context.Client.CurrentUser.Id);
+			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == (long) context.Client.CurrentUser.Id);
 			config.Presence = updatePresence;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)

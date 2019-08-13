@@ -16,7 +16,7 @@ namespace JazzBot.Data
 		[Key]
 		[Required]
 		[Column("Guild_ID")]
-		public ulong IdOfGuild { get; set; }
+		public long IdOfGuild { get; set; }
 
 		/// <summary>
 		/// ID of song currentlyplaying.
@@ -73,7 +73,6 @@ namespace JazzBot.Data
 		/// </summary>
 		[Required]
 		[Column("Playlist_Name")]
-		[MaxLength(30)]
 		public string PlaylistName { get; set; }
 
 		/// <summary>
@@ -92,7 +91,7 @@ namespace JazzBot.Data
 		[Key]
 		[Required]
 		[Column("Id")]
-		public ulong ID { get; set; }
+		public long ID { get; set; }
 
 		/// <summary>
 		/// Name of the tag.
@@ -111,14 +110,14 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Date of creation of tag.
 		/// </summary>
-		[Column("Creation_date")]
+		[Column("Creation_date", TypeName = "timestamp with time zone")]
 		[Required]
 		public DateTime CretionDate { get; set; }
 
 		/// <summary>
 		/// Date of last edit of tag.
 		/// </summary>
-		[Column("Latest_revision_date")]
+		[Column("Latest_revision_date", TypeName = "timestamp with time zone")]
 		[Required]
 		public DateTime RevisionDate { get; set; }
 
@@ -127,14 +126,14 @@ namespace JazzBot.Data
 		/// </summary>
 		[Column("GuildID")]
 		[Required]
-		public ulong GuildID { get; set; }
+		public long GuildID { get; set; }
 
 		/// <summary>
 		/// Id of owner of the tag.
 		/// </summary>
 		[Column("OwnerID")]
 		[Required]
-		public ulong OwnerID { get; set; }
+		public long OwnerID { get; set; }
 
 		/// <summary>
 		/// How many times tag have been used.
@@ -156,7 +155,7 @@ namespace JazzBot.Data
 		[Key]
 		[Required]
 		[Column("Id")]
-		public ulong Id { get; set; }
+		public long Id { get; set; }
 
 		/// <summary>
 		/// Status string of bot.

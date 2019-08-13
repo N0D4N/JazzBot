@@ -1,6 +1,6 @@
 ﻿using JazzBot.Data;
 using Microsoft.EntityFrameworkCore;
-
+using Npgsql;
 namespace JazzBot.Services
 {
 	public class DatabaseContext : DbContext
@@ -21,22 +21,42 @@ namespace JazzBot.Services
 
 		private string EntityFrameworkConnectionString { get; }
 
+		private string PgSqlCS { get; set; }
+
 		public DatabaseContext()
 		{
 			this.EntityFrameworkConnectionString = Program.Cfgjson.Database.EntityFrameworkConnectionString;
+			this.PgSqlCS = new NpgsqlConnectionStringBuilder
+			{
+				Host = Program.Cfgjson.Database.Hostname,
+				Port = Program.Cfgjson.Database.Port,
+
+				Username = Program.Cfgjson.Database.Username,
+				Password = Program.Cfgjson.Database.Password,
+				Database = Program.Cfgjson.Database.Database
+			}.ConnectionString;
 			Database.EnsureCreated();
 		}
 
 		public DatabaseContext(DbContextOptions<DatabaseContext> options) :base(options)
 		{
 			this.EntityFrameworkConnectionString = Program.Cfgjson.Database.EntityFrameworkConnectionString;
+			this.PgSqlCS = new NpgsqlConnectionStringBuilder
+			{
+				Host = Program.Cfgjson.Database.Hostname,
+				Port = Program.Cfgjson.Database.Port,
+
+				Username = Program.Cfgjson.Database.Username,
+				Password = Program.Cfgjson.Database.Password,
+				Database = Program.Cfgjson.Database.Database
+			}.ConnectionString;
 			Database.EnsureCreated();
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			if (!optionsBuilder.IsConfigured)
-				optionsBuilder.UseSqlServer(this.EntityFrameworkConnectionString);
+				optionsBuilder.UseNpgsql(this.PgSqlCS);
 			
 		}
 
