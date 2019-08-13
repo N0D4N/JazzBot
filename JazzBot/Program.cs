@@ -152,12 +152,14 @@ namespace JazzBot
 
 			var db = new DatabaseContext();
 
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == (long) e.Client.CurrentUser.Id);
+			var cuid = (long)e.Client.CurrentUser.Id;
+
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid );
 			if (config == null)
 			{
 				config = new Data.Configs
 				{
-					Id = (long)e.Client.CurrentUser.Id,
+					Id = cuid,
 					Presence = "Music"
 				};
 				await db.Configs.AddAsync(config);
@@ -183,7 +185,7 @@ namespace JazzBot
 			var chn = Bot.ErrorChannel;
 
 			var ex = e.Exception;
-			while (ex is AggregateException)
+			while (ex is AggregateException || ex.InnerException != null)
 				ex = ex.InnerException;
 
 			await chn.SendMessageAsync(embed: EmbedTemplates.ErrorEmbed()
@@ -223,7 +225,7 @@ namespace JazzBot
 
 
 			var ex = e.Exception;
-			while (ex is AggregateException)
+			while (ex is AggregateException || ex.InnerException != null)
 				ex = ex.InnerException;
 
 			// Check if exception is result of command prechecks.
