@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;

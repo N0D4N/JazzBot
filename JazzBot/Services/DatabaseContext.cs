@@ -1,6 +1,6 @@
 ﻿using JazzBot.Data;
-using Microsoft.EntityFrameworkCore;
 using JazzBot.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace JazzBot.Services
 {

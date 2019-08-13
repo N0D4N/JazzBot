@@ -4,10 +4,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using JazzBot.Enums;
-using TagLib;
 using JazzBot.Data;
+using JazzBot.Enums;
 using Npgsql;
+using Tag = TagLib.Tag;
 
 namespace JazzBot.Utilities
 {
