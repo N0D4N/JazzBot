@@ -6,7 +6,7 @@ I'm pretty sure nobody will host it for themself but if you want to do so - here
 _______
 1. [.NET Core 2.2.0 or better](https://dotnet.microsoft.com/download/dotnet-core/2.2)
 2. Java
-3. [Microsoft SQL Server](https://www.microsoft.com/en-gb/sql-server/sql-server-downloads) 
+3. [PostgreSQL](https://www.postgresql.org/) 
 4. [Lavalink](https://github.com/Frederikam/Lavalink)  
 
 Recommended platform is Windows.  
