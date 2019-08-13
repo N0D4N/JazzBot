@@ -52,13 +52,13 @@ namespace JazzBot.Commands
 				List<Songs> songs = new List<Songs>();
 				string text = "";
 				StreamReader sr = new StreamReader(file.FullName);
-				while (text != null)
+				for(int i = 1; text != null; i++)
 				{
 					text = await sr.ReadLineAsync();
 					if (text == null)
 						break;
 					File songfile = File.Create(text);
-					songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name});
+					songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = name, SongId = i});
 				}
 				sr.Close();
 				sr.DiscardBufferedData();
@@ -147,7 +147,8 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
 
 			var db = new DatabaseContext();
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == context.Client.CurrentUser.Id);
+			var bId = (long)context.Client.CurrentUser.Id;
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == bId);
 			config.Presence = presenceText;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)
@@ -189,7 +190,8 @@ namespace JazzBot.Commands
 			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
 			var db = new DatabaseContext();
-			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == context.Client.CurrentUser.Id);
+			var bId = (long)context.Client.CurrentUser.Id;
+			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == bId);
 			config.Presence = updatePresence;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)

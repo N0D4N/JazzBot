@@ -49,12 +49,12 @@ namespace JazzBot.Commands
 
 			var tag = new Tag
 			{
-				ID = Convert.ToUInt64(DateTimeOffset.Now.ToUnixTimeMilliseconds()),
+				ID = Convert.ToInt64(DateTimeOffset.Now.ToUnixTimeMilliseconds()),
 				Name = name,
 				TagContent = contents,
 				RevisionDate = DateTime.Now,
-				GuildID = context.Guild.Id,
-				OwnerID = context.User.Id,
+				GuildID = (long) context.Guild.Id,
+				OwnerID = (long) context.User.Id,
 				CretionDate = DateTime.Now,
 				TimesUsed = 0
 			};
@@ -92,7 +92,11 @@ namespace JazzBot.Commands
 
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id && t.OwnerID == context.User.Id).ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+			var uId = (long)context.User.Id;
+
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId  && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				db.Dispose();
@@ -126,7 +130,8 @@ namespace JazzBot.Commands
 
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
-			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id).ConfigureAwait(false);
+			var gId = (long)context.Guild.Id;
+			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				db.Dispose();
@@ -169,7 +174,11 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 
 			name = name.ToLowerInvariant();
-			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id && t.OwnerID == context.User.Id).ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+			var uId = (long)context.User.Id;
+
+			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				db.Dispose();
@@ -215,7 +224,9 @@ namespace JazzBot.Commands
 
 			name = name.ToLowerInvariant();
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id).ConfigureAwait(false);
+			var gId = (long)context.Guild.Id;
+
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
 			else
@@ -245,7 +256,10 @@ namespace JazzBot.Commands
 		public async Task List(CommandContext context)
 		{
 			var db = new DatabaseContext();
-			var tagsArray = await db.Tags.Where(t => t.GuildID == context.Guild.Id).ToArrayAsync().ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+
+			var tagsArray = await db.Tags.Where(t => t.GuildID == gId).ToArrayAsync().ConfigureAwait(false);
 			db.Dispose();
 			if (tagsArray?.Any() == true)
 			{
@@ -286,7 +300,10 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id).ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			db.Dispose();
 			if (tag == null)
 			{
@@ -294,7 +311,8 @@ namespace JazzBot.Commands
 			}
 			else
 			{
-				DiscordUser TagAuthor = await context.Client.GetUserAsync(tag.OwnerID).ConfigureAwait(false);
+				var ownId = (ulong)tag.OwnerID;
+				DiscordUser TagAuthor = await context.Client.GetUserAsync(ownId).ConfigureAwait(false);
 				await context.RespondAsync(embed: new DiscordEmbedBuilder
 				{
 					Title = $"Информация про тег {tag.Name}",
@@ -323,7 +341,11 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Вы не можете передать себе владельство над тегом", nameof(memberToGive));
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id && t.OwnerID == context.User.Id).ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+			var uId = (long)context.User.Id;
+
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				db.Dispose();
@@ -331,7 +353,7 @@ namespace JazzBot.Commands
 			}
 			else
 			{
-				tag.OwnerID = memberToGive.Id;
+				tag.OwnerID = (long) memberToGive.Id;
 				db.Tags.Update(tag);
 				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
@@ -351,15 +373,18 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(name))
 				throw new ArgumentException("Название тега не должно быть пустым", nameof(name));
 			var db = new DatabaseContext();
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id).ConfigureAwait(false);
+			var gId = (long)context.Guild.Id;
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			DiscordMember owner = null;
 			try
 			{
-				owner = await context.Guild.GetMemberAsync(tag.OwnerID).ConfigureAwait(false);
+				var ownId = (ulong)tag.OwnerID;
+
+				owner = await context.Guild.GetMemberAsync(ownId).ConfigureAwait(false);
 			}
 			catch (NotFoundException)
 			{
-				tag.OwnerID = context.User.Id;
+				tag.OwnerID =(long) context.User.Id;
 				db.Tags.Update(tag);
 				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
@@ -390,7 +415,11 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 			var embed = new DiscordEmbedBuilder { }
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl);
-			var tags = await db.Tags.Where(x => x.OwnerID == member.Id && x.GuildID == context.Guild.Id).ToListAsync();
+
+			var gId = (long)context.Guild.Id;
+			var mId = (long)member.Id;
+
+			var tags = await db.Tags.Where(x => x.OwnerID == mId && x.GuildID == gId).ToListAsync();
 			db.Dispose();
 
 			if (tags?.Any() == false)
@@ -414,7 +443,10 @@ namespace JazzBot.Commands
 		public async Task ServerStats(CommandContext context)
 		{
 			var db = new DatabaseContext();
-			var serverTags = await db.Tags.Where(x => x.GuildID == context.Guild.Id).ToListAsync();
+
+			var gId = (long)context.Guild.Id;
+
+			var serverTags = await db.Tags.Where(x => x.GuildID == gId).ToListAsync();
 			db.Dispose();
 			if (serverTags?.Any() == false)
 			{
@@ -429,6 +461,7 @@ namespace JazzBot.Commands
 			{
 				tagsOwners.Add(new TagsOwner(owner));
 			}
+			
 			tagsOwners.ForEach(x => x.TimesUsed = serverTags.Where(y => x.OwnerId == y.OwnerID).Select(y => y.TimesUsed).Sum());
 			tagsOwners.ForEach(x => x.AmountOfTags = serverTags.Where(y => x.OwnerId == y.OwnerID).Count());
 			Tag maxuses = serverTags.OrderByDescending(x => x.TimesUsed).First();
@@ -456,11 +489,14 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или быть называться также как и команды.", nameof(name));
 
 			var db = new DatabaseContext();
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == context.Guild.Id).ConfigureAwait(false);
+
+			var gId = (long)context.Guild.Id;
+
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				var nL = new NormalizedLevenshtein();
-				var tags = await db.Tags.Where(t => t.GuildID == context.Guild.Id).OrderBy(t => nL.Distance(t.Name, name)).ToArrayAsync().ConfigureAwait(false);
+				var tags = await db.Tags.Where(t => t.GuildID == gId).OrderBy(t => nL.Distance(t.Name, name)).ToArrayAsync().ConfigureAwait(false);
 				db.Dispose();
 				if (tags?.Any() == false)
 					throw new ArgumentException("Тегов на этом сервере не найдено");
@@ -517,15 +553,15 @@ namespace JazzBot.Commands
 
 	sealed class TagsOwner
 	{
-		public ulong OwnerId { get; set; }
+		public long OwnerId { get; set; }
 		public int TimesUsed { get; set; }
 		public int AmountOfTags { get; set; }
-		public TagsOwner(ulong id, int used)
+		public TagsOwner(long id, int used)
 		{
 			this.OwnerId = id;
 			this.TimesUsed = used;
 		}
-		public TagsOwner(ulong id)
+		public TagsOwner(long id)
 		{
 			this.OwnerId = id;
 		}

@@ -1,4 +1,5 @@
 ﻿using JazzBot.Data;
+using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace JazzBot.Services
@@ -19,24 +20,24 @@ namespace JazzBot.Services
 
 		public DbSet<Configs> Configs { get; set; }
 
-		private string EntityFrameworkConnectionString { get; }
+		private string PgSqlCS { get; }
 
 		public DatabaseContext()
 		{
-			this.EntityFrameworkConnectionString = Program.Cfgjson.Database.EntityFrameworkConnectionString;
+			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
 			Database.EnsureCreated();
 		}
 
 		public DatabaseContext(DbContextOptions<DatabaseContext> options) :base(options)
 		{
-			this.EntityFrameworkConnectionString = Program.Cfgjson.Database.EntityFrameworkConnectionString;
+			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
 			Database.EnsureCreated();
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			if (!optionsBuilder.IsConfigured)
-				optionsBuilder.UseSqlServer(this.EntityFrameworkConnectionString);
+				optionsBuilder.UseNpgsql(this.PgSqlCS);
 			
 		}
 

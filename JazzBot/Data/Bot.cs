@@ -12,10 +12,6 @@ namespace JazzBot.Data
 		/// </summary>
 		public string PathToDirectoryWithPlaylists { get; }
 
-		/// <summary>
-		/// Connection string to database for Entity Framework.
-		/// </summary>
-		public string EFconstring { get; }
 
 		/// <summary>
 		/// Channel where all unexpected or important errors and exceptions should be posted.
@@ -44,7 +40,6 @@ namespace JazzBot.Data
 		public Bot(JazzBotConfig config, DiscordClient client)
 		{
 			this.PathToDirectoryWithPlaylists = config.Miscellaneous.PathToDirectoryWithPlaylists;
-			this.EFconstring = config.Database.EntityFrameworkConnectionString;
 			this.Config = config;
 			client.Ready += this.Client_Ready;
 		}

@@ -14,7 +14,11 @@
   },
 
   "Database": {
-    "EntityFrameworkConnectionString": "connection_string_here"
+    "Hostname": "localhost",
+    "Port": 5432,
+    "Database": "your_db_name",
+    "Username": "username",
+    "Password": "password"
   },
 
   "Lavalink": {

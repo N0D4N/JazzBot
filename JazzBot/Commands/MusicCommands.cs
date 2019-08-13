@@ -131,7 +131,8 @@ namespace JazzBot.Commands
 				{
 					if (res >= 1 && res <= playNexts.Count)
 					{
-						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == context.Guild.Id).ConfigureAwait(false);
+						var gId = (long)context.Guild.Id;
+						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
 						db.Dispose();
 						this.GuildMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
 						await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
