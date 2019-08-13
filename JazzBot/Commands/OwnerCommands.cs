@@ -173,7 +173,7 @@ namespace JazzBot.Commands
 			string text = "";
 
 			StreamReader sr = new StreamReader(file.FullName);
-			for (int i = db.Playlist.Count(); text != null; i++)
+			for (int i = db.Playlist.Count() +1; text != null; i++)
 			{
 				text = await sr.ReadLineAsync();
 				if (text == null)
