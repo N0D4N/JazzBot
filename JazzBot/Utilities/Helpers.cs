@@ -110,7 +110,7 @@ namespace JazzBot.Utilities
 			var provider = new RNGCryptoServiceProvider();
 			byte[] rgb = new byte[3];
 			provider.GetNonZeroBytes(rgb);
-			return new DiscordColor(rgb[1], rgb[2], rgb[3]);
+			return new DiscordColor(rgb[0], rgb[1], rgb[2]);
 		}
 
 
