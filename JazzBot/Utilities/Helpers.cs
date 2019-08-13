@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using JazzBot.Enums;
 using TagLib;
+using JazzBot.Data;
+using Npgsql;
 
 namespace JazzBot.Utilities
 {
@@ -113,7 +115,18 @@ namespace JazzBot.Utilities
 			return new DiscordColor(rgb[0], rgb[1], rgb[2]);
 		}
 
+		public static string NpgSqlConnectionString(this JazzBotConfigDatabase config)
+		{
+			return new NpgsqlConnectionStringBuilder
+			{
+				Host = Program.Cfgjson.Database.Hostname,
+				Port = Program.Cfgjson.Database.Port,
 
+				Username = Program.Cfgjson.Database.Username,
+				Password = Program.Cfgjson.Database.Password,
+				Database = Program.Cfgjson.Database.Database
+			}.ConnectionString;
+		}
 
 		#region unused_and_old_code_i_dont_want_to_delete
 		//public static bool IsFileLocked(FileInfo file)

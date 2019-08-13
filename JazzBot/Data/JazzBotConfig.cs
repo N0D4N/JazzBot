@@ -72,12 +72,6 @@ namespace JazzBot.Data
 
 	public sealed class JazzBotConfigDatabase
 	{
-		/// <summary>
-		/// Connection string for Entity Framework.
-		/// </summary>
-		[JsonProperty("EntityFrameworkConnectionString")]
-		public string EntityFrameworkConnectionString { get; private set; }
-
 		[JsonProperty("Hostname")]
 		public string Hostname { get; private set; }
 
