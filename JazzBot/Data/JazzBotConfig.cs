@@ -23,6 +23,9 @@ namespace JazzBot.Data
 		[JsonProperty("Lavalink")]
 		public JazzBotConfigLavalink Lavalink { get; private set; }
 
+		[JsonProperty("Youtube")]
+		public JazzBotConfigYoutube Youtube { get; private set; }
+
 		/// <summary>
 		/// Miscellaneous configuration.
 		/// </summary>
@@ -107,6 +110,12 @@ namespace JazzBot.Data
 		/// </summary>
 		[JsonProperty("Port")]
 		public int Port { get; private set; }
+	}
+
+	public sealed class JazzBotConfigYoutube
+	{
+		[JsonProperty("ApiKey")]
+		public string ApiKey { get; private set; }
 	}
 
 	public sealed class JazzBotConfigMiscellaneous
