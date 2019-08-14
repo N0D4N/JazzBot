@@ -175,6 +175,8 @@ namespace JazzBot.Data
 			}
 			else
 			{
+				if (this.LocalMusic.CurrentSong == null)
+					await this.LocalMusic.ChangeCurrentSong(false);
 				var embed = new DiscordEmbedBuilder
 				{
 					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",

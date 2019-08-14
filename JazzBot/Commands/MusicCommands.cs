@@ -57,7 +57,8 @@ namespace JazzBot.Commands
 		[Aliases("st")]
 		public async Task Start(CommandContext context)
 		{
-
+			if (this.GuildMusic.RemoteMusic?.Queue?.Any() == false)
+				return;
 			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
 			await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
@@ -104,6 +105,7 @@ namespace JazzBot.Commands
 			foreach(var el in searchResults)
 			{
 				description.AppendLine($"{i}. {el.VideoTitle} - {el.ChannelName}");
+				i++;
 			}
 			if (!searchResults.Any())
 				throw new ArgumentException("По заданному запросу на Youtube ничего не было найдено", nameof(searchQuery));
