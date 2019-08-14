@@ -57,7 +57,7 @@ namespace JazzBot.Commands
 		[Aliases("st")]
 		public async Task Start(CommandContext context)
 		{
-			if (this.GuildMusic.RemoteMusic?.Queue?.Any() == false)
+			if (this.GuildMusic.RemoteMusic?.Queue?.Any() == true)
 				return;
 			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
