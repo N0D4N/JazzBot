@@ -104,7 +104,7 @@ namespace JazzBot.Commands
 			int i = 1;
 			foreach(var el in searchResults)
 			{
-				description.AppendLine($"{i}. {el.VideoTitle} - {el.ChannelName}");
+				description.AppendLine($"{i}. {Formatter.InlineCode(el.VideoTitle)} {Formatter.Bold("-")} {Formatter.InlineCode(el.ChannelName)}");
 				i++;
 			}
 			if (!searchResults.Any())
@@ -131,6 +131,8 @@ namespace JazzBot.Commands
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed)
 				throw new ArgumentException("По данной ссылке ничего не было найдено");
 			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
+
+			await msg.DeleteAsync().ConfigureAwait(false);
 
 			if (this.GuildMusic.PlayingMessage == null)
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
