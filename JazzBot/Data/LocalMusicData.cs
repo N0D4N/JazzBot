@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
 using JazzBot.Enums;
-using JazzBot.Services;
 using System.IO;
 using DSharpPlus.Lavalink.Entities;
 using DSharpPlus.Lavalink;

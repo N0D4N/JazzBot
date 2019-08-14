@@ -167,8 +167,7 @@ namespace JazzBot.Data
 					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",
 					Color = track.RequestedByMember.Color,
 					Timestamp = DateTime.Now + track.Track.Length,
-					Description = $"{Formatter.MaskedUrl(track.YoutubeData.VideoTitle, track.VideoUri)} - {Formatter.MaskedUrl(track.YoutubeData.ChannelName, track.ChannelUri)}",
-					ThumbnailUrl = track.YoutubeData.VideoThumbnailUrl
+					Description = $"{Formatter.MaskedUrl(track.Track.Title, track.Track.Uri)} - {track.Track.Author}",
 				}.AddField("Длительность", track.Track.Length.ToString(@"mm\:ss"), true)
 				.WithFooter("Приблизительное время окончания");
 

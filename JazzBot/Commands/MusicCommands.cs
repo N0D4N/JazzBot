@@ -51,16 +51,16 @@ namespace JazzBot.Commands
 
 		[Command("Start")]
 		[Description("Подключается и начиает проигрывать песню из плейлиста гильдии")]
-		[Aliases("st", "play", "p")]
+		[Aliases("st")]
 		public async Task Start(CommandContext context)
 		{
 
 			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
-			await this.GuildMusic.ChangeCurrentSong(false);
+			await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
 			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
-			this.GuildMusic.Play(await this.GuildMusic.GetSong().ConfigureAwait(false));
+			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
 
 		}
 
@@ -91,7 +91,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(playlistname))
 				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistname));
-			await this.GuildMusic.ChangePlaylist(playlistname).ConfigureAwait(false);
+			await this.GuildMusic.LocalMusic.ChangePlaylist(playlistname).ConfigureAwait(false);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Плейлист успешно изменен на {playlistname}")).ConfigureAwait(false);
 		}
@@ -134,7 +134,7 @@ namespace JazzBot.Commands
 						var gId = (long)context.Guild.Id;
 						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
 						db.Dispose();
-						this.GuildMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
+						this.GuildMusic.LocalMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
 						await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 							.WithTitle($"Следующей песней будет {playNexts[res - 1].Title}")).ConfigureAwait(false);
 					}
@@ -162,10 +162,8 @@ namespace JazzBot.Commands
 		[Description("Skips playing of the current track")]
 		public async Task Skip(CommandContext context)
 		{
-			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-				.WithTitle($"{this.GuildMusic.CurrentSong.Tag.FirstPerformer} - {this.GuildMusic.CurrentSong.Tag.Title} была пропущена")).ConfigureAwait(false);
 			this.GuildMusic.Skip();
-			
+			await context.RespondAsync("Песню пропущено").ConfigureAwait(false);
 		}
 		
 
