@@ -28,7 +28,7 @@ namespace JazzBot.Services
 
 		public async Task<IEnumerable<YoutubeSearchResult>> SearchAsync(string query)
 		{
-			var uri = new Uri($"https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q={WebUtility.UrlEncode(query)}&type=video&fields=items(id(videoId)%2Csnippet(title%2CchannelTitle%2CchannelId%2Cthumbnails(medium(url))))&key={this.ApiKey}");
+			var uri = new Uri($"https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q={WebUtility.UrlEncode(query)}&type=video&fields=items(id(videoId)%2Csnippet(title%2CchannelTitle))&key={this.ApiKey}");
 			var json = "{}";
 
 			using (var request = await this.HttpClient.GetAsync(uri))
