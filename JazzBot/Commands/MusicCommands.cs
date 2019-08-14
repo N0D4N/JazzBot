@@ -24,18 +24,20 @@ namespace JazzBot.Commands
 	{
 		private LavalinkService Lavalink { get; }
 
-
 		private Bot Bot { get; }
 
 		private MusicService Music { get; }
 
 		private GuildMusicData GuildMusic { get; set; }
 
-		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot)
+		private YoutubeService Youtube { get; }
+
+		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot, YoutubeService youtube)
 		{
 			this.Lavalink = lavalink;
 			this.Music = music;
 			this.Bot = bot;
+			this.Youtube = youtube;
 		}
 
 		public override async Task BeforeExecutionAsync(CommandContext context)
@@ -51,7 +53,7 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Start")]
-		[Description("Подключается и начиает проигрывать песню из плейлиста гильдии")]
+		[Description("Подключается и начинает проигрывать песню из плейлиста сервера")]
 		[Aliases("st")]
 		public async Task Start(CommandContext context)
 		{
@@ -66,14 +68,16 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Play")]
-		public async Task Play(CommandContext context, Uri trackUri)
+		[Description("Подключается и начинает воспроизведение трека из интернета по задданной ссылке или названию")]
+		[Aliases("p")]
+		[Priority(1)]
+		public async Task Play(CommandContext context, [RemainingText, Description("Ссылка на трек")]Uri trackUri)
 		{
+			await context.RespondAsync(trackUri.ToString());
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
-			{
-				await context.RespondAsync("Ошибка загрузки треков").ConfigureAwait(false);
-				return;
-			}
+				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
+
 			if(loadResult.LoadResultType == LavalinkLoadResultType.PlaylistLoaded)
 			{
 				var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
@@ -83,11 +87,56 @@ namespace JazzBot.Commands
 			{
 				this.GuildMusic.RemoteMusic.Add(new RemoteMusicItem(loadResult.Tracks.First(), context.Member));
 			}
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			
+			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
+			this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+		}
 
-			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+		[Command("Play")]
+		[Priority(0)]
+		public async Task Play(CommandContext context, [RemainingText, Description("Текст для поиска")]string searchQuery)
+		{
+			var searchResults = await this.Youtube.SearchAsync(searchQuery);
+			StringBuilder description = new StringBuilder();
+			int i = 1;
+			foreach(var el in searchResults)
+			{
+				description.AppendLine($"{i}. {el.VideoTitle} - {el.ChannelName}");
+			}
+			if (!searchResults.Any())
+				throw new ArgumentException("По заданному запросу на Youtube ничего не было найдено", nameof(searchQuery));
+			var interactivity = context.Client.GetInteractivity();
+
+			var msg = await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Выберите песню (ответьте 0 если чтобы отменить комманду)")
+				.WithDescription(description.ToString())).ConfigureAwait(false);
+			var intres = await interactivity.WaitForMessageAsync(x => x.Author.Id == context.User.Id, TimeSpan.FromSeconds(10));
+			if (intres.TimedOut || !int.TryParse(intres.Result.Content, out int result))
+				throw new ArgumentException("Время вышло или ответ не является числом");
+			if (result < 0 || result > searchResults.Count() + 1)
+				throw new ArgumentException("Число выходит за заданные границы");
+			if (result == 0)
+			{
+				await msg.ModifyAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle("Поиск отменен").Build()).ConfigureAwait(false);
+				return;
+			}
+
+			var selectedTrack = searchResults.ElementAt(result - 1);
+			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed)
+				throw new ArgumentException("По данной ссылке ничего не было найдено");
+			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
+
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+
+
 		}
 
 		[Command("Leave")]
