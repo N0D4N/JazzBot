@@ -191,7 +191,10 @@ namespace JazzBot.Data
 			}
 			else
 			{
-				var result = await this.Lavalink.LavalinkNode.GetTracksAsync(new FileInfo(this.PathToCurrentSong)).ConfigureAwait(false);
+				var file = new FileInfo(this.PathToCurrentSong);
+				if (!file.Exists)
+					throw new CustomJBException("Трек не существует");
+				var result = await this.Lavalink.LavalinkNode.GetTracksAsync(file).ConfigureAwait(false);
 				return result.Tracks.ElementAt(0);
 			}
 		}
