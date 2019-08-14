@@ -11,6 +11,7 @@ using F23.StringSimilarity;
 using JazzBot.Data;
 using JazzBot.Services;
 using JazzBot.Utilities;
+using DSharpPlus.Lavalink;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -62,6 +63,31 @@ namespace JazzBot.Commands
 
 			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
 
+		}
+
+		[Command("Play")]
+		public async Task Play(CommandContext context, Uri trackUri)
+		{
+			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
+			{
+				await context.RespondAsync("Ошибка загрузки треков").ConfigureAwait(false);
+				return;
+			}
+			if(loadResult.LoadResultType == LavalinkLoadResultType.PlaylistLoaded)
+			{
+				var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+				this.GuildMusic.RemoteMusic.Add(tracks);
+			}
+			else if(loadResult.LoadResultType == LavalinkLoadResultType.TrackLoaded)
+			{
+				this.GuildMusic.RemoteMusic.Add(new RemoteMusicItem(loadResult.Tracks.First(), context.Member));
+			}
+
+			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+
+			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
+			this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
 		}
 
 		[Command("Leave")]
