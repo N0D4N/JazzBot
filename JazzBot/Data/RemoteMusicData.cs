@@ -16,7 +16,7 @@ using DSharpPlus.Lavalink.EventArgs;
 
 namespace JazzBot.Data
 {
-	class RemoteMusicData
+	public sealed class RemoteMusicData
 	{
 		public List<RemoteMusicItem> Queue { get; private set; }
 

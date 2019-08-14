@@ -16,7 +16,7 @@ using DSharpPlus.Lavalink;
 
 namespace JazzBot.Data
 {
-	class LocalMusicData
+	public sealed class LocalMusicData
 	{
 		/// <summary>
 		/// Current song of type <see cref="TagLib.File"/> needed to showing what song is playing now.

@@ -4,7 +4,7 @@ using DSharpPlus.Entities;
 
 namespace JazzBot.Data
 {
-	class RemoteMusicItem
+	public sealed class RemoteMusicItem
 	{
 		public YoutubeSearchResult YoutubeData { get; }
 

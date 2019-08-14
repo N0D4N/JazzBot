@@ -56,9 +56,9 @@ namespace JazzBot.Data
 		/// </summary>
 		private LavalinkTrack Track { get; set; } // Not used for now
 
-		private LocalMusicData LocalMusic { get; }
+		public LocalMusicData LocalMusic { get; }
 
-		private RemoteMusicData RemoteMusic { get; }
+		public RemoteMusicData RemoteMusic { get; }
 
 		/// <summary>
 		/// Current bot program.
