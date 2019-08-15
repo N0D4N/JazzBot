@@ -49,7 +49,7 @@ namespace JazzBot.Commands
 
 			this.GuildMusic = await this.Music.GetOrCreateDataAsync(context.Guild).ConfigureAwait(false);
 
-			if (this.GuildMusic?.LavalinkConnection?.IsConnected == true || this.GuildMusic.LavalinkConnection.Channel.Id != context.Member.VoiceState.Channel.Id)
+			if (this.GuildMusic?.LavalinkConnection?.IsConnected == true && this.GuildMusic.LavalinkConnection.Channel.Id != context.Member.VoiceState.Channel.Id)
 				throw new ArgumentException("Вы должны находиться в том же голосовом канале что и бот", nameof(context.Member.VoiceState));
 
 			await base.BeforeExecutionAsync(context).ConfigureAwait(false);
