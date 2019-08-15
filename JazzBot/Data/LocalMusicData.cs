@@ -163,7 +163,8 @@ namespace JazzBot.Data
 		public async Task<LavalinkTrack> GetSong(LavalinkService lavalink)
 		{
 			var db = new DatabaseContext();
-			if (await db.Playlist.CountAsync().ConfigureAwait(false) < this.IdOfCurrentSong)
+			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
+			if (playlistLength < this.IdOfCurrentSong)
 				this.Shuffle();
 			else
 				await this.ChangeCurrentSong(true).ConfigureAwait(false);

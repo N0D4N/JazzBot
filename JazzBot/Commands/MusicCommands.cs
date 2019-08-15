@@ -61,10 +61,10 @@ namespace JazzBot.Commands
 				return;
 			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
-			await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
-			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			//await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
 
 			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
+			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 		}
 

@@ -236,6 +236,7 @@ namespace JazzBot.Data
 			this.IsPlaying = false;
 			if (this.LavalinkConnection != null)
 			{
+				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false);
 				if (this.IsMessageLast())
 					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				else
@@ -244,7 +245,7 @@ namespace JazzBot.Data
 					this.PlayingMessage = await this.PlayingMessage.Channel.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 					await plmsg.DeleteAsync().ConfigureAwait(false);					
 				}
-				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false);
+				this.RemoteMusic.Pop();
 				this.InternalPlay(track);
 			}
 		}

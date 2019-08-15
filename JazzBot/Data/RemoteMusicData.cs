@@ -33,13 +33,16 @@ namespace JazzBot.Data
 
 		public void Add(IEnumerable<RemoteMusicItem> songs)
 			=> this.Queue.AddRange(songs);
-		
+
 
 		public LavalinkTrack GetSong()
+			=> this.Queue[0].Track;
+
+		public void Pop()
 		{
-			var track = this.Queue[0];
-			this.Queue.RemoveAt(0);
-			return track.Track;
+			if(this.Queue.Any())
+				this.Queue.RemoveAt(0);
 		}
+
 	}
 }
