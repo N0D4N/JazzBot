@@ -84,8 +84,11 @@ namespace JazzBot.Commands
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 			
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
-			if(!this.GuildMusic.IsPlaying)
+			if (!this.GuildMusic.IsPlaying)
+			{
 				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+				this.GuildMusic.RemoteMusic.Pop();
+			}
 		}
 
 		[Command("Play")]
@@ -131,8 +134,11 @@ namespace JazzBot.Commands
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
-			if(!this.GuildMusic.IsPlaying)
+			if (!this.GuildMusic.IsPlaying)
+			{
 				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+				this.GuildMusic.RemoteMusic.Pop();
+			}
 
 
 		}
