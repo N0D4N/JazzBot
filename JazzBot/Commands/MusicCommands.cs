@@ -19,7 +19,7 @@ namespace JazzBot.Commands
 {
 	[Group("Music")]
 	[Description("Комманды связанные с музыкой")]
-	[Aliases("lm", "lmu", "music", "mu", "m")]
+	[Aliases("lm", "lmu", "mu", "m")]
 	public sealed class MusicCommands : BaseCommandModule
 	{
 		private LavalinkService Lavalink { get; }
