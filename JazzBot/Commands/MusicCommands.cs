@@ -81,7 +81,8 @@ namespace JazzBot.Commands
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
 				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
 
-			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			this.GuildMusic.RemoteMusic.Add(tracks);
 			
 			if (this.GuildMusic.PlayingMessage == null)
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
@@ -91,6 +92,11 @@ namespace JazzBot.Commands
 			{
 				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
 				this.GuildMusic.RemoteMusic.Pop();
+			}
+			else
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
 			}
 		}
 
@@ -129,7 +135,9 @@ namespace JazzBot.Commands
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
 				throw new ArgumentException("По данной ссылке ничего не было найдено");
-			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
+
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			this.GuildMusic.RemoteMusic.Add(tracks);
 
 			await msg.DeleteAsync().ConfigureAwait(false);
 
@@ -141,6 +149,11 @@ namespace JazzBot.Commands
 			{
 				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
 				this.GuildMusic.RemoteMusic.Pop();
+			}
+			else
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
 			}
 
 
