@@ -199,6 +199,8 @@ namespace JazzBot
 		/// </summary>
 		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) 
 		{
+			if (e.Message?.Author == null)
+				return;
 			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || e.Message.Author.Id != e.Client.CurrentUser.Id)
 				return;
 			var deleteEmoji = DiscordEmoji.FromName(e.Client, ":no_entry_sign:");
