@@ -7,6 +7,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Lavalink;
 using F23.StringSimilarity;
 using JazzBot.Data;
 using JazzBot.Services;
@@ -16,13 +17,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JazzBot.Commands
 {
-	[Group("LocalMusic")]
+	[Group("Music")]
 	[Description("Комманды связанные с музыкой")]
-	[Aliases("lm", "lmu")]
+	[Aliases("lm", "lmu", "music", "mu", "m")]
 	public sealed class MusicCommands : BaseCommandModule
 	{
 		private LavalinkService Lavalink { get; }
-
 
 		private Bot Bot { get; }
 
@@ -30,37 +30,132 @@ namespace JazzBot.Commands
 
 		private GuildMusicData GuildMusic { get; set; }
 
-		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot)
+		private YoutubeService Youtube { get; }
+
+		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot, YoutubeService youtube)
 		{
 			this.Lavalink = lavalink;
 			this.Music = music;
 			this.Bot = bot;
+			this.Youtube = youtube;
 		}
 
 		public override async Task BeforeExecutionAsync(CommandContext context)
 		{
 			if (context.Member?.VoiceState.Channel == null)
 			{
-				throw new ArgumentException("Вы должны быть в голосовм канале", nameof(context.Member.VoiceState));
+				throw new ArgumentException("Вы должны быть в голосовом канале", nameof(context.Member.VoiceState));
 			}
 
 			this.GuildMusic = await this.Music.GetOrCreateDataAsync(context.Guild).ConfigureAwait(false);
+
+			if (this.GuildMusic.LavalinkConnection.IsConnected || this.GuildMusic.LavalinkConnection.Channel.Id != context.Member.VoiceState.Channel.Id)
+				throw new ArgumentException("Вы должны находиться в том же голосовом канале что и бот", nameof(context.Member.VoiceState));
 
 			await base.BeforeExecutionAsync(context).ConfigureAwait(false);
 		}
 
 		[Command("Start")]
-		[Description("Подключается и начиает проигрывать песню из плейлиста гильдии")]
-		[Aliases("st", "play", "p")]
+		[Description("Подключается и начинает проигрывать песню из плейлиста сервера")]
+		[Aliases("st")]
 		public async Task Start(CommandContext context)
 		{
-
+			if (this.GuildMusic.RemoteMusic?.Queue?.Any() == true)
+				return;
 			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
-			await this.GuildMusic.ChangeCurrentSong(false);
+			//await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
+
+			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
 			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
-			this.GuildMusic.Play(await this.GuildMusic.GetSong().ConfigureAwait(false));
+		}
+
+		[Command("Play")]
+		[Description("Подключается и начинает воспроизведение трека из интернета по задданной ссылке или названию")]
+		[Aliases("p")]
+		[Priority(1)]
+		public async Task Play(CommandContext context, [RemainingText, Description("Ссылка на трек")]Uri trackUri)
+		{
+			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
+				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
+
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			this.GuildMusic.RemoteMusic.Add(tracks);
+			
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+			
+			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
+			if (!this.GuildMusic.IsPlaying)
+			{
+				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+				this.GuildMusic.RemoteMusic.Pop();
+			}
+			else
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
+			}
+		}
+
+		[Command("Play")]
+		[Priority(0)]
+		public async Task Play(CommandContext context, [RemainingText, Description("Текст для поиска")]string searchQuery)
+		{
+			var searchResults = await this.Youtube.SearchAsync(searchQuery);
+			StringBuilder description = new StringBuilder();
+			int i = 1;
+			foreach(var el in searchResults)
+			{
+				description.AppendLine($"{i}. {Formatter.InlineCode(el.VideoTitle)} {Formatter.Bold("-")} {Formatter.InlineCode(el.ChannelName)}");
+				i++;
+			}
+			if (!searchResults.Any())
+				throw new ArgumentException("По заданному запросу на Youtube ничего не было найдено", nameof(searchQuery));
+			var interactivity = context.Client.GetInteractivity();
+
+			var msg = await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Выберите песню (ответьте 0 если чтобы отменить комманду)")
+				.WithDescription(description.ToString())).ConfigureAwait(false);
+			var intres = await interactivity.WaitForMessageAsync(x => x.Author.Id == context.User.Id, TimeSpan.FromSeconds(10));
+			if (intres.TimedOut || !int.TryParse(intres.Result.Content, out int result))
+				throw new ArgumentException("Время вышло или ответ не является числом");
+			if (result < 0 || result > searchResults.Count() + 1)
+				throw new ArgumentException("Число выходит за заданные границы");
+			if (result == 0)
+			{
+				await msg.ModifyAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle("Поиск отменен").Build()).ConfigureAwait(false);
+				return;
+			}
+
+			var selectedTrack = searchResults.ElementAt(result - 1);
+			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
+				throw new ArgumentException("По данной ссылке ничего не было найдено");
+
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			this.GuildMusic.RemoteMusic.Add(tracks);
+
+			await msg.DeleteAsync().ConfigureAwait(false);
+
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+
+			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
+			if (!this.GuildMusic.IsPlaying)
+			{
+				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
+				this.GuildMusic.RemoteMusic.Pop();
+			}
+			else
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
+			}
+
 
 		}
 
@@ -74,14 +169,6 @@ namespace JazzBot.Commands
 			await context.RespondAsync("Бот отключен").ConfigureAwait(false);
 		}
 
-		[Command("Playing")]
-		[Description("Отображает информацию о текущей песни")]
-		[Aliases("np", "nowplaying")]
-		public async Task NowPlaying(CommandContext context)
-		{
-			await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-		}
-
 
 		[Command("SwitchPlaylist")]
 		[Description("Сменить текущий плейлист")]
@@ -91,7 +178,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(playlistname))
 				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistname));
-			await this.GuildMusic.ChangePlaylist(playlistname).ConfigureAwait(false);
+			await this.GuildMusic.LocalMusic.ChangePlaylist(playlistname).ConfigureAwait(false);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Плейлист успешно изменен на {playlistname}")).ConfigureAwait(false);
 		}
@@ -134,7 +221,7 @@ namespace JazzBot.Commands
 						var gId = (long)context.Guild.Id;
 						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
 						db.Dispose();
-						this.GuildMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
+						this.GuildMusic.LocalMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
 						await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 							.WithTitle($"Следующей песней будет {playNexts[res - 1].Title}")).ConfigureAwait(false);
 					}
@@ -159,13 +246,33 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Skip")]
-		[Description("Skips playing of the current track")]
+		[Description("Останавливает воспроизведение текущей песни и начинает воспроизведение следующей в очереди песни")]
 		public async Task Skip(CommandContext context)
 		{
-			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-				.WithTitle($"{this.GuildMusic.CurrentSong.Tag.FirstPerformer} - {this.GuildMusic.CurrentSong.Tag.Title} была пропущена")).ConfigureAwait(false);
 			this.GuildMusic.Skip();
-			
+			await context.RespondAsync("Песню пропущено").ConfigureAwait(false);
+		}
+
+		[Command("Stop")]
+		[Description("Останавливает воспроизведение текущей песни и удаляет все песни из очередей")]
+		public async Task Stop(CommandContext context)
+		{
+			if (this.GuildMusic.RemoteMusic.Queue.Any())
+				this.GuildMusic.RemoteMusic.Queue.Clear();
+			if (this.GuildMusic.LocalMusic.PlayNextStack.Any())
+				this.GuildMusic.LocalMusic.PlayNextStack.Clear();
+			this.GuildMusic.Stop();
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Воспроизведение остановлено и списки очищены")).ConfigureAwait(false);
+		}
+		
+		[Command("Shuffle")]
+		[Description("Перемешивает список на воспроизведение в таком порядке - Песни из Интернета -> общая очередь из локального источника")]
+		public async Task Shuffle(CommandContext context)
+		{
+			this.GuildMusic.Shuffle();
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Список был перемешан")).ConfigureAwait(false);
 		}
 		
 
