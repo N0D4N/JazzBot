@@ -63,7 +63,7 @@ namespace JazzBot.Commands
 
 			//await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
 
-			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false), Enums.SongType.Local);
+			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
 			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 		}
@@ -80,17 +80,15 @@ namespace JazzBot.Commands
 
 			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
 			
-			
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 			
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			if (!this.GuildMusic.IsPlaying)
 			{
-				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong(), Enums.SongType.Remote, this.GuildMusic.RemoteMusic.Queue[0]);
+				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
 				this.GuildMusic.RemoteMusic.Pop();
 			}
-
-			if (this.GuildMusic.PlayingMessage == null)
-				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 		}
 
 		[Command("Play")]
@@ -132,17 +130,16 @@ namespace JazzBot.Commands
 
 			await msg.DeleteAsync().ConfigureAwait(false);
 
-			
+			if (this.GuildMusic.PlayingMessage == null)
+				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			if (!this.GuildMusic.IsPlaying)
 			{
-				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong(), Enums.SongType.Remote, this.GuildMusic.RemoteMusic.Queue[0]);
+				this.GuildMusic.Play(this.GuildMusic.RemoteMusic.GetSong());
 				this.GuildMusic.RemoteMusic.Pop();
 			}
 
-			if (this.GuildMusic.PlayingMessage == null)
-				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 		}
 
@@ -241,37 +238,13 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Skip")]
-		[Description("Останавливает воспроизведение текущей песни и начинает воспроизведение следующей")]
+		[Description("Skips playing of the current track")]
 		public async Task Skip(CommandContext context)
 		{
 			this.GuildMusic.Skip();
 			await context.RespondAsync("Песню пропущено").ConfigureAwait(false);
 		}
 		
-		[Command("Stop")]
-		[Description("Останавливает воспроизведение текущей песни и удаляет все песни из очереди")]
-		public async Task Stop(CommandContext context)
-		{
-			if(this.GuildMusic.RemoteMusic.Queue.Any())
-			{
-				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-					.WithTitle($"Пропущено {this.GuildMusic.RemoteMusic.Queue.Count} песен из списка с музыкой из интернета")).ConfigureAwait(false);
-				this.GuildMusic.RemoteMusic.Queue.Clear();
-				this.GuildMusic.Skip();
-			}
-			else if(this.GuildMusic.LocalMusic.PlayNextStack.Any())
-			{
-				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-					.WithTitle($"Пропущено {this.GuildMusic.LocalMusic.PlayNextStack.Count} песен из {Formatter.Italic("PlayNext")} списка")).ConfigureAwait(false);
-				this.GuildMusic.LocalMusic.PlayNextStack.Clear();
-				this.GuildMusic.Skip();
-			}
-			else
-			{
-				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-					.WithTitle("Ни одной песни пропущено не было, так как обе очереди на воспроизведения пусты")).ConfigureAwait(false);
-			}
-		}
 
 		[Command("Playlists")]
 		[Description("Показывает список доступных плейлистов")]

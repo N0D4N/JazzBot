@@ -51,7 +51,10 @@ namespace JazzBot.Data
 		/// </summary>
 		private LavalinkGuildConnection LavalinkConnection { get; set; }
 
-		public CurrentTrack CurrentTrack { get; set; }
+		/// <summary>
+		/// Current song of type <see cref="LavalinkTrack"/> used for <see cref="LavalinkGuildConnection"/>.
+		/// </summary>
+		private LavalinkTrack Track { get; set; } // Not used for now
 
 		public LocalMusicData LocalMusic { get; }
 
@@ -78,12 +81,10 @@ namespace JazzBot.Data
 		/// Starts playback.
 		/// </summary>
 		/// <param name="track"> Track that should be played </param>
-		public void Play(LavalinkTrack track, SongType songType, RemoteMusicItem remoteMusic = null)
+		public void Play(LavalinkTrack track)
 		{
 			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
 				return;
-
-			this.CurrentTrack = new CurrentTrack(songType, remoteMusic);
 			
 			this.InternalPlay(track);
 			
@@ -132,8 +133,6 @@ namespace JazzBot.Data
 			//this.LavalinkConnection.PlaybackFinished -= this.PlaybackFinished;
 
 			this.LavalinkConnection = null;
-			this.CurrentTrack = null;
-
 			await this.PlayingMessage.DeleteAsync().ConfigureAwait(false);
 			this.PlayingMessage = null;
 
@@ -160,9 +159,9 @@ namespace JazzBot.Data
 		/// <returns><see cref="DiscordEmbed"/> with info about currently playing song</returns>
 		public async Task<DiscordEmbed> NowPlayingEmbedAsync()
 		{
-			if(this.CurrentTrack.SongType == SongType.Remote)
+			if(this.RemoteMusic.Queue.Any())
 			{
-				var track = this.CurrentTrack.RemoteTrack;
+				var track = this.RemoteMusic.Queue[0];
 				var embed = new DiscordEmbedBuilder
 				{
 					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",
@@ -237,17 +236,7 @@ namespace JazzBot.Data
 			this.IsPlaying = false;
 			if (this.LavalinkConnection != null)
 			{
-				LavalinkTrack track;
-				if(this.RemoteMusic.Queue.Any())
-				{
-					this.CurrentTrack = new CurrentTrack(SongType.Remote, this.RemoteMusic.Queue[0]);
-					track = this.CurrentTrack.RemoteTrack.Track;
-				}
-				else
-				{
-					this.CurrentTrack = new CurrentTrack(SongType.Local);
-					track = await this.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false);
-				}
+				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false);
 				if (this.IsMessageLast())
 					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				else
