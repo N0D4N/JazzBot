@@ -11,9 +11,19 @@ using Newtonsoft.Json.Linq;
 
 namespace JazzBot.Services
 {
+	/// <summary>
+	/// Service for searching in youtube
+	/// </summary>
 	public sealed class YoutubeService
 	{
+		/// <summary>
+		/// Youtube Api key
+		/// </summary>
 		private string ApiKey { get; }
+
+		/// <summary>
+		/// HttpClient which do all requests
+		/// </summary>
 		private HttpClient HttpClient { get; }
 
 		public YoutubeService(JazzBotConfigYoutube config)
@@ -26,6 +36,11 @@ namespace JazzBot.Services
 			this.HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "JazzBot");
 		}
 
+		/// <summary>
+		/// Searches Youtube for provided query
+		/// </summary>
+		/// <param name="query">Sring to search for</param>
+		/// <returns>Results of searching</returns>
 		public async Task<IEnumerable<YoutubeSearchResult>> SearchAsync(string query)
 		{
 			var uri = new Uri($"https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q={WebUtility.UrlEncode(query)}&type=video&fields=items(id(videoId)%2Csnippet(title%2CchannelTitle))&key={this.ApiKey}");

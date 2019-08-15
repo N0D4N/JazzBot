@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JazzBot.Data
 {
+	/// <summary>
+	/// Songs from local source
+	/// </summary>
 	public sealed class LocalMusicData
 	{
 

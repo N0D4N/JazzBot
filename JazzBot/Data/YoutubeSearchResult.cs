@@ -2,12 +2,24 @@
 
 namespace JazzBot.Data
 {
+	/// <summary>
+	/// Parsed responce of Youtube Api
+	/// </summary>
 	public sealed class YoutubeSearchResult
 	{
+		/// <summary>
+		/// Title of the video
+		/// </summary>
 		public string VideoTitle { get; }
 
+		/// <summary>
+		/// Id of the vide
+		/// </summary>
 		public string VideoId { get; }
 
+		/// <summary>
+		/// Name of the channel
+		/// </summary>
 		public string ChannelName { get; }
 
 		public YoutubeSearchResult(string videoTitle, string videoId, string videoThumb, string channelName, string channelId)

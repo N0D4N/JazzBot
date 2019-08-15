@@ -53,8 +53,14 @@ namespace JazzBot.Data
 		/// </summary>
 		private LavalinkTrack Track { get; set; } // Not used for now
 
+		/// <summary>
+		/// Music from local source
+		/// </summary>
 		public LocalMusicData LocalMusic { get; }
 
+		/// <summary>
+		/// Music from remote source
+		/// </summary>
 		public RemoteMusicData RemoteMusic { get; }
 
 		/// <summary>
@@ -87,7 +93,9 @@ namespace JazzBot.Data
 			
 		}	
 
-
+		/// <summary>
+		/// Shuffles queue in remote music if there are any elements else shuffles playlist in local music
+		/// </summary>
 		public void Shuffle()
 		{
 			if(this.RemoteMusic.Queue.Any())

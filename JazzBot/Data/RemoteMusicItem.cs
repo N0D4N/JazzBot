@@ -5,8 +5,14 @@ namespace JazzBot.Data
 {
 	public sealed class RemoteMusicItem
 	{
+		/// <summary>
+		/// Song to play
+		/// </summary>
 		public LavalinkTrack Track { get; }
 
+		/// <summary>
+		/// Member that requested this song
+		/// </summary>
 		public DiscordMember RequestedByMember { get; }
 
 		public RemoteMusicItem(LavalinkTrack track, DiscordMember requestedByMember)
