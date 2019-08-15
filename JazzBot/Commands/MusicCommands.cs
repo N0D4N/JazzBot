@@ -230,11 +230,33 @@ namespace JazzBot.Commands
 		}
 
 		[Command("Skip")]
-		[Description("Skips playing of the current track")]
+		[Description("Останавливает воспроизведение текущей песни и начинает воспроизведение следующей в очереди песни")]
 		public async Task Skip(CommandContext context)
 		{
 			this.GuildMusic.Skip();
 			await context.RespondAsync("Песню пропущено").ConfigureAwait(false);
+		}
+
+		[Command("Stop")]
+		[Description("Останавливает воспроизведение текущей песни и удаляет все песни из очередей")]
+		public async Task Stop(CommandContext context)
+		{
+			if (this.GuildMusic.RemoteMusic.Queue.Any())
+				this.GuildMusic.RemoteMusic.Queue.Clear();
+			if (this.GuildMusic.LocalMusic.PlayNextStack.Any())
+				this.GuildMusic.LocalMusic.PlayNextStack.Clear();
+			this.GuildMusic.Stop();
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Воспроизведение остановлено и списки очищены")).ConfigureAwait(false);
+		}
+		
+		[Command("Shuffle")]
+		[Description("Перемешивает список на воспроизведение в таком порядке - Песни из Интернета -> общая очередь из локального источника")]
+		public async Task Shuffle(CommandContext context)
+		{
+			this.GuildMusic.Shuffle();
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Список был перемешан")).ConfigureAwait(false);
 		}
 		
 

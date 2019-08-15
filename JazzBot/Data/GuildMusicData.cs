@@ -90,6 +90,17 @@ namespace JazzBot.Data
 			
 		}	
 
+
+		public void Shuffle()
+		{
+			if(this.RemoteMusic.Queue.Any())
+			{
+				this.RemoteMusic.Shuffle();
+				return;
+			}
+			this.LocalMusic.Shuffle();
+		}
+
 		/// <summary>
 		/// Skips currently playing song.
 		/// </summary>
