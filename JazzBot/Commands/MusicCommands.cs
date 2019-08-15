@@ -17,9 +17,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JazzBot.Commands
 {
-	[Group("LocalMusic")]
+	[Group("Music")]
 	[Description("Комманды связанные с музыкой")]
-	[Aliases("lm", "lmu")]
+	[Aliases("lm", "lmu", "music", "mu", "m")]
 	public sealed class MusicCommands : BaseCommandModule
 	{
 		private LavalinkService Lavalink { get; }
