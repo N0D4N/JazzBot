@@ -27,6 +27,10 @@
     "Port": 2333
   },
 
+  "Youtube": {
+    "ApiKey": "AIzaSyDb0GUNEw3TwudYLaR49wq5vCwlaeq8_BI"
+  },
+
   "Miscellaneous": {
     "PathToDirectoryWithPlaylists": "your_path_here",
     "PlaylistLink": "your_link_here",
