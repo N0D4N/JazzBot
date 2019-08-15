@@ -83,7 +83,7 @@ namespace JazzBot.Data
 		/// <param name="track"> Track that should be played </param>
 		public void Play(LavalinkTrack track)
 		{
-			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected)
+			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
 				return;
 			
 			this.InternalPlay(track);
