@@ -184,13 +184,13 @@ namespace JazzBot.Data
 					Color = DiscordColor.Black,
 					Timestamp = DateTimeOffset.Now + currentSong.Properties.Duration
 				}
-			.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
-			.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
-			.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
-			.AddField("Дата", currentSong.Tag.Year.ToString() ?? "Неизвестная дата", true)
-			.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
-			.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
-			.WithFooter("Приблизительное время окончания");
+				.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
+				.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
+				.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
+				.AddField("Дата", currentSong.Tag.Year.ToString() ?? "Неизвестная дата", true)
+				.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
+				.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
+				.WithFooter("Приблизительное время окончания");
 
 				if (currentSong.Tag.IsCoverArtLinkPresent())
 				{
