@@ -112,7 +112,6 @@ namespace JazzBot.Data
 				IdOfCurrentSong++;
 			var db = new DatabaseContext();
 			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName);
-			db.Dispose();
 			foreach (var song in songs)
 			{
 				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongId);
@@ -127,6 +126,7 @@ namespace JazzBot.Data
 
 			if (updateID)
 				UpdateDB();
+			db.Dispose();
 			return Task.CompletedTask;
 		}
 
