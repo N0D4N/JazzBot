@@ -73,7 +73,7 @@ namespace JazzBot.Data
 			this.CurrentProgram = program;
 			this.Guild = guild;
 			this.Lavalink = lavalink;
-			var db = new DatabaseContext();
+
 
 			this.LocalMusic = new LocalMusicData(this.Guild);
 
