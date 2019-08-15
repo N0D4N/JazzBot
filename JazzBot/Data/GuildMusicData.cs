@@ -49,7 +49,7 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Lavalink connection in this guild.
 		/// </summary>
-		private LavalinkGuildConnection LavalinkConnection { get; set; }
+		public LavalinkGuildConnection LavalinkConnection { get; private set; }
 
 		/// <summary>
 		/// Current song of type <see cref="LavalinkTrack"/> used for <see cref="LavalinkGuildConnection"/>.
