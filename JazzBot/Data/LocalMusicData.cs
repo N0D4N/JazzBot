@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using File = TagLib.File;
-using DSharpPlus.Entities;
-using JazzBot.Services;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.Entities;
+using DSharpPlus.Lavalink;
+using JazzBot.Enums;
+using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
-using JazzBot.Enums;
-using System.IO;
-using DSharpPlus.Lavalink.Entities;
-using DSharpPlus.Lavalink;
 
 namespace JazzBot.Data
 {

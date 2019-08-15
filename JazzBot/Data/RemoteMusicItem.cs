@@ -1,6 +1,5 @@
-﻿using DSharpPlus.Lavalink;
-using System;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
+using DSharpPlus.Lavalink;
 
 namespace JazzBot.Data
 {

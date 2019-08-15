@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
-using JazzBot.Enums;
 using JazzBot.Services;
 using JazzBot.Utilities;
-using DSharpPlus;
-using Microsoft.EntityFrameworkCore;
 using File = TagLib.File;
 
 

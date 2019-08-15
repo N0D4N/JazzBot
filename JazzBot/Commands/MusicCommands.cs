@@ -7,11 +7,11 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Lavalink;
 using F23.StringSimilarity;
 using JazzBot.Data;
 using JazzBot.Services;
 using JazzBot.Utilities;
-using DSharpPlus.Lavalink;
 using Microsoft.EntityFrameworkCore;
 
 
