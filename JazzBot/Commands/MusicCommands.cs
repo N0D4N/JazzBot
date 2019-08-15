@@ -74,20 +74,12 @@ namespace JazzBot.Commands
 		[Priority(1)]
 		public async Task Play(CommandContext context, [RemainingText, Description("Ссылка на трек")]Uri trackUri)
 		{
-			await context.RespondAsync(trackUri.ToString());
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
-			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
 				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
 
-			if(loadResult.LoadResultType == LavalinkLoadResultType.PlaylistLoaded)
-			{
-				var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
-				this.GuildMusic.RemoteMusic.Add(tracks);
-			}
-			else if(loadResult.LoadResultType == LavalinkLoadResultType.TrackLoaded)
-			{
-				this.GuildMusic.RemoteMusic.Add(new RemoteMusicItem(loadResult.Tracks.First(), context.Member));
-			}
+			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
+			
 			if (this.GuildMusic.PlayingMessage == null)
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 			
@@ -129,7 +121,7 @@ namespace JazzBot.Commands
 
 			var selectedTrack = searchResults.ElementAt(result - 1);
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
-			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed)
+			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
 				throw new ArgumentException("По данной ссылке ничего не было найдено");
 			this.GuildMusic.RemoteMusic.Add(loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)));
 
