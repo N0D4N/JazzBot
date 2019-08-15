@@ -153,14 +153,6 @@ namespace JazzBot.Commands
 			await context.RespondAsync("Бот отключен").ConfigureAwait(false);
 		}
 
-		[Command("Playing")]
-		[Description("Отображает информацию о текущей песни")]
-		[Aliases("np", "nowplaying")]
-		public async Task NowPlaying(CommandContext context)
-		{
-			await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-		}
-
 
 		[Command("SwitchPlaylist")]
 		[Description("Сменить текущий плейлист")]
