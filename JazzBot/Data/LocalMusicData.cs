@@ -111,7 +111,7 @@ namespace JazzBot.Data
 			if (updateID)
 				IdOfCurrentSong++;
 			var db = new DatabaseContext();
-			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName).ToArray();
+			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName);
 			db.Dispose();
 			foreach (var song in songs)
 			{
