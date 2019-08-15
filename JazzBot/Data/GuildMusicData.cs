@@ -175,37 +175,38 @@ namespace JazzBot.Data
 			}
 			else
 			{
-				if (this.LocalMusic.CurrentSong == null)
+				if (this.LocalMusic.PathToCurrentSong == null)
 					await this.LocalMusic.ChangeCurrentSong(false);
+				var currentSong = File.Create(this.LocalMusic.PathToCurrentSong);
 				var embed = new DiscordEmbedBuilder
 				{
 					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",
 					Color = DiscordColor.Black,
-					Timestamp = DateTimeOffset.Now + this.LocalMusic.CurrentSong.Properties.Duration
+					Timestamp = DateTimeOffset.Now + currentSong.Properties.Duration
 				}
-			.AddField("Название", this.LocalMusic.CurrentSong.Tag.Title ?? "Неизвестное название")
-			.AddField("Исполнитель", this.LocalMusic.CurrentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
-			.AddField("Альбом", this.LocalMusic.CurrentSong.Tag.Album ?? "Неизвестный альбом", true)
-			.AddField("Дата", this.LocalMusic.CurrentSong.Tag.Year.ToString() ?? "Неизвестная дата", true)
-			.AddField("Длительность", this.LocalMusic.CurrentSong.Properties.Duration.ToString(@"mm\:ss"), true)
-			.AddField("Жанр", this.LocalMusic.CurrentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
+			.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
+			.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
+			.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
+			.AddField("Дата", currentSong.Tag.Year.ToString() ?? "Неизвестная дата", true)
+			.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
+			.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
 			.WithFooter("Приблизительное время окончания");
 
-				if (this.LocalMusic.CurrentSong.Tag.IsCoverArtLinkPresent())
+				if (currentSong.Tag.IsCoverArtLinkPresent())
 				{
-					embed.ThumbnailUrl = this.LocalMusic.CurrentSong.Tag.Comment;
+					embed.ThumbnailUrl = currentSong.Tag.Comment;
 				}
 				// Checking if cover art is present to this file.
-				else if (this.LocalMusic.CurrentSong.Tag.Pictures?.Any() == true)
+				else if (currentSong.Tag.Pictures?.Any() == true)
 				{
-					var msg = await this.CurrentProgram.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(this.LocalMusic.CurrentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
-					this.LocalMusic.CurrentSong.Tag.Comment = msg.Attachments[0].Url;
-					this.LocalMusic.CurrentSong.Save();
-					embed.ThumbnailUrl = this.LocalMusic.CurrentSong.Tag.Comment;
+					var msg = await this.CurrentProgram.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
+					currentSong.Tag.Comment = msg.Attachments[0].Url;
+					currentSong.Save();
+					embed.ThumbnailUrl = currentSong.Tag.Comment;
 				}
 
 				// Checking if this song was requested to add by some user.
-				if (ulong.TryParse(this.LocalMusic.CurrentSong.Tag.FirstComposer, out ulong requestedById))
+				if (ulong.TryParse(currentSong.Tag.FirstComposer, out ulong requestedById))
 				{
 					var user = await this.CurrentProgram.Client.GetUserAsync(requestedById).ConfigureAwait(false);
 					embed.Author = new DiscordEmbedBuilder.EmbedAuthor()

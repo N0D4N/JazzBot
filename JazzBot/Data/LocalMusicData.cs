@@ -17,15 +17,11 @@ namespace JazzBot.Data
 {
 	public sealed class LocalMusicData
 	{
-		/// <summary>
-		/// Current song of type <see cref="TagLib.File"/> needed to showing what song is playing now.
-		/// </summary>
-		public File CurrentSong { get; set; } = null;
 
 		/// <summary>
 		/// Path to current song.
 		/// </summary>
-		public string PathToCurrentSong { get; set; }
+		public string PathToCurrentSong { get; set; } = null;
 
 		/// <summary>
 		/// Seed of the current guild playlist.
@@ -127,7 +123,6 @@ namespace JazzBot.Data
 				IdOfCurrentSong++;
 				path = songs.ElementAt(this.IdOfCurrentSong).Path;
 			}
-			this.CurrentSong = File.Create(path);
 			this.PathToCurrentSong = path;
 
 			if (updateID)
@@ -179,7 +174,6 @@ namespace JazzBot.Data
 			{
 				string path = this.PlayNextStack.Pop();
 				var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(path)).ConfigureAwait(false);
-				this.CurrentSong = File.Create(path);
 				return result.Tracks.ElementAt(0);
 			}
 			else
