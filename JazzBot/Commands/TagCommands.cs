@@ -500,13 +500,13 @@ namespace JazzBot.Commands
 				db.Dispose();
 				if (tags?.Any() == false)
 					throw new ArgumentException("Тегов на этом сервере не найдено");
-				string suggetions =
+				string suggestions =
 					(tags.Length >= 10
 					?
 					string.Join(", ", tags.Take(10).OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct())
 					:
 					string.Join(", ", tags.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct()));
-				await context.RespondAsync($"Нужного тега не найдено, вот некоторые {Formatter.Italic("возможные варианты того что вы искали")}:\n\u200b{suggetions}").ConfigureAwait(false);
+				await context.RespondAsync($"Нужного тега не найдено, вот некоторые {Formatter.Italic("возможные варианты того что вы искали")}:\n\u200b{suggestions}").ConfigureAwait(false);
 			}
 			else
 			{

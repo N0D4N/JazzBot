@@ -77,7 +77,7 @@ namespace JazzBot
 
 				if (command.ExecutionChecks.Any(x => x is OwnerOrPermissionAttribute))
 				{
-					var oOpa = command.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
+					var oOpa = command.ExecutionChecks.Single(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
 					exChecksSb.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(oOpa.Permissions.ToPermissionString())}.");
 				}
 
@@ -88,13 +88,13 @@ namespace JazzBot
 
 				if (command.ExecutionChecks.Any(x => x is CooldownAttribute))
 				{
-					var cooldown = command.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) as CooldownAttribute;
+					var cooldown = command.ExecutionChecks.Single(x => x is CooldownAttribute) as CooldownAttribute;
 					exChecksSb.AppendLine($"Эта команда может быть использована {Formatter.InlineCode(cooldown.MaxUses.ToString())} раз/а в течении {Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
 				}
 
 				if (command.ExecutionChecks.Any(x => x is RequirePermissionsAttribute))
 				{
-					var perm = command.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
+					var perm = command.ExecutionChecks.Single(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
 					exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
 				}
 

@@ -96,7 +96,7 @@ namespace JazzBot.Commands
 			else
 			{
 				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
+					.WithTitle($"{tracks.Length} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
 			}
 		}
 
@@ -122,7 +122,7 @@ namespace JazzBot.Commands
 			var intres = await interactivity.WaitForMessageAsync(x => x.Author.Id == context.User.Id, TimeSpan.FromSeconds(10));
 			if (intres.TimedOut || !int.TryParse(intres.Result.Content, out int result))
 				throw new ArgumentException("Время вышло или ответ не является числом");
-			if (result < 0 || result > searchResults.Count() + 1)
+			if (result < 0 || result > searchResults.Length + 1)
 				throw new ArgumentException("Число выходит за заданные границы");
 			if (result == 0)
 			{
@@ -153,7 +153,7 @@ namespace JazzBot.Commands
 			else
 			{
 				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-					.WithTitle($"{tracks.Count()} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
+					.WithTitle($"{tracks.Length} трек(ов) было добавлено в очередь")).ConfigureAwait(false);
 			}
 
 

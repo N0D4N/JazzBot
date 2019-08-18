@@ -29,7 +29,7 @@
 
 
 		/// <summary>
-		/// <see cref="CustomJbException"/> of this type should be displayed only in <see cref="JazzBot.Entities.Bot.ErrorChannel"/>.
+		/// <see cref="CustomJbException"/> of this type should be displayed only in <see cref="JazzBot.Data.Bot.ErrorChannel"/>.
 		/// </summary>
 		ForInnerPurposes = 4,
 	}

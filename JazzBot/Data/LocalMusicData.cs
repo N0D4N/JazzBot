@@ -52,7 +52,7 @@ namespace JazzBot.Data
 			this.Guild = guild;
 			var gId = (long) this.Guild.Id;
 			var db = new DatabaseContext();
-			var dguild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == gId);
+			var dguild = db.Guilds.Single(x => x.IdOfGuild == gId);
 			db.Dispose();
 			this.Seed = dguild.Seed;
 			this.PlaylistName = dguild.PlaylistName;
@@ -136,7 +136,7 @@ namespace JazzBot.Data
 		{
 			var db = new DatabaseContext();
 			var gId = (long) this.Guild.Id;
-			var guild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == gId);
+			var guild = db.Guilds.Single(x => x.IdOfGuild == gId);
 			guild.IdOfCurrentSong = this.IdOfCurrentSong;
 			guild.IdOfGuild = (long) this.Guild.Id;
 			guild.PlaylistName = this.PlaylistName;

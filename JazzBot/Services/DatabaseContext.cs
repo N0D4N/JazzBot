@@ -25,13 +25,11 @@ namespace JazzBot.Services
 		public DatabaseContext()
 		{
 			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
-			this.Database.EnsureCreated();
 		}
 
 		public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
 		{
 			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
-			this.Database.EnsureCreated();
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

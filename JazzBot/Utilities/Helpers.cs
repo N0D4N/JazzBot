@@ -70,7 +70,7 @@ namespace JazzBot.Utilities
 
 
 		/// <summary>
-		/// Get extended color for <see cref="DiscordMember".
+		/// Get extended color for <see cref="DiscordMember"></see>.
 		/// </summary>
 		/// <param name="member">Member from which color gets</param>
 		/// <param name="currentMember">Current member of the guild</param>
