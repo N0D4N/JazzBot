@@ -24,12 +24,12 @@ namespace JazzBot.Services
 
 		public DatabaseContext()
 		{
-			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
+			this.PgSqlCS = Program.CfgJson.Database.NpgSqlConnectionString();
 		}
 
 		public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
 		{
-			this.PgSqlCS = Program.Cfgjson.Database.NpgSqlConnectionString();
+			this.PgSqlCS = Program.CfgJson.Database.NpgSqlConnectionString();
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

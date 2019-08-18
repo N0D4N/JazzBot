@@ -19,7 +19,7 @@ namespace JazzBot.Data
 		public long IdOfGuild { get; set; }
 
 		/// <summary>
-		/// ID of song currentlyplaying.
+		/// ID of song currently playing.
 		/// </summary>
 		[Required]
 		[Column("Current_Song_ID")]
@@ -112,7 +112,7 @@ namespace JazzBot.Data
 		/// </summary>
 		[Column("Creation_date", TypeName = "timestamp with time zone")]
 		[Required]
-		public DateTime CretionDate { get; set; }
+		public DateTime CreationDate { get; set; }
 
 		/// <summary>
 		/// Date of last edit of tag.

@@ -43,7 +43,7 @@ namespace JazzBot
 
 			this.EmbedBuilder.WithDescription($"{Formatter.InlineCode(command.Name)}: {command.Description ?? "Описание отсутствует."}");
 
-			if (command is CommandGroup cgroup && cgroup.IsExecutableWithoutSubcommands)
+			if (command is CommandGroup cGroup && cGroup.IsExecutableWithoutSubcommands)
 				this.EmbedBuilder.WithDescription($"{this.EmbedBuilder.Description}\n\nЭта группа может быть выполнена как отдельная команда.");
 
 			if (command.Aliases?.Any() == true)

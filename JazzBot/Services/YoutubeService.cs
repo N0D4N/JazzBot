@@ -39,7 +39,7 @@ namespace JazzBot.Services
 		/// <summary>
 		/// Searches Youtube for provided query
 		/// </summary>
-		/// <param name="query">Sring to search for</param>
+		/// <param name="query">String to search for</param>
 		/// <returns>Results of searching</returns>
 		public async Task<IEnumerable<YoutubeSearchResult>> SearchAsync(string query)
 		{
@@ -52,7 +52,7 @@ namespace JazzBot.Services
 				json = await streamReader.ReadToEndAsync().ConfigureAwait(false);
 
 			var jsonData = JObject.Parse(json);
-			return jsonData["items"].ToObject<IEnumerable<YoutubeResponce>>().Select(x=> new YoutubeSearchResult(x));
+			return jsonData["items"].ToObject<IEnumerable<YoutubeResponce>>().Select(x => new YoutubeSearchResult(x));
 
 		}
 	}

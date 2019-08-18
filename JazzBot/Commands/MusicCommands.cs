@@ -66,7 +66,7 @@ namespace JazzBot.Commands
 
 			//await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
 
-			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false));
+			this.GuildMusic.Play(await this.GuildMusic.LocalMusic.GetSongAsync(this.Lavalink).ConfigureAwait(false));
 			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 		}
@@ -119,8 +119,8 @@ namespace JazzBot.Commands
 			var msg = await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Выберите песню (ответьте 0 если чтобы отменить комманду)")
 				.WithDescription(description.ToString())).ConfigureAwait(false);
-			var intres = await interactivity.WaitForMessageAsync(x => x.Author.Id == context.User.Id, TimeSpan.FromSeconds(10));
-			if (intres.TimedOut || !int.TryParse(intres.Result.Content, out int result))
+			var intRes = await interactivity.WaitForMessageAsync(x => x.Author.Id == context.User.Id, TimeSpan.FromSeconds(10));
+			if (intRes.TimedOut || !int.TryParse(intRes.Result.Content, out int result))
 				throw new ArgumentException("Время вышло или ответ не является числом");
 			if (result < 0 || result > searchResults.Length + 1)
 				throw new ArgumentException("Число выходит за заданные границы");
@@ -174,29 +174,29 @@ namespace JazzBot.Commands
 		[Description("Сменить текущий плейлист")]
 		[Aliases("sp")]
 		[Cooldown(1, 300, CooldownBucketType.Guild)]
-		public async Task SwitchPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")] string playlistname)
+		public async Task SwitchPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")] string playlistName)
 		{
-			if (string.IsNullOrWhiteSpace(playlistname))
-				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistname));
-			await this.GuildMusic.LocalMusic.ChangePlaylist(playlistname).ConfigureAwait(false);
+			if (string.IsNullOrWhiteSpace(playlistName))
+				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistName));
+			await this.GuildMusic.LocalMusic.ChangePlaylistAsync(playlistName).ConfigureAwait(false);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-				.WithTitle($"Плейлист успешно изменен на {playlistname}")).ConfigureAwait(false);
+				.WithTitle($"Плейлист успешно изменен на {playlistName}")).ConfigureAwait(false);
 		}
 
 		[Command("PlayNext")]
 		[Description("Ищет песню по названию и воспроизводит ее следующей")]
 		[Aliases("pn", "enqueue")]
-		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songname)
+		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songName)
 		{
-			if (string.IsNullOrWhiteSpace(songname))
-				throw new ArgumentException("Название песни не должно быть пустым", nameof(songname));
+			if (string.IsNullOrWhiteSpace(songName))
+				throw new ArgumentException("Название песни не должно быть пустым", nameof(songName));
 			var db = new DatabaseContext();
 			var songs = await db.Playlist.ToArrayAsync().ConfigureAwait(false);
 			var playNexts = new List<PlayNextElement>();
 			var nL = new NormalizedLevenshtein();
 			foreach (var song in songs)
 			{
-				playNexts.Add(new PlayNextElement(song.Path, song.Name, nL.Distance(song.Name, songname)));
+				playNexts.Add(new PlayNextElement(song.Path, song.Name, nL.Distance(song.Name, songName)));
 			}
 			playNexts = playNexts.OrderBy(s => s.Coefficient).ToList();
 			var interactivity = context.Client.GetInteractivity();
@@ -234,7 +234,6 @@ namespace JazzBot.Commands
 				else if (msg.Result.Content.ToLowerInvariant() == "x")
 				{
 					db.Dispose();
-					return;
 				}
 				else
 				{

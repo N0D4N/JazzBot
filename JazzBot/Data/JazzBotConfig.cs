@@ -51,7 +51,7 @@ namespace JazzBot.Data
 		public string[] Prefixes { get; private set; }
 
 		/// <summary>
-		/// ID of <see cref="DiscordChannel"/> where cover arts of song albums shoul be sent.
+		/// ID of <see cref="DiscordChannel"/> where cover arts of song albums should be sent.
 		/// </summary>
 		[JsonProperty("CoverArtsChannelID")]
 		public ulong CoverArtsChannelId { get; private set; }
@@ -61,7 +61,7 @@ namespace JazzBot.Data
 		/// </summary>
 		[JsonProperty("ErrorChannelID")]
 		public ulong ErrorChannelId { get; private set; }
-	
+
 		/// <summary>
 		/// ID of <see cref="DiscordChannel"/> where all user reports should be sent.
 		/// </summary>
@@ -112,7 +112,7 @@ namespace JazzBot.Data
 		[JsonProperty("Password")]
 		public string Password { get; private set; }
 	}
-	
+
 	public sealed class JazzBotConfigLavalink
 	{
 		/// <summary>
@@ -135,7 +135,7 @@ namespace JazzBot.Data
 	}
 
 	/// <summary>
-	/// Config for interactingwith youtube
+	/// Config for interacting with youtube
 	/// </summary>
 	public sealed class JazzBotConfigYoutube
 	{

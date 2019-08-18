@@ -42,7 +42,7 @@ namespace JazzBot.Utilities
 		}
 
 		/// <summary>
-		/// <see cref="DiscordEmbedBuilder"/> for errors happened in commmands.
+		/// <see cref="DiscordEmbedBuilder"/> for errors happened in commands.
 		/// </summary>
 		/// <param name="member">Member which tried executing <see cref="Command"/> which failed</param>
 		/// <param name="command">Command in which error happened</param>
@@ -51,7 +51,7 @@ namespace JazzBot.Utilities
 		{
 			return ErrorEmbed()
 				.AddField("Примечание", $"Если вы считаете что бот неправ воспользуйтесь командой {Formatter.InlineCode("report")}", false)
-				.WithAuthor($"{member.Username}#{member.Discriminator}",iconUrl: member.AvatarUrl)
+				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl)
 				.WithFooter($"Комманда \"{command.QualifiedName}\"");
 		}
 

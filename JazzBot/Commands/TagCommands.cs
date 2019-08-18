@@ -55,7 +55,7 @@ namespace JazzBot.Commands
 				RevisionDate = DateTime.Now,
 				GuildId = (long) context.Guild.Id,
 				OwnerId = (long) context.User.Id,
-				CretionDate = DateTime.Now,
+				CreationDate = DateTime.Now,
 				TimesUsed = 0
 			};
 
@@ -68,13 +68,12 @@ namespace JazzBot.Commands
 			else
 			{
 				await db.Tags.AddAsync(tag).ConfigureAwait(false);
-				var modcount = await db.SaveChangesAsync();
+				var modCount = await db.SaveChangesAsync();
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle("Тег успешно создан")).ConfigureAwait(false);
-					return;
 				}
 				else
 					throw new CustomJbException($"Не удалось создать тег {name}. Попробуйте снова.", ExceptionType.DatabaseException);
@@ -105,9 +104,9 @@ namespace JazzBot.Commands
 			else
 			{
 				db.Tags.Remove(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно удален")).ConfigureAwait(false);
@@ -140,9 +139,9 @@ namespace JazzBot.Commands
 			else
 			{
 				db.Tags.Remove(tag);
-				var modcount = await db.SaveChangesAsync();
+				var modCount = await db.SaveChangesAsync();
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно удален")).ConfigureAwait(false);
@@ -189,9 +188,9 @@ namespace JazzBot.Commands
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
 				db.Tags.Update(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно изменен")).ConfigureAwait(false);
@@ -234,13 +233,12 @@ namespace JazzBot.Commands
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
 				db.Tags.Update(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
-				if (modcount > 0)
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle("Тег успешно изменен")).ConfigureAwait(false);
 					db.Dispose();
-					return;
 				}
 				else
 				{
@@ -264,7 +262,7 @@ namespace JazzBot.Commands
 			if (tagsArray?.Any() == true)
 			{
 				string tagsNames = string.Join(", ", tagsArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());
-				var embedrespond = EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				var embedRespond = EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 					.WithTitle("Теги на этом сервере");
 				if (tagsNames.Length > 2048)
 				{
@@ -275,14 +273,14 @@ namespace JazzBot.Commands
 
 					tagsNames = this.TagNamesNormalizer(tags);
 					var interactivity = context.Client.GetInteractivity();
-					var tagsPaginated = interactivity.GeneratePagesInEmbed(tagsNames, SplitType.Character, embedrespond);
+					var tagsPaginated = interactivity.GeneratePagesInEmbed(tagsNames, SplitType.Character, embedRespond);
 					await interactivity.SendPaginatedMessageAsync
 						(context.Channel, context.User, tagsPaginated, behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis).ConfigureAwait(false);
 
 				}
 				else
 				{
-					await context.RespondAsync(embed: embedrespond.WithDescription(tagsNames)).ConfigureAwait(false);
+					await context.RespondAsync(embed: embedRespond.WithDescription(tagsNames)).ConfigureAwait(false);
 				}
 			}
 			else
@@ -317,12 +315,12 @@ namespace JazzBot.Commands
 				{
 					Title = $"Информация про тег {tag.Name}",
 					Description = tag.TagContent,
-					Timestamp = tag.CretionDate,
+					Timestamp = tag.CreationDate,
 					Color = Helpers.ExtendedColor(context.Member, context.Guild.CurrentMember),
 				}
 				.WithAuthor($"Автор тега - {tagAuthor.Username}#{tagAuthor.Discriminator}", iconUrl: tagAuthor.AvatarUrl)
 				.WithFooter("Дата создания")
-				.AddField("Количество испоьзований", tag.TimesUsed.ToString(), true)
+				.AddField("Количество использований", tag.TimesUsed.ToString(), true)
 				.AddField("Дата последнего изменения", tag.RevisionDate.ToString("yyyy-MM-dd HH:mm:ss zzz"), true)
 				.AddField("ID тега", tag.Id.ToString(), true)).ConfigureAwait(false);
 			}
@@ -355,9 +353,9 @@ namespace JazzBot.Commands
 			{
 				tag.OwnerId = (long) memberToGive.Id;
 				db.Tags.Update(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Владельство над тегом {Formatter.InlineCode(tag.Name)} успешно передано {memberToGive.Mention}"))
 						.ConfigureAwait(false);
@@ -385,13 +383,12 @@ namespace JazzBot.Commands
 			{
 				tag.OwnerId = (long) context.User.Id;
 				db.Tags.Update(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
-				if (modcount > 0)
+				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Вы успешно получили владельство над тегом {tag.Name}")).ConfigureAwait(false);
-					return;
 				}
 				else
 					throw new CustomJbException("Не удалось обновить владельство над тегом  хотя его владелец покинул сервер", ExceptionType.DatabaseException);
@@ -413,7 +410,7 @@ namespace JazzBot.Commands
 				member = context.Guild.CurrentMember;
 
 			var db = new DatabaseContext();
-			var embed = new DiscordEmbedBuilder { }
+			var embed = new DiscordEmbedBuilder()
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl);
 
 			var gId = (long) context.Guild.Id;
@@ -453,7 +450,7 @@ namespace JazzBot.Commands
 				await context.RespondAsync("На данном сервере нет тегов").ConfigureAwait(false);
 				return;
 			}
-			// I know next region is written in very stupid way but i dont know how to actually improve it.
+			// I know next region is written in very stupid way but i don't know how to actually improve it.
 			// TODO: FIX IT.
 			#region stupid
 			var tagsOwners = new List<TagsOwner>();
@@ -464,7 +461,7 @@ namespace JazzBot.Commands
 
 			tagsOwners.ForEach(x => x.TimesUsed = serverTags.Where(y => x.OwnerId == y.OwnerId).Select(y => y.TimesUsed).Sum());
 			tagsOwners.ForEach(x => x.AmountOfTags = serverTags.Where(y => x.OwnerId == y.OwnerId).Count());
-			Tag maxuses = serverTags.OrderByDescending(x => x.TimesUsed).First();
+			Tag maxUses = serverTags.OrderByDescending(x => x.TimesUsed).First();
 			TagsOwner maxAmountOfTags = tagsOwners.OrderByDescending(x => x.AmountOfTags).First();
 			TagsOwner maxAmountOfUses = tagsOwners.OrderByDescending(x => x.TimesUsed).First();
 			#endregion
@@ -472,11 +469,11 @@ namespace JazzBot.Commands
 			{
 				Title = "Информация о тегах на сервере " + context.Guild.Name,
 				Description = $"{serverTags.Count} тегов, {serverTags.Select(x => x.TimesUsed).Sum()} использований"
-			}.AddField("Наиболее исползуемый тег", $"{maxuses.Name} ({maxuses.TimesUsed} использований)", false)
+			}.AddField("Наиболее исползуемый тег", $"{maxUses.Name} ({maxUses.TimesUsed} использований)", false)
 			.AddField("Пользователь с наибольшим количеством тегов", $"<@{maxAmountOfTags.OwnerId}> ({maxAmountOfTags.AmountOfTags} тегов)", false)
 			.AddField("Пользователь, теги которого имеют наибольшее количество использованй", $"<@{maxAmountOfUses.OwnerId}> ({maxAmountOfUses.TimesUsed} использований)", false)
-			.AddField("Первый созданный тег", $"{serverTags.OrderByDescending(x => x.CretionDate).First().Name} ({serverTags.OrderByDescending(x => x.CretionDate).First().CretionDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
-			.AddField("Последний созданный тег", $"{serverTags.OrderBy(x => x.CretionDate).First().Name} ({serverTags.OrderBy(x => x.CretionDate).First().CretionDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})");
+			.AddField("Первый созданный тег", $"{serverTags.OrderByDescending(x => x.CreationDate).First().Name} ({serverTags.OrderByDescending(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
+			.AddField("Последний созданный тег", $"{serverTags.OrderBy(x => x.CreationDate).First().Name} ({serverTags.OrderBy(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})");
 			await context.RespondAsync(embed: embed).ConfigureAwait(false);
 		}
 
@@ -514,9 +511,9 @@ namespace JazzBot.Commands
 				await context.RespondAsync($"\u200b{content}").ConfigureAwait(false);
 				tag.TimesUsed++;
 				db.Tags.Update(tag);
-				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
+				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
-				if (modcount <= 0)
+				if (modCount <= 0)
 					throw new CustomJbException("Не удалось обновить количество использований в базе данных", ExceptionType.DatabaseException);
 			}
 
@@ -526,23 +523,23 @@ namespace JazzBot.Commands
 		private string TagNamesNormalizer(IEnumerable<string> tagnames)
 		{
 			var separatedPartsTagNames = new List<string>();
-			var tempstring = new StringBuilder();
+			var tempString = new StringBuilder();
 			int currentElement = 0;
 			while (currentElement != tagnames.Count())
 			{
-				if (tempstring.Length + tagnames.ElementAt(currentElement).Length <= 500)
+				if (tempString.Length + tagnames.ElementAt(currentElement).Length <= 500)
 				{
-					tempstring.Append(tagnames.ElementAt(currentElement));
+					tempString.Append(tagnames.ElementAt(currentElement));
 					currentElement++;
 				}
 				else
 				{
-					while (tempstring.Length < 500)
+					while (tempString.Length < 500)
 					{
-						tempstring.Append(' ');
+						tempString.Append(' ');
 					}
-					separatedPartsTagNames.Add(tempstring.ToString());
-					tempstring.Clear();
+					separatedPartsTagNames.Add(tempString.ToString());
+					tempString.Clear();
 				}
 			}
 			return string.Concat(separatedPartsTagNames);

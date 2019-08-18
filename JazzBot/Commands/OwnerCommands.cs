@@ -41,8 +41,8 @@ namespace JazzBot.Commands
 			{
 				throw new ArgumentException($"Файла плейлиста {name}.txt не существует", nameof(name));
 			}
-			await this.UpdatePlaylist(name).ConfigureAwait(false);
-			await this.CreateExcel(context.Client).ConfigureAwait(false);
+			await this.UpdatePlaylistAsync(name).ConfigureAwait(false);
+			await this.CreateExcelAsync(context.Client).ConfigureAwait(false);
 			await context.RespondAsync($"Плейлист {name} успешно обновлен").ConfigureAwait(false);
 		}
 
@@ -54,10 +54,10 @@ namespace JazzBot.Commands
 			var songs = new List<Songs>();
 			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
 			{
-				await this.UpdatePlaylist(file).ConfigureAwait(false);
+				await this.UpdatePlaylistAsync(file).ConfigureAwait(false);
 			}
 
-			await this.CreateExcel(context.Client);
+			await this.CreateExcelAsync(context.Client);
 			await context.RespondAsync("Все плейлисты успешно обновлены").ConfigureAwait(false);
 		}
 
@@ -82,7 +82,7 @@ namespace JazzBot.Commands
 		[Aliases("excel")]
 		public async Task ExcelSheet(CommandContext context)
 		{
-			await this.CreateExcel(context.Client);
+			await this.CreateExcelAsync(context.Client);
 		}
 
 		[Command("UpdatePresence")]
@@ -124,7 +124,7 @@ namespace JazzBot.Commands
 				throw new ArgumentException($"Не удалось найти сервер с таким id {guildId}, проверьте правильность ввода если необходимо", nameof(guildId));
 			if (!guild.Members.TryGetValue(userId, out var user))
 			{
-				await context.RespondAsync($"Пользователь покинул сервер (скорее всего о-О)").ConfigureAwait(false);
+				await context.RespondAsync("Пользователь покинул сервер (скорее всего о-О)").ConfigureAwait(false);
 				return;
 			}
 			if (!guild.Channels.TryGetValue(channelId, out var channel))
@@ -159,7 +159,7 @@ namespace JazzBot.Commands
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);
 		}
 
-		private async Task UpdatePlaylist(string playlistName)
+		private async Task UpdatePlaylistAsync(string playlistName)
 		{
 			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
 
@@ -171,13 +171,13 @@ namespace JazzBot.Commands
 			string text = "";
 
 			var sr = new StreamReader(file.FullName);
-			for (int i = db.Playlist.Count() + 1; text != null; i++)
+			for (int i = db.Playlist.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
 			{
 				text = await sr.ReadLineAsync();
 				if (text == null)
 					break;
-				var songfile = File.Create(text);
-				songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+				var songFile = File.Create(text);
+				songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
 			}
 			sr.Close();
 			sr.DiscardBufferedData();
@@ -190,7 +190,7 @@ namespace JazzBot.Commands
 			db.Dispose();
 		}
 
-		private async Task CreateExcel(DiscordClient client)
+		private async Task CreateExcelAsync(DiscordClient client)
 		{
 			var overallPlDuration = TimeSpan.Zero;
 

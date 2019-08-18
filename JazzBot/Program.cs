@@ -30,7 +30,7 @@ namespace JazzBot
 		public InteractivityExtension Interactivity;
 		public LavalinkExtension Lavalink { get; private set; }
 		public LavalinkNodeConnection LavalinkNode { get; set; }
-		public static JazzBotConfig Cfgjson { get; private set; }
+		public static JazzBotConfig CfgJson { get; private set; }
 
 		public Bot Bot { get; set; }
 
@@ -55,13 +55,13 @@ namespace JazzBot
 			using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
 				json = sr.ReadToEnd();
 
-			Cfgjson = JsonConvert.DeserializeObject<JazzBotConfig>(json);
+			CfgJson = JsonConvert.DeserializeObject<JazzBotConfig>(json);
 
 			Console.WriteLine("Конфиг загружен");
 
 			var cfg = new DiscordConfiguration
 			{
-				Token = Cfgjson.Discord.Token,
+				Token = CfgJson.Discord.Token,
 				TokenType = TokenType.Bot,
 
 				AutoReconnect = true,
@@ -76,21 +76,21 @@ namespace JazzBot
 			this.Client.ClientErrored += this.Client_ClientError;
 			this.Client.VoiceServerUpdated += this.Voice_VoiceServerUpdate;
 			this.Client.MessageReactionAdded += this.Client_ReactionAdded;
-			this.Bot = new Bot(Cfgjson, this.Client);
+			this.Bot = new Bot(CfgJson, this.Client);
 
 			this.Services = new ServiceCollection()
 				.AddSingleton(this.Client)
 				.AddSingleton(this.Bot)
 				.AddSingleton<MusicService>()
-				.AddSingleton(new YoutubeService(Cfgjson.Youtube))
-				.AddSingleton(new LavalinkService(Cfgjson, this.Client))
+				.AddSingleton(new YoutubeService(CfgJson.Youtube))
+				.AddSingleton(new LavalinkService(CfgJson, this.Client))
 				.AddSingleton(this)
 				.BuildServiceProvider(true);
 
 
 			var ccfg = new CommandsNextConfiguration
 			{
-				StringPrefixes = Cfgjson.Discord.Prefixes,
+				StringPrefixes = CfgJson.Discord.Prefixes,
 
 				EnableDefaultHelp = true,
 
@@ -158,7 +158,7 @@ namespace JazzBot
 			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid);
 			if (config == null)
 			{
-				config = new Data.Configs
+				config = new Configs
 				{
 					Id = cuid,
 					Presence = "Music"
@@ -284,7 +284,7 @@ namespace JazzBot
 				if (failedchecks is CooldownAttribute cooldown)
 				{
 					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithDescription($"Вы пытаетесь использовать команду слишком часто, таймер - " +
+						.WithDescription("Вы пытаетесь использовать команду слишком часто, таймер - " +
 								$"не больше {cooldown.MaxUses} раз в {cooldown.Reset.TotalMinutes} минут")).ConfigureAwait(false);
 					return;
 				}
@@ -300,14 +300,14 @@ namespace JazzBot
 					.WithDescription(description.ToString())).ConfigureAwait(false);
 				return;
 			}
-			else if (ex is CustomJbException jbex)
+			else if (ex is CustomJbException jbEx)
 			{
-				switch (jbex.ExceptionType)
+				switch (jbEx.ExceptionType)
 				{
 					case ExceptionType.DatabaseException:
 						var embedDb = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Database exception")
-							.WithDescription($"Произошла ошибка связанная с работой БД с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
+							.WithDescription($"Произошла ошибка связанная с работой БД с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}");
 						await e.Context.RespondAsync(embed: embedDb).ConfigureAwait(false);
 						await this.Bot.ErrorChannel.SendMessageAsync(embed: embedDb).ConfigureAwait(false);
 						break;
@@ -315,31 +315,31 @@ namespace JazzBot
 					case ExceptionType.PlaylistException:
 						var embedPl = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Playlist exception")
-							.WithDescription($"Произошла ошибка с работой плейлистов (скорее всего плейлиста не существует) с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
+							.WithDescription($"Произошла ошибка с работой плейлистов (скорее всего плейлиста не существует) с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}");
 						await e.Context.RespondAsync(embed: embedPl).ConfigureAwait(false);
 						break;
 
 					case ExceptionType.ForInnerPurposes:
 						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Inner Purposes Exception")
-							.WithDescription($"Произошла внутренняя ошибка с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+							.WithDescription($"Произошла внутренняя ошибка с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
 						break;
 
 					case ExceptionType.Unknown:
 						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
 						break;
 
 					case ExceptionType.Default:
 						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
 						break;
 					default:
 						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}")).ConfigureAwait(false);
+							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
 						break;
 				}
 			}

@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Provides "type" of <see cref="CustomJbException"/> that happened.
 	/// </summary>
-	public enum ExceptionType : int
+	public enum ExceptionType
 	{
 		/// <summary>
 		/// Default type or none provided.

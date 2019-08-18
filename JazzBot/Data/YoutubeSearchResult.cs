@@ -13,7 +13,7 @@ namespace JazzBot.Data
 		public string VideoTitle { get; }
 
 		/// <summary>
-		/// Id of the vide
+		/// Id of the video
 		/// </summary>
 		public string VideoId { get; }
 
@@ -21,13 +21,6 @@ namespace JazzBot.Data
 		/// Name of the channel
 		/// </summary>
 		public string ChannelName { get; }
-
-		public YoutubeSearchResult(string videoTitle, string videoId, string videoThumb, string channelName, string channelId)
-		{
-			this.VideoTitle = videoTitle;
-			this.VideoId = videoId;
-			this.ChannelName = channelName;
-		}
 
 		public YoutubeSearchResult(YoutubeResponce responce)
 		{
@@ -57,7 +50,7 @@ namespace JazzBot.Data
 
 			[JsonProperty("title")]
 			public string VideoTitle { get; private set; }
-			
+
 			[JsonProperty("channelTitle")]
 			public string ChannelTitle { get; private set; }
 

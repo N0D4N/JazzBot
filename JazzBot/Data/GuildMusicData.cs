@@ -21,7 +21,7 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Shows if something is played in this guild.
 		/// </summary>
-		public bool IsPlaying { get; set; } = false; //Not used probably should delete it
+		public bool IsPlaying { get; set; } = false;
 
 		/// <summary>
 		/// Guild for which this data is stored.
@@ -203,7 +203,7 @@ namespace JazzBot.Data
 				.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
 				.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
 				.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
-				.AddField("Дата", currentSong.Tag.Year.ToString() ?? "Неизвестная дата", true)
+				.AddField("Дата", currentSong.Tag.Year.ToString(), true)
 				.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
 				.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
 				.WithFooter("Приблизительное время окончания");
@@ -250,14 +250,14 @@ namespace JazzBot.Data
 			this.IsPlaying = false;
 			if (this.LavalinkConnection != null)
 			{
-				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSong(this.Lavalink).ConfigureAwait(false);
+				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSongAsync(this.Lavalink).ConfigureAwait(false);
 				if (this.IsMessageLast())
 					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				else
 				{
-					var plmsg = this.PlayingMessage;
+					var plMsg = this.PlayingMessage;
 					this.PlayingMessage = await this.PlayingMessage.Channel.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-					await plmsg.DeleteAsync().ConfigureAwait(false);
+					await plMsg.DeleteAsync().ConfigureAwait(false);
 				}
 				this.RemoteMusic.Pop();
 				this.InternalPlay(track);

@@ -60,7 +60,7 @@ namespace JazzBot.Commands
 				max = min.Value;
 				min = 1;
 			}
-			int result = Helpers.Cryptorandom(min.Value, max.Value);
+			int result = Helpers.CryptoRandom(min.Value, max.Value);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Случайное число в границах [{min};{max}] = {result}")).ConfigureAwait(false);
 		}
@@ -74,14 +74,14 @@ namespace JazzBot.Commands
 		{
 			if (choices?.Any() != true)
 				throw new ArgumentException("Вы должны предоставить хотя бы 1 вариант для выбора", nameof(choices));
-			string x = choices[Helpers.Cryptorandom(0, choices.Length)].Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere");
+			string x = choices[Helpers.CryptoRandom(0, choices.Length)].Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere");
 			await context.RespondAsync(x).ConfigureAwait(false);
 		}
 
 		[Command("Ban")]
 		[Description("Банит пользователя по его ID, пользователю не обязательно находиться на этом сервере")]
 		[RequirePermissions(Permissions.BanMembers)]
-		public async Task Hackban(CommandContext context, [Description("ID пользователя которого нужно забанить")]ulong id, [RemainingText, Description("Причина бана")] string reason = "")
+		public async Task Ban(CommandContext context, [Description("ID пользователя которого нужно забанить")]ulong id, [RemainingText, Description("Причина бана")] string reason = "")
 		{
 			if (context.Member.Id == id)
 				throw new ArgumentException("Вы не можете забанить себя");
@@ -168,7 +168,7 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Сообщение об ошибке не может быть пустым или содержать только пробелы", nameof(reportMessage));
 			var interactivity = context.Client.GetInteractivity();
 
-			var errmsg = await this.Bot.ReportChannel.SendMessageAsync(embed: new DiscordEmbedBuilder
+			var errMsg = await this.Bot.ReportChannel.SendMessageAsync(embed: new DiscordEmbedBuilder
 			{
 				Title = "Пришел юзер-репорт",
 				Description = reportMessage.Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere"),
@@ -180,18 +180,16 @@ namespace JazzBot.Commands
 
 			var cancelReportEmoji = DiscordEmoji.FromName(context.Client, ":no_entry_sign:");
 
-			var chsmsg = await context.RespondAsync(embed: new DiscordEmbedBuilder
+			var chsMsg = await context.RespondAsync(embed: new DiscordEmbedBuilder
 			{
 				Description = $"Спасибо за репорт как только ошибка будет исправлена и вам придет об этом сообщение, если вы не хотите получать сообщение с отчетом о фиксе - поставьте емодзи {cancelReportEmoji} (:no_entry_sign) под это сообщение",
 				Timestamp = DateTimeOffset.Now,
 			}.WithFooter($"По запросу {context.User.Username}#{context.User.Discriminator}", context.User.AvatarUrl)).ConfigureAwait(false);
-			await chsmsg.CreateReactionAsync(cancelReportEmoji).ConfigureAwait(false);
-			var intResult = await interactivity.WaitForReactionAsync(x => x.Emoji.GetDiscordName() == cancelReportEmoji.GetDiscordName(), chsmsg, context.User, TimeSpan.FromSeconds(25));
-			if (intResult.TimedOut)
-				return;
-			else
+			await chsMsg.CreateReactionAsync(cancelReportEmoji).ConfigureAwait(false);
+			var intResult = await interactivity.WaitForReactionAsync(x => x.Emoji.GetDiscordName() == cancelReportEmoji.GetDiscordName(), chsMsg, context.User, TimeSpan.FromSeconds(25));
+			if (!intResult.TimedOut)
 			{
-				await errmsg.ModifyAsync(embed: new DiscordEmbedBuilder(errmsg.Embeds[0])
+				await errMsg.ModifyAsync(embed: new DiscordEmbedBuilder(errMsg.Embeds[0])
 					.AddField("Стоит ли сообщать об ошибке", "Уже нет", false).Build()).ConfigureAwait(false);
 
 			}
@@ -210,9 +208,9 @@ namespace JazzBot.Commands
 			var roles = new StringBuilder();
 			if (member.Roles?.Any() == true)
 			{
-				var roleslist = member.Roles.OrderByDescending(x => x.Position).Select(x => x.Name).ToList();
-				roleslist.Add("everyone");
-				roles.AppendJoin(',', roleslist.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
+				var rolesList = member.Roles.OrderByDescending(x => x.Position).Select(x => x.Name).ToList();
+				rolesList.Add("everyone");
+				roles.AppendJoin(',', rolesList.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
 			}
 			else
 				roles.AppendLine(Formatter.InlineCode("@everyone"));

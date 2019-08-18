@@ -15,7 +15,7 @@ namespace JazzBot.Utilities
 	{
 		public static string ToSize(this long value, SizeUnits unit)
 		{
-			return (value / (double) Math.Pow(1024, (long) unit)).ToString("0.00");
+			return (value / Math.Pow(1024, (long) unit)).ToString("0.00");
 		}
 
 		/// <summary>
@@ -24,7 +24,7 @@ namespace JazzBot.Utilities
 		/// <param name="minValue">Lower bound</param>
 		/// <param name="maxValue">Higher bound</param>
 		/// <returns>Pseudorandom number within <paramref name="minValue"/> and <paramref name="maxValue"/></returns>
-		public static int Cryptorandom(int minValue, int maxValue)
+		public static int CryptoRandom(int minValue, int maxValue)
 		{
 			var provider = new RNGCryptoServiceProvider();
 			var uint32Buffer = new byte[4];
@@ -59,7 +59,7 @@ namespace JazzBot.Utilities
 				byte[] box = new byte[sizeof(int)];
 				provider.GetBytes(box);
 				int bit = BitConverter.ToInt32(box, 0);
-				int k = Math.Abs(bit) % (int) n;
+				int k = Math.Abs(bit) % n;
 				n--;
 				T value = list[k];
 				list[k] = list[n];
@@ -86,9 +86,9 @@ namespace JazzBot.Utilities
 				{
 					if (currentMember?.Roles?.Any() == true)
 					{
-						var botrole = currentMember.Roles.OrderByDescending(xr => xr.Position).First(xr => xr.Color.Value != 0);
-						if (botrole != null)
-							return botrole.Color;
+						var botRole = currentMember.Roles.OrderByDescending(xr => xr.Position).First(xr => xr.Color.Value != 0);
+						if (botRole != null)
+							return botRole.Color;
 					}
 				}
 			}
@@ -120,12 +120,12 @@ namespace JazzBot.Utilities
 		{
 			return new NpgsqlConnectionStringBuilder
 			{
-				Host = Program.Cfgjson.Database.Hostname,
-				Port = Program.Cfgjson.Database.Port,
+				Host = Program.CfgJson.Database.Hostname,
+				Port = Program.CfgJson.Database.Port,
 
-				Username = Program.Cfgjson.Database.Username,
-				Password = Program.Cfgjson.Database.Password,
-				Database = Program.Cfgjson.Database.Database
+				Username = Program.CfgJson.Database.Username,
+				Password = Program.CfgJson.Database.Password,
+				Database = Program.CfgJson.Database.Database
 			}.ConnectionString;
 		}
 

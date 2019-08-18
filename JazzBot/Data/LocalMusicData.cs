@@ -52,11 +52,11 @@ namespace JazzBot.Data
 			this.Guild = guild;
 			var gId = (long) this.Guild.Id;
 			var db = new DatabaseContext();
-			var dguild = db.Guilds.Single(x => x.IdOfGuild == gId);
+			var dGuild = db.Guilds.Single(x => x.IdOfGuild == gId);
 			db.Dispose();
-			this.Seed = dguild.Seed;
-			this.PlaylistName = dguild.PlaylistName;
-			this.IdOfCurrentSong = dguild.IdOfCurrentSong;
+			this.Seed = dGuild.Seed;
+			this.PlaylistName = dGuild.PlaylistName;
+			this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
 			this.PlayNextStack = new Stack<string>();
 		}
 
@@ -65,7 +65,7 @@ namespace JazzBot.Data
 		/// </summary>
 		/// <param name="playlistName">New playlist</param>
 		/// <returns></returns>
-		public async Task ChangePlaylist(string playlistName)
+		public async Task ChangePlaylistAsync(string playlistName)
 		{
 			var db = new DatabaseContext();
 			if (await db.Playlist.Select(x => x.PlaylistName).ContainsAsync(this.PlaylistName).ConfigureAwait(false))
@@ -94,7 +94,7 @@ namespace JazzBot.Data
 		/// </summary>
 		public void Shuffle()
 		{
-			this.Seed = Helpers.Cryptorandom(0, 1000);
+			this.Seed = Helpers.CryptoRandom(0, 1000);
 			this.IdOfCurrentSong = 1;
 			this.ChangeCurrentSong(false);
 
@@ -117,7 +117,7 @@ namespace JazzBot.Data
 				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongId);
 			}
 			string path = songs.OrderBy(x => x.Numing).ElementAt(this.IdOfCurrentSong).Path;
-			while (!System.IO.File.Exists(path))
+			while (!File.Exists(path))
 			{
 				this.IdOfCurrentSong++;
 				path = songs.ElementAt(this.IdOfCurrentSong).Path;
@@ -146,7 +146,6 @@ namespace JazzBot.Data
 			if (db.SaveChanges() > 0)
 			{
 				db.Dispose();
-				return;
 			}
 			else
 			{
@@ -159,7 +158,7 @@ namespace JazzBot.Data
 		/// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>.
 		/// </summary>
 		/// <returns><see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/></returns>
-		public async Task<LavalinkTrack> GetSong(LavalinkService lavalink)
+		public async Task<LavalinkTrack> GetSongAsync(LavalinkService lavalink)
 		{
 			var db = new DatabaseContext();
 			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
