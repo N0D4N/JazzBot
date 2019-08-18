@@ -152,7 +152,10 @@ namespace JazzBot.Commands
 			{
 				await channelToSayIn.SendMessageAsync(embed: embed).ConfigureAwait(false);
 			}
-			catch { }
+			catch
+			{
+				await context.RespondAsync("Не удалось отправить сообщение, проверьте все и попробуйте снова").ConfigureAwait(false);
+			}
 		}
 
 		[Command("ErrorReport")]
