@@ -18,17 +18,14 @@ namespace JazzBot.Attributes
 		/// </summary>
 		public Permissions Permissions { get; private set; }
 
-		public OwnerOrPermissionAttribute(Permissions permissions)
-		{
-			this.Permissions = permissions;
-		}
+		public OwnerOrPermissionAttribute(Permissions permissions) => this.Permissions = permissions;
 
 		public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
 		{
 			var app = ctx.Client.CurrentApplication;
 			var me = ctx.Client.CurrentUser;
 
-			if (app != null && app.Owners.Any(x=>x.Id == ctx.User.Id))
+			if (app != null && app.Owners.Any(x => x.Id == ctx.User.Id))
 				return Task.FromResult(true);
 
 			if (ctx.User.Id == me.Id)

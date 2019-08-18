@@ -13,9 +13,9 @@ namespace JazzBot.Utilities
 {
 	static class Helpers
 	{
-		public static string ToSize(this Int64 value, SizeUnits unit)
+		public static string ToSize(this long value, SizeUnits unit)
 		{
-			return (value / (double)Math.Pow(1024, (Int64)unit)).ToString("0.00");
+			return (value / (double) Math.Pow(1024, (long) unit)).ToString("0.00");
 		}
 
 		/// <summary>
@@ -30,18 +30,19 @@ namespace JazzBot.Utilities
 			var _uint32Buffer = new byte[4];
 			if (minValue > maxValue)
 				throw new ArgumentOutOfRangeException("minValue");
-			if (minValue == maxValue) return minValue;
-			Int64 diff = maxValue - minValue;
+			if (minValue == maxValue)
+				return minValue;
+			long diff = maxValue - minValue;
 			while (true)
 			{
 				provider.GetBytes(_uint32Buffer);
-				UInt32 rand = BitConverter.ToUInt32(_uint32Buffer, 0);
+				uint rand = BitConverter.ToUInt32(_uint32Buffer, 0);
 
-				Int64 max = (1 + (Int64)UInt32.MaxValue);
-				Int64 remainder = max % diff;
+				long max = (1 + (long) uint.MaxValue);
+				long remainder = max % diff;
 				if (rand < max - remainder)
 				{
-					return (Int32)(minValue + (rand % diff));
+					return (int) (minValue + (rand % diff));
 				}
 			}
 		}
@@ -58,7 +59,7 @@ namespace JazzBot.Utilities
 				byte[] box = new byte[sizeof(int)];
 				provider.GetBytes(box);
 				int bit = BitConverter.ToInt32(box, 0);
-				int k = Math.Abs(bit) % (int)n;
+				int k = Math.Abs(bit) % (int) n;
 				n--;
 				T value = list[k];
 				list[k] = list[n];
@@ -67,7 +68,7 @@ namespace JazzBot.Utilities
 			return Task.CompletedTask;
 		}
 
-		
+
 		/// <summary>
 		/// Get extended color for <see cref="DiscordMember".
 		/// </summary>
@@ -91,10 +92,10 @@ namespace JazzBot.Utilities
 					}
 				}
 			}
-			return RandomColor();			
-		}		
+			return RandomColor();
+		}
 
-		
+
 		public static double OrderingFormula(int seed, int Songid)
 		{
 			double id = Math.Abs(Math.Sin(Songid * 1.0) + Math.Cos(Math.Sqrt(seed) * Songid));
@@ -186,6 +187,6 @@ namespace JazzBot.Utilities
 		#endregion
 	}
 
-	
+
 
 }

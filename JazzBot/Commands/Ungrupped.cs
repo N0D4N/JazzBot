@@ -19,9 +19,7 @@ namespace JazzBot.Commands
 		private Bot Bot { get; }
 
 		public Ungrupped(Bot bot)
-		{
-			this.Bot = bot;
-		}
+			=> this.Bot = bot;
 
 		[Command("UserInfo")]
 		[Description("Информация об этом участнике сервера")]
@@ -51,13 +49,13 @@ namespace JazzBot.Commands
 		public async Task Roll(CommandContext context, [Description("Нижняя граница")] int? min = null, [Description("Верхняя граница")] int? max = null)
 		{
 			// No arguments were provided.
-			if (min == null) 
+			if (min == null)
 			{
 				min = 1;
 				max = 10;
 			}
 			// Only one argument were provided, so it will be maximum and minimum will be default "1".
-			else if (max == null) 
+			else if (max == null)
 			{
 				max = min.Value;
 				min = 1;
@@ -65,9 +63,9 @@ namespace JazzBot.Commands
 			int result = Helpers.Cryptorandom(min.Value, max.Value);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Случайное число в границах [{min};{max}] = {result}")).ConfigureAwait(false);
-		}			
+		}
 
-		
+
 
 		[Command("Choice")]
 		[Description("Выбирает случайный вариант из представленных")]
@@ -91,7 +89,7 @@ namespace JazzBot.Commands
 			string reasonString = string.IsNullOrWhiteSpace(reason) ? " отсутствует" : $": {reason}";
 
 			// Member is still in the guild.
-			if (context.Guild.Members.TryGetValue(id, out var member)) 
+			if (context.Guild.Members.TryGetValue(id, out var member))
 			{
 				if (this.MemberRolePositionAndOwnerChecker(context.Member, member))
 				{
@@ -130,7 +128,7 @@ namespace JazzBot.Commands
 		{
 
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-				.WithDescription(Formatter.MaskedUrl("Ссылка-приглашение бота на ваш сервер", 
+				.WithDescription(Formatter.MaskedUrl("Ссылка-приглашение бота на ваш сервер",
 				new Uri("https://discordapp.com/api/oauth2/authorize?client_id=" + context.Client.CurrentUser.Id + "&permissions=120966212&scope=bot"))))
 				.ConfigureAwait(false);
 		}
@@ -138,9 +136,9 @@ namespace JazzBot.Commands
 		[Command("say")]
 		[Description("Отправляет \"embed\" в заданный канал с заданным текстом")]
 		[OwnerOrPermission(Permissions.ManageGuild)]
-		public async Task Say(CommandContext context, 
+		public async Task Say(CommandContext context,
 			[Description("Канал в который нужно отправить сообщение")]DiscordChannel channelToSayIn,
-			[RemainingText,Description("Текст который нужно отправить")] string messageContent)
+			[RemainingText, Description("Текст который нужно отправить")] string messageContent)
 		{
 			if (string.IsNullOrWhiteSpace(messageContent))
 				throw new ArgumentException("Содержимое сообщения не должно быть пустым", nameof(messageContent));
@@ -160,7 +158,7 @@ namespace JazzBot.Commands
 		[Command("ErrorReport")]
 		[Description("Если произошла ошибка и вы хотите сообщить о ней - напишите подробное(или не очень) описание ошибки и репорт будет передан соответствующим лицам")]
 		[Aliases("report")]
-		[Cooldown(2,120,CooldownBucketType.User)]
+		[Cooldown(2, 120, CooldownBucketType.User)]
 		public async Task ErrorReport(CommandContext context, [RemainingText, Description("Описание ошибки")]string reportMessage)
 		{
 			if (string.IsNullOrWhiteSpace(reportMessage))
@@ -201,7 +199,7 @@ namespace JazzBot.Commands
 		public async Task Update(CommandContext context)
 		{
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-				.WithDescription(Formatter.MaskedUrl("Ссылка на последнее обновление",new Uri(this.Bot.Config.Miscellaneous.UpdateLink)))).ConfigureAwait(false);
+				.WithDescription(Formatter.MaskedUrl("Ссылка на последнее обновление", new Uri(this.Bot.Config.Miscellaneous.UpdateLink)))).ConfigureAwait(false);
 		}
 
 		private Task<DiscordEmbed> MemberInfo(DiscordMember member, CommandContext context)
@@ -230,7 +228,7 @@ namespace JazzBot.Commands
 		{
 			return ((memberToBan?.Roles?.Any() == true && memberInvoked?.Roles?.Any() == true
 						// Moderator have higher role than member he tries to ban.
-						&& memberInvoked.Roles.OrderByDescending(x => x.Position).First().Position > memberToBan.Roles.OrderByDescending(x => x.Position).First().Position) 
+						&& memberInvoked.Roles.OrderByDescending(x => x.Position).First().Position > memberToBan.Roles.OrderByDescending(x => x.Position).First().Position)
 							|| memberToBan?.Roles?.Any() != true)
 								&& !memberToBan.IsOwner;
 		}

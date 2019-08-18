@@ -62,7 +62,7 @@ namespace JazzBot.Commands
 		{
 			if (this.GuildMusic.RemoteMusic?.Queue?.Any() == true)
 				return;
-			await GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
+			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 
 			//await this.GuildMusic.LocalMusic.ChangeCurrentSong(false);
 
@@ -83,10 +83,10 @@ namespace JazzBot.Commands
 
 			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
 			this.GuildMusic.RemoteMusic.Add(tracks);
-			
+
 			if (this.GuildMusic.PlayingMessage == null)
 				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-			
+
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			if (!this.GuildMusic.IsPlaying)
 			{
@@ -105,9 +105,9 @@ namespace JazzBot.Commands
 		public async Task Play(CommandContext context, [RemainingText, Description("Текст для поиска")]string searchQuery)
 		{
 			var searchResults = await this.Youtube.SearchAsync(searchQuery);
-			StringBuilder description = new StringBuilder();
+			var description = new StringBuilder();
 			int i = 1;
-			foreach(var el in searchResults)
+			foreach (var el in searchResults)
 			{
 				description.AppendLine($"{i}. {Formatter.InlineCode(el.VideoTitle)} {Formatter.Bold("-")} {Formatter.InlineCode(el.ChannelName)}");
 				i++;
@@ -200,7 +200,7 @@ namespace JazzBot.Commands
 			}
 			playNexts = playNexts.OrderBy(s => s.Coefficient).ToList();
 			var interactivity = context.Client.GetInteractivity();
-			StringBuilder description = new StringBuilder();
+			var description = new StringBuilder();
 			for (int i = 0; i < 10; i++)
 				description.AppendLine($"\n№ {i + 1}; Name: {playNexts[i].Title}.");
 
@@ -218,7 +218,7 @@ namespace JazzBot.Commands
 				{
 					if (res >= 1 && res <= playNexts.Count)
 					{
-						var gId = (long)context.Guild.Id;
+						var gId = (long) context.Guild.Id;
 						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
 						db.Dispose();
 						this.GuildMusic.LocalMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
@@ -231,7 +231,7 @@ namespace JazzBot.Commands
 						throw new ArgumentException("Данное число выходит за границы", nameof(res));
 					}
 				}
-				else if(msg.Result.Content.ToLowerInvariant() == "x")
+				else if (msg.Result.Content.ToLowerInvariant() == "x")
 				{
 					db.Dispose();
 					return;
@@ -265,7 +265,7 @@ namespace JazzBot.Commands
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Воспроизведение остановлено и списки очищены")).ConfigureAwait(false);
 		}
-		
+
 		[Command("Shuffle")]
 		[Description("Перемешивает список на воспроизведение в таком порядке - Песни из Интернета -> общая очередь из локального источника")]
 		public async Task Shuffle(CommandContext context)
@@ -274,7 +274,7 @@ namespace JazzBot.Commands
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Список был перемешан")).ConfigureAwait(false);
 		}
-		
+
 
 		[Command("Playlists")]
 		[Description("Показывает список доступных плейлистов")]
@@ -294,7 +294,7 @@ namespace JazzBot.Commands
 		{
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Все песни в плейлистах")
-				.WithUrl(Bot.Config.Miscellaneous.PlaylistLink)).ConfigureAwait(false);
+				.WithUrl(this.Bot.Config.Miscellaneous.PlaylistLink)).ConfigureAwait(false);
 		}
 	}
 }

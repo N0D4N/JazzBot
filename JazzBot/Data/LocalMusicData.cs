@@ -68,9 +68,9 @@ namespace JazzBot.Data
 		public async Task ChangePlaylist(string playlistName)
 		{
 			var db = new DatabaseContext();
-			if (await db.Playlist.Select(x => x.PlaylistName).ContainsAsync(PlaylistName).ConfigureAwait(false))
+			if (await db.Playlist.Select(x => x.PlaylistName).ContainsAsync(this.PlaylistName).ConfigureAwait(false))
 			{
-				var gId = (long)this.Guild.Id;
+				var gId = (long) this.Guild.Id;
 				var guild = await db.Guilds.SingleOrDefaultAsync(x => x.IdOfGuild == gId).ConfigureAwait(false);
 				this.PlaylistName = playlistName;
 				guild.PlaylistName = playlistName;
@@ -108,7 +108,7 @@ namespace JazzBot.Data
 		public Task ChangeCurrentSong(bool updateID)
 		{
 			if (updateID)
-				IdOfCurrentSong++;
+				this.IdOfCurrentSong++;
 			var db = new DatabaseContext();
 			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName).ToList();
 			db.Dispose();
@@ -119,13 +119,13 @@ namespace JazzBot.Data
 			string path = songs.OrderBy(x => x.Numing).ElementAt(this.IdOfCurrentSong).Path;
 			while (!System.IO.File.Exists(path))
 			{
-				IdOfCurrentSong++;
+				this.IdOfCurrentSong++;
 				path = songs.ElementAt(this.IdOfCurrentSong).Path;
 			}
 			this.PathToCurrentSong = path;
 
 			if (updateID)
-				UpdateDB();
+				this.UpdateDB();
 			return Task.CompletedTask;
 		}
 
@@ -135,10 +135,10 @@ namespace JazzBot.Data
 		private void UpdateDB()
 		{
 			var db = new DatabaseContext();
-			var gId = (long)this.Guild.Id;
+			var gId = (long) this.Guild.Id;
 			var guild = db.Guilds.SingleOrDefault(x => x.IdOfGuild == gId);
 			guild.IdOfCurrentSong = this.IdOfCurrentSong;
-			guild.IdOfGuild = (long)this.Guild.Id;
+			guild.IdOfGuild = (long) this.Guild.Id;
 			guild.PlaylistName = this.PlaylistName;
 			guild.Seed = this.Seed;
 
@@ -188,8 +188,6 @@ namespace JazzBot.Data
 		/// </summary>
 		/// <param name="path">Path to song</param>
 		public void EnqueueToPlayNext(string path)
-		{
-			this.PlayNextStack.Push(path);
-		}
+			=> this.PlayNextStack.Push(path);
 	}
 }

@@ -27,9 +27,7 @@ namespace JazzBot.Commands
 		private Bot Bot { get; }
 
 		public OwnerCommands(Bot bot)
-		{
-			this.Bot = bot;
-		}
+			=> this.Bot = bot;
 
 		[Command("FillPlaylist")]
 		[Description("Заполняет определенный плейлист по имени")]
@@ -38,7 +36,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(name))
 				throw new ArgumentException("Название плейлиста не может быть пустым или состоять из пробелов", nameof(name));
-			FileInfo file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + name + ".txt");
+			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + name + ".txt");
 			if (!file.Exists)
 			{
 				throw new ArgumentException($"Файла плейлиста {name}.txt не существует", nameof(name));
@@ -53,12 +51,12 @@ namespace JazzBot.Commands
 		[Aliases("fillap")]
 		public async Task FillAllPlaylists(CommandContext context)
 		{
-			List<Songs> songs = new List<Songs>();
-			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x=> Path.GetFileNameWithoutExtension(x.FullName)))
+			var songs = new List<Songs>();
+			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
 			{
 				await this.UpdatePlaylist(file).ConfigureAwait(false);
 			}
-			
+
 			await this.CreateExcel(context.Client);
 			await context.RespondAsync("Все плейлисты успешно обновлены").ConfigureAwait(false);
 		}
@@ -90,8 +88,8 @@ namespace JazzBot.Commands
 		[Command("UpdatePresence")]
 		[Description("Обновляет статус бота")]
 		[Aliases("updpr")]
-		[Cooldown(5,60,CooldownBucketType.Global)]
-		public async Task UpdatePresence(CommandContext context,[RemainingText, Description("Строчка которая будет отображаться в статусе")]string presenceText)
+		[Cooldown(5, 60, CooldownBucketType.Global)]
+		public async Task UpdatePresence(CommandContext context, [RemainingText, Description("Строчка которая будет отображаться в статусе")]string presenceText)
 		{
 			if (string.IsNullOrWhiteSpace(presenceText))
 				throw new ArgumentException("Строчка статус не должна быть пустой или состоять только из пробелов.", nameof(presenceText));
@@ -100,7 +98,7 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
 
 			var db = new DatabaseContext();
-			var bId = (long)context.Client.CurrentUser.Id;
+			var bId = (long) context.Client.CurrentUser.Id;
 			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == bId);
 			config.Presence = presenceText;
 			db.Configs.Update(config);
@@ -111,15 +109,15 @@ namespace JazzBot.Commands
 			}
 			await context.Client.UpdateStatusAsync(new DiscordActivity(presenceText, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 			db.Dispose();
-			
+
 		}
 
 		[Command("FixedReport")]
 		[Description("Сообщает юзеру что ошибка зарепорченная им была исправлена")]
 		[Aliases("fixed")]
-		public async Task FixedReport(CommandContext context, 
-			[Description("Id сервера")] ulong guildId, 
-				[Description("Id канала")]ulong channelId, 
+		public async Task FixedReport(CommandContext context,
+			[Description("Id сервера")] ulong guildId,
+				[Description("Id канала")]ulong channelId,
 					[RemainingText, Description("Id пользователя")] ulong userID)
 		{
 			if (!context.Client.Guilds.TryGetValue(guildId, out var guild))
@@ -130,7 +128,7 @@ namespace JazzBot.Commands
 				return;
 			}
 			if (!guild.Channels.TryGetValue(channelId, out var channel))
-				throw new ArgumentException($"Не удалось найти канал с таким id {channelId}, проверьте правильность ввода если необходимо",nameof(channelId));
+				throw new ArgumentException($"Не удалось найти канал с таким id {channelId}, проверьте правильность ввода если необходимо", nameof(channelId));
 			await channel.SendMessageAsync($"{user.Mention}, ошибка о которой вы сообщили была исправлена, спасибо за сотрудничество").ConfigureAwait(false);
 		}
 
@@ -143,14 +141,14 @@ namespace JazzBot.Commands
 			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
 			var db = new DatabaseContext();
-			var bId = (long)context.Client.CurrentUser.Id;
+			var bId = (long) context.Client.CurrentUser.Id;
 			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == bId);
 			config.Presence = updatePresence;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)
 				throw new CustomJBException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
 
-			
+
 		}
 
 		[Command("Nickname")]
@@ -163,22 +161,22 @@ namespace JazzBot.Commands
 
 		private async Task UpdatePlaylist(string playlistName)
 		{
-			FileInfo file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
-			
+			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
+
 			var db = new DatabaseContext();
 			db.Playlist.RemoveRange(db.Playlist.Where(x => x.PlaylistName == playlistName));
-			if(await db.SaveChangesAsync() <= 0)
+			if (await db.SaveChangesAsync() <= 0)
 				throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
-			List<Songs> songs = new List<Songs>();
+			var songs = new List<Songs>();
 			string text = "";
 
-			StreamReader sr = new StreamReader(file.FullName);
-			for (int i = db.Playlist.Count() +1; text != null; i++)
+			var sr = new StreamReader(file.FullName);
+			for (int i = db.Playlist.Count() + 1; text != null; i++)
 			{
 				text = await sr.ReadLineAsync();
 				if (text == null)
 					break;
-				File songfile = File.Create(text);
+				var songfile = File.Create(text);
 				songs.Add(new Songs { Name = songfile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
 			}
 			sr.Close();
@@ -222,7 +220,7 @@ namespace JazzBot.Commands
 					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Инфо-страница заполнена", DateTime.Now);
 
 					// Filling info for each playlist in DB.
-					foreach(var playlist in db.Playlist.Select(x=>x.PlaylistName).Distinct())
+					foreach (var playlist in db.Playlist.Select(x => x.PlaylistName).Distinct())
 					{
 						TimeSpan plDuration = TimeSpan.Zero;
 
@@ -237,19 +235,19 @@ namespace JazzBot.Commands
 						playlistWorksheet.Cells[2, 6].Value = "Requested by";
 						foreach (var cell in playlistWorksheet.Cells[2, 1, 2, 6])
 						{
-							cell.Style.Border.BorderAround(ExcelBorderStyle.Thick,	System.Drawing.Color.Black);
+							cell.Style.Border.BorderAround(ExcelBorderStyle.Thick, System.Drawing.Color.Black);
 							cell.Style.Font.Size = 24;
 						}
 
 						string[] songs = await db.Playlist.Where(x => x.PlaylistName == playlist).Select(x => x.Path).ToArrayAsync();
 						var songsFiles = new List<File>();
-						foreach(var song in songs)
+						foreach (var song in songs)
 						{
 							songsFiles.Add(File.Create(song));
 						}
 						songsFiles = songsFiles.OrderBy(x => x.Tag.FirstPerformer + x.Tag.Year.ToString() + x.Tag.Album + x.Tag.Track).ToList();
 						int songNum = 1, currentRow = 3;
-						foreach(var song in songsFiles)
+						foreach (var song in songsFiles)
 						{
 							playlistWorksheet.Cells[currentRow, 1].Value = songNum;
 							playlistWorksheet.Cells[currentRow, 2].Value = $"{song.Tag.Track}.{song.Tag.Title}";
@@ -267,7 +265,7 @@ namespace JazzBot.Commands
 							currentRow++;
 							plDuration = plDuration.Add(song.Properties.Duration);
 						}
-						playlistWorksheet.Cells[3, 1, currentRow -1, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin, System.Drawing.Color.Black);
+						playlistWorksheet.Cells[3, 1, currentRow - 1, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin, System.Drawing.Color.Black);
 						playlistWorksheet.Cells[3, 1, currentRow, 6].Style.Font.Size = 10;
 						playlistWorksheet.Cells.AutoFitColumns(0.5, 80.0);
 						playlistWorksheet.Cells[1, 1].Value = $"Длительность плейлиста: {plDuration.ToString(@"dd\.hh\:mm\:ss")}";

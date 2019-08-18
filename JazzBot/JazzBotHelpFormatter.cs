@@ -71,28 +71,28 @@ namespace JazzBot
 				this.EmbedBuilder.AddField("Аргументы", sb.ToString().Trim(), false);
 			}
 
-			if(command.ExecutionChecks.Any())
+			if (command.ExecutionChecks.Any())
 			{
-				StringBuilder exChecksSB = new StringBuilder();
+				var exChecksSB = new StringBuilder();
 
-				if(command.ExecutionChecks.Any(x=>x is OwnerOrPermissionAttribute))
+				if (command.ExecutionChecks.Any(x => x is OwnerOrPermissionAttribute))
 				{
 					var oOPA = command.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
 					exChecksSB.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(oOPA.Permissions.ToPermissionString())}.");
 				}
 
-				if(command.ExecutionChecks.Any(x=>x is RequireOwnerAttribute))
+				if (command.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
 				{
 					exChecksSB.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
 				}
 
-				if(command.ExecutionChecks.Any(x=> x is CooldownAttribute))
+				if (command.ExecutionChecks.Any(x => x is CooldownAttribute))
 				{
 					var cooldown = command.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) as CooldownAttribute;
 					exChecksSB.AppendLine($"Эта команда может быть использована {Formatter.InlineCode(cooldown.MaxUses.ToString())} раз/а в течении {Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
 				}
 
-				if(command.ExecutionChecks.Any(x=>x is RequirePermissionsAttribute))
+				if (command.ExecutionChecks.Any(x => x is RequirePermissionsAttribute))
 				{
 					var perm = command.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
 					exChecksSB.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");

@@ -93,10 +93,10 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
-			var gId = (long)context.Guild.Id;
-			var uId = (long)context.User.Id;
+			var gId = (long) context.Guild.Id;
+			var uId = (long) context.User.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId  && t.OwnerID == uId).ConfigureAwait(false);
+			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				db.Dispose();
@@ -130,7 +130,7 @@ namespace JazzBot.Commands
 
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
@@ -175,8 +175,8 @@ namespace JazzBot.Commands
 
 			name = name.ToLowerInvariant();
 
-			var gId = (long)context.Guild.Id;
-			var uId = (long)context.User.Id;
+			var gId = (long) context.Guild.Id;
+			var uId = (long) context.User.Id;
 
 			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
@@ -224,7 +224,7 @@ namespace JazzBot.Commands
 
 			name = name.ToLowerInvariant();
 
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 
 			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
@@ -257,7 +257,7 @@ namespace JazzBot.Commands
 		{
 			var db = new DatabaseContext();
 
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 
 			var tagsArray = await db.Tags.Where(t => t.GuildID == gId).ToArrayAsync().ConfigureAwait(false);
 			db.Dispose();
@@ -268,10 +268,10 @@ namespace JazzBot.Commands
 					.WithTitle("Теги на этом сервере");
 				if (tagsNames.Length > 2048)
 				{
-					List<string> tags = tagsArray.OrderBy(x => x.Name).Select(x => $"{Formatter.InlineCode(x.Name)},").ToList();
+					var tags = tagsArray.OrderBy(x => x.Name).Select(x => $"{Formatter.InlineCode(x.Name)},").ToList();
 
 					// Deleting last coma.
-					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1); 
+					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1);
 
 					tagsNames = this.TagNamesNormalizer(tags);
 					var interactivity = context.Client.GetInteractivity();
@@ -301,7 +301,7 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 
 			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			db.Dispose();
@@ -311,7 +311,7 @@ namespace JazzBot.Commands
 			}
 			else
 			{
-				var ownId = (ulong)tag.OwnerID;
+				var ownId = (ulong) tag.OwnerID;
 				DiscordUser TagAuthor = await context.Client.GetUserAsync(ownId).ConfigureAwait(false);
 				await context.RespondAsync(embed: new DiscordEmbedBuilder
 				{
@@ -342,8 +342,8 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
-			var gId = (long)context.Guild.Id;
-			var uId = (long)context.User.Id;
+			var gId = (long) context.Guild.Id;
+			var uId = (long) context.User.Id;
 
 			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId && t.OwnerID == uId).ConfigureAwait(false);
 			if (tag == null)
@@ -373,18 +373,18 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(name))
 				throw new ArgumentException("Название тега не должно быть пустым", nameof(name));
 			var db = new DatabaseContext();
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			DiscordMember owner = null;
 			try
 			{
-				var ownId = (ulong)tag.OwnerID;
+				var ownId = (ulong) tag.OwnerID;
 
 				owner = await context.Guild.GetMemberAsync(ownId).ConfigureAwait(false);
 			}
 			catch (NotFoundException)
 			{
-				tag.OwnerID =(long) context.User.Id;
+				tag.OwnerID = (long) context.User.Id;
 				db.Tags.Update(tag);
 				var modcount = await db.SaveChangesAsync().ConfigureAwait(false);
 				db.Dispose();
@@ -416,8 +416,8 @@ namespace JazzBot.Commands
 			var embed = new DiscordEmbedBuilder { }
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl);
 
-			var gId = (long)context.Guild.Id;
-			var mId = (long)member.Id;
+			var gId = (long) context.Guild.Id;
+			var mId = (long) member.Id;
 
 			var tags = await db.Tags.Where(x => x.OwnerID == mId && x.GuildID == gId).ToListAsync();
 			db.Dispose();
@@ -444,7 +444,7 @@ namespace JazzBot.Commands
 		{
 			var db = new DatabaseContext();
 
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 
 			var serverTags = await db.Tags.Where(x => x.GuildID == gId).ToListAsync();
 			db.Dispose();
@@ -456,12 +456,12 @@ namespace JazzBot.Commands
 			// I know next region is written in very stupid way but i dont know how to actually improve it.
 			// TODO: FIX IT.
 			#region stupid
-			List<TagsOwner> tagsOwners = new List<TagsOwner>();
-			foreach(var owner in serverTags.Select(x=>x.OwnerID).Distinct())
+			var tagsOwners = new List<TagsOwner>();
+			foreach (var owner in serverTags.Select(x => x.OwnerID).Distinct())
 			{
 				tagsOwners.Add(new TagsOwner(owner));
 			}
-			
+
 			tagsOwners.ForEach(x => x.TimesUsed = serverTags.Where(y => x.OwnerId == y.OwnerID).Select(y => y.TimesUsed).Sum());
 			tagsOwners.ForEach(x => x.AmountOfTags = serverTags.Where(y => x.OwnerId == y.OwnerID).Count());
 			Tag maxuses = serverTags.OrderByDescending(x => x.TimesUsed).First();
@@ -490,7 +490,7 @@ namespace JazzBot.Commands
 
 			var db = new DatabaseContext();
 
-			var gId = (long)context.Guild.Id;
+			var gId = (long) context.Guild.Id;
 
 			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildID == gId).ConfigureAwait(false);
 			if (tag == null)
@@ -526,7 +526,7 @@ namespace JazzBot.Commands
 		private string TagNamesNormalizer(IEnumerable<string> tagnames)
 		{
 			var SeparatedPartsTagNames = new List<string>();
-			StringBuilder tempstring = new StringBuilder();
+			var tempstring = new StringBuilder();
 			int currentElement = 0;
 			while (currentElement != tagnames.Count())
 			{
@@ -545,10 +545,10 @@ namespace JazzBot.Commands
 					tempstring.Clear();
 				}
 			}
-			return string.Concat(SeparatedPartsTagNames); 
+			return string.Concat(SeparatedPartsTagNames);
 		}
 
-		
+
 	}
 
 	sealed class TagsOwner
@@ -562,8 +562,6 @@ namespace JazzBot.Commands
 			this.TimesUsed = used;
 		}
 		public TagsOwner(long id)
-		{
-			this.OwnerId = id;
-		}
+			=> this.OwnerId = id;
 	}
 }

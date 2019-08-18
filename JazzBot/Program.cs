@@ -69,14 +69,14 @@ namespace JazzBot
 				UseInternalLogHandler = true
 			};
 
-			Client = new DiscordClient(cfg);
+			this.Client = new DiscordClient(cfg);
 
-			Client.Ready += this.Client_Ready;
-			Client.GuildAvailable += this.Client_GuildAvailable;
-			Client.ClientErrored += this.Client_ClientError;
-			Client.VoiceServerUpdated += this.Voice_VoiceServerUpdate;
-			Client.MessageReactionAdded += this.Client_ReactionAdded;
-			Bot = new Bot(Cfgjson, this.Client);
+			this.Client.Ready += this.Client_Ready;
+			this.Client.GuildAvailable += this.Client_GuildAvailable;
+			this.Client.ClientErrored += this.Client_ClientError;
+			this.Client.VoiceServerUpdated += this.Voice_VoiceServerUpdate;
+			this.Client.MessageReactionAdded += this.Client_ReactionAdded;
+			this.Bot = new Bot(Cfgjson, this.Client);
 
 			this.Services = new ServiceCollection()
 				.AddSingleton(this.Client)
@@ -103,7 +103,7 @@ namespace JazzBot
 				Services = this.Services
 			};
 
-			this.Commands = Client.UseCommandsNext(ccfg);
+			this.Commands = this.Client.UseCommandsNext(ccfg);
 
 
 
@@ -122,12 +122,12 @@ namespace JazzBot
 			{
 				Timeout = TimeSpan.FromSeconds(60)
 			};
-			interactivity = Client.UseInteractivity(icfg);
+			this.interactivity = this.Client.UseInteractivity(icfg);
 
-			this.Lavalink = Client.UseLavalink();
+			this.Lavalink = this.Client.UseLavalink();
 
 
-			await Client.ConnectAsync();
+			await this.Client.ConnectAsync();
 
 			await Task.Delay(-1);
 		}
@@ -147,15 +147,15 @@ namespace JazzBot
 
 			Console.Title = this.LogName;
 
-			
+
 
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, "Бот готов к работе.", DateTime.Now);
 
 			var db = new DatabaseContext();
 
-			var cuid = (long)e.Client.CurrentUser.Id;
+			var cuid = (long) e.Client.CurrentUser.Id;
 
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid );
+			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid);
 			if (config == null)
 			{
 				config = new Data.Configs
@@ -183,7 +183,7 @@ namespace JazzBot
 			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
 
-			var chn = Bot.ErrorChannel;
+			var chn = this.Bot.ErrorChannel;
 
 			var ex = e.Exception;
 			while (ex is AggregateException || ex.InnerException != null)
@@ -197,7 +197,7 @@ namespace JazzBot
 		/// <summary>
 		/// Allows owner of the bot delete bot's messages by adding reaction to a message.
 		/// </summary>
-		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e) 
+		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e)
 		{
 			if (e.Message?.Author == null)
 				return;
@@ -232,13 +232,13 @@ namespace JazzBot
 				ex = ex.InnerException;
 
 			// Check if exception is result of command prechecks.
-			if (ex is ChecksFailedException exep)  
+			if (ex is ChecksFailedException exep)
 			{
 
 
 				var failedchecks = exep.FailedChecks.First();
 				// Bot is lacking permissions.
-				if (failedchecks is RequireBotPermissionsAttribute reqbotperm) 
+				if (failedchecks is RequireBotPermissionsAttribute reqbotperm)
 				{
 					string permissionsLacking = reqbotperm.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -249,7 +249,7 @@ namespace JazzBot
 				}
 
 				// User is lacking permissions.
-				if (failedchecks is RequireUserPermissionsAttribute requserperm) 
+				if (failedchecks is RequireUserPermissionsAttribute requserperm)
 				{
 					string permissionsLacking = requserperm.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -261,7 +261,7 @@ namespace JazzBot
 				}
 
 				// User is not owner of the bot.
-				if (failedchecks is RequireOwnerAttribute reqowner) 
+				if (failedchecks is RequireOwnerAttribute reqowner)
 				{
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
 					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
@@ -270,7 +270,7 @@ namespace JazzBot
 				}
 
 				// User is not owner or don't have permissions.
-				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission) 
+				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission)
 				{
 					string permissionsLacking = ownerOrPermission.Permissions.ToPermissionString();
 					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -281,7 +281,7 @@ namespace JazzBot
 				}
 
 				// Command shouldn't be executed so fast.
-				if (failedchecks is CooldownAttribute cooldown) 
+				if (failedchecks is CooldownAttribute cooldown)
 				{
 					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 						.WithDescription($"Вы пытаетесь использовать команду слишком часто, таймер - " +
@@ -290,9 +290,9 @@ namespace JazzBot
 				}
 			}
 			// In most cases exception caused by user that inputted wrong info.
-			else if (ex is ArgumentException argEx)  
+			else if (ex is ArgumentException argEx)
 			{
-				StringBuilder description = new StringBuilder($"Произошла ошибка, скорее всего, связанная с данными вводимыми пользователями, с сообщением: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
+				var description = new StringBuilder($"Произошла ошибка, скорее всего, связанная с данными вводимыми пользователями, с сообщением: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
 				if (!string.IsNullOrEmpty(argEx.ParamName))
 					description.AppendLine($"Название параметра {Formatter.InlineCode(argEx.ParamName)}.");
 				await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)

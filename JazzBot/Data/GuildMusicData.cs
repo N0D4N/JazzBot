@@ -78,7 +78,7 @@ namespace JazzBot.Data
 			this.LocalMusic = new LocalMusicData(this.Guild);
 
 			this.RemoteMusic = new RemoteMusicData();
-		}		
+		}
 
 		/// <summary>
 		/// Starts playback.
@@ -88,17 +88,17 @@ namespace JazzBot.Data
 		{
 			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
 				return;
-			
+
 			this.InternalPlay(track);
-			
-		}	
+
+		}
 
 		/// <summary>
 		/// Shuffles queue in remote music if there are any elements else shuffles playlist in local music
 		/// </summary>
 		public void Shuffle()
 		{
-			if(this.RemoteMusic.Queue.Any())
+			if (this.RemoteMusic.Queue.Any())
 			{
 				this.RemoteMusic.Shuffle();
 				return;
@@ -127,7 +127,7 @@ namespace JazzBot.Data
 		{
 			if (this.LavalinkConnection != null && this.LavalinkConnection.IsConnected)
 				return;
-			this.LavalinkConnection = await Lavalink.LavalinkNode.ConnectAsync(channel).ConfigureAwait(false);
+			this.LavalinkConnection = await this.Lavalink.LavalinkNode.ConnectAsync(channel).ConfigureAwait(false);
 			this.LavalinkConnection.PlaybackFinished += this.PlaybackFinished;
 		}
 
@@ -154,7 +154,7 @@ namespace JazzBot.Data
 
 		}
 
-		
+
 
 		/// <summary>
 		/// Stops playback.
@@ -167,7 +167,7 @@ namespace JazzBot.Data
 			this.LavalinkConnection.Stop();
 		}
 
-		
+
 
 		/// <summary>
 		/// Creates detailed info about currently playing  song.
@@ -175,7 +175,7 @@ namespace JazzBot.Data
 		/// <returns><see cref="DiscordEmbed"/> with info about currently playing song</returns>
 		public async Task<DiscordEmbed> NowPlayingEmbedAsync()
 		{
-			if(this.RemoteMusic.Queue.Any())
+			if (this.RemoteMusic.Queue.Any())
 			{
 				var track = this.RemoteMusic.Queue[0];
 				var embed = new DiscordEmbedBuilder
@@ -233,21 +233,19 @@ namespace JazzBot.Data
 				}
 				return embed.Build();
 			}
-			
+
 		}
 
 		/// <summary>
 		/// Checks if <see cref="PlayingMessage"/> is last in its channel.
 		/// </summary>
 		private bool IsMessageLast()
-		{
-			return this.PlayingMessage.Channel.LastMessageId == this.PlayingMessage.Id;
-		}
+			=> this.PlayingMessage.Channel.LastMessageId == this.PlayingMessage.Id;
 
-		
+
 
 		private async Task PlaybackFinished(TrackFinishEventArgs e)
-		{	
+		{
 			await Task.Delay(600).ConfigureAwait(false);
 			this.IsPlaying = false;
 			if (this.LavalinkConnection != null)
@@ -259,7 +257,7 @@ namespace JazzBot.Data
 				{
 					var plmsg = this.PlayingMessage;
 					this.PlayingMessage = await this.PlayingMessage.Channel.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-					await plmsg.DeleteAsync().ConfigureAwait(false);					
+					await plmsg.DeleteAsync().ConfigureAwait(false);
 				}
 				this.RemoteMusic.Pop();
 				this.InternalPlay(track);

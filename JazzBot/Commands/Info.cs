@@ -80,9 +80,6 @@ namespace JazzBot.Commands
 		}
 
 		private string ProcessUptime()
-		{
-			return (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString("g");
-			
-		}
+			=> (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString("g");
 	}
 }
