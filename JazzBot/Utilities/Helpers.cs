@@ -27,16 +27,16 @@ namespace JazzBot.Utilities
 		public static int Cryptorandom(int minValue, int maxValue)
 		{
 			var provider = new RNGCryptoServiceProvider();
-			var _uint32Buffer = new byte[4];
+			var uint32Buffer = new byte[4];
 			if (minValue > maxValue)
-				throw new ArgumentOutOfRangeException("minValue");
+				throw new ArgumentOutOfRangeException(nameof(minValue));
 			if (minValue == maxValue)
 				return minValue;
 			long diff = maxValue - minValue;
 			while (true)
 			{
-				provider.GetBytes(_uint32Buffer);
-				uint rand = BitConverter.ToUInt32(_uint32Buffer, 0);
+				provider.GetBytes(uint32Buffer);
+				uint rand = BitConverter.ToUInt32(uint32Buffer, 0);
 
 				long max = (1 + (long) uint.MaxValue);
 				long remainder = max % diff;
@@ -96,9 +96,9 @@ namespace JazzBot.Utilities
 		}
 
 
-		public static double OrderingFormula(int seed, int Songid)
+		public static double OrderingFormula(int seed, int songId)
 		{
-			double id = Math.Abs(Math.Sin(Songid * 1.0) + Math.Cos(Math.Sqrt(seed) * Songid));
+			double id = Math.Abs(Math.Sin(songId * 1.0) + Math.Cos(Math.Sqrt(seed) * songId));
 			return Math.Abs(Math.Sin(id) + Math.Cos(Math.Sqrt(seed) * id));
 		}
 

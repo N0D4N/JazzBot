@@ -39,11 +39,11 @@ namespace JazzBot.Data
 		[Required]
 		[Column("Seed")]
 		public int Seed { get; set; }
-		
+
 	}
 
 	[Table("Songs")]
-	public  class Songs
+	public class Songs
 	{
 		/// <summary>
 		/// Id of song in table.
@@ -81,7 +81,7 @@ namespace JazzBot.Data
 		[NotMapped]
 		public double Numing { get; set; }
 	}
-	
+
 	[Table("Tags")]
 	public class Tag
 	{
@@ -91,7 +91,7 @@ namespace JazzBot.Data
 		[Key]
 		[Required]
 		[Column("Id")]
-		public long ID { get; set; }
+		public long Id { get; set; }
 
 		/// <summary>
 		/// Name of the tag.
@@ -99,7 +99,7 @@ namespace JazzBot.Data
 		[Column("Tag_name")]
 		[Required]
 		public string Name { get; set; }
-		
+
 		/// <summary>
 		/// Content of the tag.
 		/// </summary>
@@ -126,14 +126,14 @@ namespace JazzBot.Data
 		/// </summary>
 		[Column("GuildID")]
 		[Required]
-		public long GuildID { get; set; }
+		public long GuildId { get; set; }
 
 		/// <summary>
 		/// Id of owner of the tag.
 		/// </summary>
 		[Column("OwnerID")]
 		[Required]
-		public long OwnerID { get; set; }
+		public long OwnerId { get; set; }
 
 		/// <summary>
 		/// How many times tag have been used.

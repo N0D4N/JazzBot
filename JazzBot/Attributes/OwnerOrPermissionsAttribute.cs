@@ -16,7 +16,7 @@ namespace JazzBot.Attributes
 		/// <summary>
 		/// Permissions needed to execute command.
 		/// </summary>
-		public Permissions Permissions { get; private set; }
+		public Permissions Permissions { get; }
 
 		public OwnerOrPermissionAttribute(Permissions permissions) => this.Permissions = permissions;
 

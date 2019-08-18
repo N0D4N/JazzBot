@@ -44,7 +44,7 @@ namespace JazzBot.Commands
 			var dspv = context.Client.VersionString;
 
 			var dncv = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
-			var owner = context.Client.CurrentApplication.Owners.FirstOrDefault();
+			var owner = context.Client.CurrentApplication.Owners.First();
 
 			var embed = new DiscordEmbedBuilder
 			{

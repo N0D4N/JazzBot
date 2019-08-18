@@ -54,25 +54,25 @@ namespace JazzBot.Data
 		/// ID of <see cref="DiscordChannel"/> where cover arts of song albums shoul be sent.
 		/// </summary>
 		[JsonProperty("CoverArtsChannelID")]
-		public ulong CoverArtsChannelID { get; private set; }
+		public ulong CoverArtsChannelId { get; private set; }
 
 		/// <summary>
 		/// ID of <see cref="DiscordChannel"/> where all important errors should be sent.
 		/// </summary>
 		[JsonProperty("ErrorChannelID")]
-		public ulong ErrorChannelID { get; private set; }
+		public ulong ErrorChannelId { get; private set; }
 	
 		/// <summary>
 		/// ID of <see cref="DiscordChannel"/> where all user reports should be sent.
 		/// </summary>
 		[JsonProperty("ReportChannelID")]
-		public ulong ReportChannelID { get; private set; }
+		public ulong ReportChannelId { get; private set; }
 
 		/// <summary>
 		/// ID of <see cref="DiscordChannel"/> where all user requests should be sent.
 		/// </summary>
 		[JsonProperty("RequestChannelID")]
-		public ulong RequestChannelID { get; private set; }
+		public ulong RequestChannelId { get; private set; }
 
 	}
 

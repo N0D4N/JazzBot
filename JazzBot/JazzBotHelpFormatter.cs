@@ -73,32 +73,32 @@ namespace JazzBot
 
 			if (command.ExecutionChecks.Any())
 			{
-				var exChecksSB = new StringBuilder();
+				var exChecksSb = new StringBuilder();
 
 				if (command.ExecutionChecks.Any(x => x is OwnerOrPermissionAttribute))
 				{
-					var oOPA = command.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
-					exChecksSB.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(oOPA.Permissions.ToPermissionString())}.");
+					var oOpa = command.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
+					exChecksSb.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(oOpa.Permissions.ToPermissionString())}.");
 				}
 
 				if (command.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
 				{
-					exChecksSB.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
+					exChecksSb.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
 				}
 
 				if (command.ExecutionChecks.Any(x => x is CooldownAttribute))
 				{
 					var cooldown = command.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) as CooldownAttribute;
-					exChecksSB.AppendLine($"Эта команда может быть использована {Formatter.InlineCode(cooldown.MaxUses.ToString())} раз/а в течении {Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
+					exChecksSb.AppendLine($"Эта команда может быть использована {Formatter.InlineCode(cooldown.MaxUses.ToString())} раз/а в течении {Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
 				}
 
 				if (command.ExecutionChecks.Any(x => x is RequirePermissionsAttribute))
 				{
 					var perm = command.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
-					exChecksSB.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
+					exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
 				}
 
-				this.EmbedBuilder.AddField("Предусловия выполнения команды", exChecksSB.ToString().Trim(), false);
+				this.EmbedBuilder.AddField("Предусловия выполнения команды", exChecksSb.ToString().Trim(), false);
 			}
 
 			return this;

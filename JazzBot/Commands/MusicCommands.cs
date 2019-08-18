@@ -81,7 +81,7 @@ namespace JazzBot.Commands
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
 				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
 
-			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)).ToArray();
 			this.GuildMusic.RemoteMusic.Add(tracks);
 
 			if (this.GuildMusic.PlayingMessage == null)
@@ -104,7 +104,7 @@ namespace JazzBot.Commands
 		[Priority(0)]
 		public async Task Play(CommandContext context, [RemainingText, Description("Текст для поиска")]string searchQuery)
 		{
-			var searchResults = await this.Youtube.SearchAsync(searchQuery);
+			var searchResults = (await this.Youtube.SearchAsync(searchQuery)).ToArray();
 			var description = new StringBuilder();
 			int i = 1;
 			foreach (var el in searchResults)
@@ -136,7 +136,7 @@ namespace JazzBot.Commands
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
 				throw new ArgumentException("По данной ссылке ничего не было найдено");
 
-			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member));
+			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)).ToArray();
 			this.GuildMusic.RemoteMusic.Add(tracks);
 
 			await msg.DeleteAsync().ConfigureAwait(false);

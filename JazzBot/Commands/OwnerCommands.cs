@@ -74,7 +74,7 @@ namespace JazzBot.Commands
 		[Command("test")]
 		public async Task Test(CommandContext context)
 		{
-			await context.RespondAsync($"новое обновление {DateTime.Now.ToString("dd.MM.yyyy")}");
+			await context.RespondAsync($"новое обновление {DateTime.Now:dd.MM.yyyy}");
 		}
 
 		[Command("ExcelSheet")]
@@ -105,7 +105,7 @@ namespace JazzBot.Commands
 			if (await db.SaveChangesAsync() <= 0)
 			{
 				db.Dispose();
-				throw new CustomJBException("Не удалось обновить БД", ExceptionType.DatabaseException);
+				throw new CustomJbException("Не удалось обновить БД", ExceptionType.DatabaseException);
 			}
 			await context.Client.UpdateStatusAsync(new DiscordActivity(presenceText, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 			db.Dispose();
@@ -118,11 +118,11 @@ namespace JazzBot.Commands
 		public async Task FixedReport(CommandContext context,
 			[Description("Id сервера")] ulong guildId,
 				[Description("Id канала")]ulong channelId,
-					[RemainingText, Description("Id пользователя")] ulong userID)
+					[RemainingText, Description("Id пользователя")] ulong userId)
 		{
 			if (!context.Client.Guilds.TryGetValue(guildId, out var guild))
 				throw new ArgumentException($"Не удалось найти сервер с таким id {guildId}, проверьте правильность ввода если необходимо", nameof(guildId));
-			if (!guild.Members.TryGetValue(userID, out var user))
+			if (!guild.Members.TryGetValue(userId, out var user))
 			{
 				await context.RespondAsync($"Пользователь покинул сервер (скорее всего о-О)").ConfigureAwait(false);
 				return;
@@ -137,7 +137,7 @@ namespace JazzBot.Commands
 		[Aliases("updbot")]
 		public async Task UpdateBot(CommandContext context)
 		{
-			string updatePresence = $"J!update, новое обновление {DateTime.Now.ToString("dd.MM.yyyy")}";
+			string updatePresence = $"J!update, новое обновление {DateTime.Now:dd.MM.yyyy}";
 			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
 			var db = new DatabaseContext();
@@ -146,7 +146,7 @@ namespace JazzBot.Commands
 			config.Presence = updatePresence;
 			db.Configs.Update(config);
 			if (await db.SaveChangesAsync() <= 0)
-				throw new CustomJBException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
+				throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
 
 
 		}
@@ -166,7 +166,7 @@ namespace JazzBot.Commands
 			var db = new DatabaseContext();
 			db.Playlist.RemoveRange(db.Playlist.Where(x => x.PlaylistName == playlistName));
 			if (await db.SaveChangesAsync() <= 0)
-				throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
 			var songs = new List<Songs>();
 			string text = "";
 
@@ -186,7 +186,7 @@ namespace JazzBot.Commands
 			await db.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
 
 			if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
-				throw new CustomJBException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
 			db.Dispose();
 		}
 
@@ -268,13 +268,13 @@ namespace JazzBot.Commands
 						playlistWorksheet.Cells[3, 1, currentRow - 1, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin, System.Drawing.Color.Black);
 						playlistWorksheet.Cells[3, 1, currentRow, 6].Style.Font.Size = 10;
 						playlistWorksheet.Cells.AutoFitColumns(0.5, 80.0);
-						playlistWorksheet.Cells[1, 1].Value = $"Длительность плейлиста: {plDuration.ToString(@"dd\.hh\:mm\:ss")}";
+						playlistWorksheet.Cells[1, 1].Value = $"Длительность плейлиста: {plDuration:dd\\.hh\\:mm\\:ss}";
 						overallPlDuration = overallPlDuration.Add(plDuration);
 						client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Закончена запись в таблицу {playlist}", DateTime.Now);
 					}
 					infoWorksheet.Cells[4, 2].Value = overallPlDuration.ToString(@"dd\.hh\:mm\:ss");
 					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Запись закончена", DateTime.Now);
-					package.SaveAs(new FileInfo($@"..\..\..\Playlists\{DateTime.Today.ToString("d")}.xlsx"));
+					package.SaveAs(new FileInfo($@"..\..\..\Playlists\{DateTime.Today:d}.xlsx"));
 				}
 			}
 		}

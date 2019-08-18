@@ -3,16 +3,16 @@ using JazzBot.Enums;
 
 namespace JazzBot
 {
-	public sealed class CustomJBException : Exception
+	public sealed class CustomJbException : Exception
 	{
-		public ExceptionType ExceptionType {get;}
+		public ExceptionType ExceptionType { get; }
 
-		public CustomJBException(string message, ExceptionType exceptionType) :base(message)
-			=>	this.ExceptionType = exceptionType;
+		public CustomJbException(string message, ExceptionType exceptionType) : base(message)
+			=> this.ExceptionType = exceptionType;
 
 
-		public CustomJBException(string message) : base(message)
+		public CustomJbException(string message) : base(message)
 			=> this.ExceptionType = ExceptionType.Default;
-		
+
 	}
 }

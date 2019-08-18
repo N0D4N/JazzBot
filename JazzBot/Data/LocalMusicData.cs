@@ -79,13 +79,13 @@ namespace JazzBot.Data
 				if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
 				{
 					db.Dispose();
-					throw new CustomJBException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
+					throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
 				}
 			}
 			else
 			{
 				db.Dispose();
-				throw new CustomJBException($"Плейлиста {playlistName} не существует", ExceptionType.PlaylistException);
+				throw new CustomJbException($"Плейлиста {playlistName} не существует", ExceptionType.PlaylistException);
 			}
 		}
 
@@ -103,11 +103,11 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Get current song info from database and optionally changes its id.
 		/// </summary>
-		/// <param name="updateID">Specifies if id of current song should be changed</param>
+		/// <param name="updateId">Specifies if id of current song should be changed</param>
 		/// <returns></returns>
-		public Task ChangeCurrentSong(bool updateID)
+		public Task ChangeCurrentSong(bool updateId)
 		{
-			if (updateID)
+			if (updateId)
 				this.IdOfCurrentSong++;
 			var db = new DatabaseContext();
 			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName).ToList();
@@ -124,15 +124,15 @@ namespace JazzBot.Data
 			}
 			this.PathToCurrentSong = path;
 
-			if (updateID)
-				this.UpdateDB();
+			if (updateId)
+				this.UpdateDb();
 			return Task.CompletedTask;
 		}
 
 		/// <summary>
 		/// Updates info about this <see cref="DiscordGuild"/> in database.
 		/// </summary>
-		private void UpdateDB()
+		private void UpdateDb()
 		{
 			var db = new DatabaseContext();
 			var gId = (long) this.Guild.Id;
@@ -151,7 +151,7 @@ namespace JazzBot.Data
 			else
 			{
 				db.Dispose();
-				throw new CustomJBException("Не удалось обновить базу данных", ExceptionType.ForInnerPurposes);
+				throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.ForInnerPurposes);
 			}
 		}
 

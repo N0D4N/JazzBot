@@ -47,16 +47,16 @@ namespace JazzBot.Data
 		private async Task Client_Ready(ReadyEventArgs e)
 		{
 			if (this.ErrorChannel == null)
-				this.ErrorChannel = await e.Client.GetChannelAsync(this.Config.Discord.ErrorChannelID).ConfigureAwait(false);
+				this.ErrorChannel = await e.Client.GetChannelAsync(this.Config.Discord.ErrorChannelId).ConfigureAwait(false);
 
 			if (this.RequestChannel == null)
-				this.RequestChannel = await e.Client.GetChannelAsync(this.Config.Discord.RequestChannelID).ConfigureAwait(false);
+				this.RequestChannel = await e.Client.GetChannelAsync(this.Config.Discord.RequestChannelId).ConfigureAwait(false);
 
 			if (this.ReportChannel == null)
-				this.ReportChannel = await e.Client.GetChannelAsync(this.Config.Discord.ReportChannelID).ConfigureAwait(false);
+				this.ReportChannel = await e.Client.GetChannelAsync(this.Config.Discord.ReportChannelId).ConfigureAwait(false);
 
 			if (this.CoverArtsChannel == null)
-				this.CoverArtsChannel = await e.Client.GetChannelAsync(this.Config.Discord.CoverArtsChannelID).ConfigureAwait(false);
+				this.CoverArtsChannel = await e.Client.GetChannelAsync(this.Config.Discord.CoverArtsChannelId).ConfigureAwait(false);
 		}
 	}
 }

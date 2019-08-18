@@ -27,7 +27,7 @@ namespace JazzBot
 	{
 		public DiscordClient Client { get; private set; }
 		public CommandsNextExtension Commands { get; private set; }
-		public InteractivityExtension interactivity;
+		public InteractivityExtension Interactivity;
 		public LavalinkExtension Lavalink { get; private set; }
 		public LavalinkNodeConnection LavalinkNode { get; set; }
 		public static JazzBotConfig Cfgjson { get; private set; }
@@ -122,7 +122,7 @@ namespace JazzBot
 			{
 				Timeout = TimeSpan.FromSeconds(60)
 			};
-			this.interactivity = this.Client.UseInteractivity(icfg);
+			this.Interactivity = this.Client.UseInteractivity(icfg);
 
 			this.Lavalink = this.Client.UseLavalink();
 
@@ -165,7 +165,7 @@ namespace JazzBot
 				};
 				await db.Configs.AddAsync(config);
 				if (await db.SaveChangesAsync() <= 0)
-					throw new CustomJBException("Не удалось обновить БД", ExceptionType.DatabaseException);
+					throw new CustomJbException("Не удалось обновить БД", ExceptionType.DatabaseException);
 				await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 
 			}
@@ -201,7 +201,7 @@ namespace JazzBot
 		{
 			if (e.Message?.Author == null)
 				return;
-			if (!e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id) || e.Message.Author.Id != e.Client.CurrentUser.Id)
+			if (e.Client.CurrentApplication.Owners.All(x => x.Id != e.User.Id) || e.Message.Author.Id != e.Client.CurrentUser.Id)
 				return;
 			var deleteEmoji = DiscordEmoji.FromName(e.Client, ":no_entry_sign:");
 			if (e.Emoji.GetDiscordName() != deleteEmoji.GetDiscordName())
@@ -300,23 +300,23 @@ namespace JazzBot
 					.WithDescription(description.ToString())).ConfigureAwait(false);
 				return;
 			}
-			else if (ex is CustomJBException jbex)
+			else if (ex is CustomJbException jbex)
 			{
 				switch (jbex.ExceptionType)
 				{
 					case ExceptionType.DatabaseException:
-						var embedDB = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						var embedDb = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Database exception")
 							.WithDescription($"Произошла ошибка связанная с работой БД с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
-						await e.Context.RespondAsync(embed: embedDB).ConfigureAwait(false);
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: embedDB).ConfigureAwait(false);
+						await e.Context.RespondAsync(embed: embedDb).ConfigureAwait(false);
+						await this.Bot.ErrorChannel.SendMessageAsync(embed: embedDb).ConfigureAwait(false);
 						break;
 
 					case ExceptionType.PlaylistException:
-						var embedPL = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						var embedPl = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 							.WithTitle("Playlist exception")
 							.WithDescription($"Произошла ошибка с работой плейлистов (скорее всего плейлиста не существует) с сообщением: \n{Formatter.InlineCode(jbex.Message)}\n в \n{Formatter.InlineCode(jbex.Source)}");
-						await e.Context.RespondAsync(embed: embedPL).ConfigureAwait(false);
+						await e.Context.RespondAsync(embed: embedPl).ConfigureAwait(false);
 						break;
 
 					case ExceptionType.ForInnerPurposes:

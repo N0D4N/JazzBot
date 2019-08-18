@@ -10,11 +10,11 @@ namespace JazzBot.Data
 	/// </summary>
 	public sealed class RemoteMusicData
 	{
-		public List<RemoteMusicItem> Queue { get; private set; }
+		public List<RemoteMusicItem> Queue { get; }
 
 		public RemoteMusicData()
 			=> this.Queue = new List<RemoteMusicItem>();
-		
+
 		/// <summary>
 		/// Shuffles queue
 		/// </summary>
@@ -27,7 +27,7 @@ namespace JazzBot.Data
 		/// <param name="song">Song to add</param>
 		public void Add(RemoteMusicItem song)
 			=> this.Queue.Add(song);
-		
+
 		/// <summary>
 		/// Add many songs to queue
 		/// </summary>
@@ -47,7 +47,7 @@ namespace JazzBot.Data
 		/// </summary>
 		public void Pop()
 		{
-			if(this.Queue.Any())
+			if (this.Queue.Any())
 				this.Queue.RemoveAt(0);
 		}
 

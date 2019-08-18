@@ -1,7 +1,7 @@
 ﻿namespace JazzBot.Enums
 {
 	/// <summary>
-	/// Provides "type" of <see cref="JazzBot.CustomJBException"/> that happened.
+	/// Provides "type" of <see cref="CustomJbException"/> that happened.
 	/// </summary>
 	public enum ExceptionType : int
 	{
@@ -23,13 +23,13 @@
 		PlaylistException = 2,
 
 		/// <summary>
-		/// Reason of <see cref="JazzBot.CustomJBException"/> is unknown.
+		/// Reason of <see cref="CustomJbException"/> is unknown.
 		/// </summary>
 		Unknown = 3,
 
 
 		/// <summary>
-		/// <see cref="JazzBot.CustomJBException"/> of this type should be displayed only in <see cref="JazzBot.Entities.Bot.ErrorChannel"/>.
+		/// <see cref="CustomJbException"/> of this type should be displayed only in <see cref="JazzBot.Entities.Bot.ErrorChannel"/>.
 		/// </summary>
 		ForInnerPurposes = 4,
 	}
