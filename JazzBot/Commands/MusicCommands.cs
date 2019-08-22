@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,8 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class MusicCommands : BaseCommandModule
 	{
+		private static ImmutableArray<string> CommandsThatIgnoreVoiceState { get; } = ImmutableArray.CreateRange(new string[] { "playlists", "playlist" });
+
 		private LavalinkService Lavalink { get; }
 
 		private Bot Bot { get; }
@@ -46,7 +49,7 @@ namespace JazzBot.Commands
 
 		public override async Task BeforeExecutionAsync(CommandContext context)
 		{
-			if (context.Member?.VoiceState.Channel == null)
+			if (!CommandsThatIgnoreVoiceState.Contains(context.Command.Name) && context.Member?.VoiceState.Channel == null)
 			{
 				throw new ArgumentException("Вы должны быть в голосовом канале", nameof(context.Member.VoiceState));
 			}
