@@ -1,5 +1,8 @@
 ### Discord music bot
 _______
+##### [WIP]  
+It's not stable and i still work on this. Use at your own risk.    
+
 Jazzbot is music bot for Discord written in C# on top of [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus/) library.  
 I'm pretty sure nobody will host it for themself but if you want to do so - here are requirements for this bot to run.  
 ### Requirements
