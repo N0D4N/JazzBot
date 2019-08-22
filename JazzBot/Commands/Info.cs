@@ -17,7 +17,7 @@ namespace JazzBot.Commands
 	[Group("InfoCommands")]
 	[Description("Команды показывающие информацию о боте")]
 	[Aliases("info", "inf")]
-	class Info : BaseCommandModule
+	public sealed class Info : BaseCommandModule
 	{
 		[Command("BotInfo")]
 		[Description("Показывает информацию о этом боте")]
