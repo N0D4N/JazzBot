@@ -22,6 +22,7 @@ namespace JazzBot.Commands
 	[Description("Комманды доступные только для владельца бота")]
 	[Aliases("o")]
 	[RequireOwner]
+	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class OwnerCommands : BaseCommandModule
 	{
 		private Bot Bot { get; }

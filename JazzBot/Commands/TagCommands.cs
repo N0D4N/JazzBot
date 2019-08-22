@@ -24,6 +24,7 @@ namespace JazzBot.Commands
 {
 	[Group("Tag")]
 	[Description("Команды тегов")]
+	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class TagCommands : BaseCommandModule
 	{
 		private static ImmutableArray<string> ForbiddenNames { get; } = new ImmutableArray<string>() { "create", "make", "delete", "remove", "force_delete", "force_remove", "edit", "modify", "force_edit", "force_modify", "info", "list", "@everyone", "@here", "transfer", "give", "claim", "userstats", "userstat", "serverstats", "serverstat" };
