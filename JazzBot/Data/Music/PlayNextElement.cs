@@ -1,4 +1,4 @@
-﻿namespace JazzBot.Data
+﻿namespace JazzBot.Data.Music
 {
 	public sealed class PlayNextElement
 	{

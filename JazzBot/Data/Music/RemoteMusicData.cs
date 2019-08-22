@@ -3,7 +3,7 @@ using System.Linq;
 using DSharpPlus.Lavalink;
 using JazzBot.Utilities;
 
-namespace JazzBot.Data
+namespace JazzBot.Data.Music
 {
 	/// <summary>
 	/// Songs from remote source

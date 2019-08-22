@@ -14,6 +14,7 @@ using JazzBot.Data;
 using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
+using JazzBot.Data.Music;
 
 
 namespace JazzBot.Commands

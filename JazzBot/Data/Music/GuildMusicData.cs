@@ -11,7 +11,7 @@ using JazzBot.Utilities;
 using File = TagLib.File;
 
 
-namespace JazzBot.Data
+namespace JazzBot.Data.Music
 {
 	/// <summary>
 	/// Music data for <see cref="DiscordGuild"/>.

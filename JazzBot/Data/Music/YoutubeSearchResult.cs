@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace JazzBot.Data
+namespace JazzBot.Data.Music
 {
 	/// <summary>
 	/// Parsed responce of Youtube Api

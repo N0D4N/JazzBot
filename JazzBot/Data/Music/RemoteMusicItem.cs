@@ -1,7 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 
-namespace JazzBot.Data
+namespace JazzBot.Data.Music
 {
 	public sealed class RemoteMusicItem
 	{

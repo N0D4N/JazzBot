@@ -1,20 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System;
+using System.Net;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using JazzBot.Enums;
 using JazzBot.Services;
 using JazzBot.Utilities;
+using DSharpPlus;
 using Microsoft.EntityFrameworkCore;
+using File = TagLib.File;
 
-namespace JazzBot.Data
+namespace JazzBot.Data.Music
 {
 	/// <summary>
 	/// Songs from local source
 	/// </summary>
-	public sealed class LocalMusicData
+	public sealed class LocalMusicData : IMusicSource
 	{
 
 		/// <summary>
@@ -47,8 +51,14 @@ namespace JazzBot.Data
 		/// </summary>
 		public DiscordGuild Guild { get; }
 
-		public LocalMusicData(DiscordGuild guild)
+		public Program Program { get; }
+
+		public Bot Bot { get; }
+
+		public LocalMusicData(DiscordGuild guild, Program currentProgram, Bot bot)
 		{
+			this.Program = currentProgram;
+			this.Bot = bot;
 			this.Guild = guild;
 			var gId = (long) this.Guild.Id;
 			var db = new DatabaseContext();
@@ -117,7 +127,7 @@ namespace JazzBot.Data
 				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongId);
 			}
 			string path = songs.OrderBy(x => x.Numing).ElementAt(this.IdOfCurrentSong).Path;
-			while (!File.Exists(path))
+			while (!System.IO.File.Exists(path))
 			{
 				this.IdOfCurrentSong++;
 				path = songs.ElementAt(this.IdOfCurrentSong).Path;
@@ -180,6 +190,58 @@ namespace JazzBot.Data
 				var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(this.PathToCurrentSong)).ConfigureAwait(false);
 				return result.Tracks.ElementAt(0);
 			}
+		}
+
+		public bool IsPresent()
+			=> true;
+
+		public async Task<DiscordEmbed> GetCurrentSongEmbed()
+		{
+			var currentSong = File.Create(this.PathToCurrentSong);
+			var embed = new DiscordEmbedBuilder
+			{
+				Title = $"{DiscordEmoji.FromGuildEmote(this.Program.Client, 518868301099565057)} Сейчас играет",
+				Color = DiscordColor.Black,
+				Timestamp = DateTimeOffset.Now + currentSong.Properties.Duration
+			}
+			.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
+			.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
+			.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
+			.AddField("Дата", currentSong.Tag.Year.ToString(), true)
+			.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
+			.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
+			.WithFooter("Приблизительное время окончания");
+
+			if (currentSong.Tag.IsCoverArtLinkPresent())
+			{
+				embed.ThumbnailUrl = currentSong.Tag.Comment;
+			}
+			// Checking if cover art is present to this file.
+			else if (currentSong.Tag.Pictures?.Any() == true)
+			{
+				var msg = await this.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
+				currentSong.Tag.Comment = msg.Attachments[0].Url;
+				currentSong.Save();
+				embed.ThumbnailUrl = currentSong.Tag.Comment;
+			}
+
+			// Checking if this song was requested to add by some user.
+			if (ulong.TryParse(currentSong.Tag.FirstComposer, out ulong requestedById))
+			{
+				var user = await this.Program.Client.GetUserAsync(requestedById).ConfigureAwait(false);
+				embed.Author = new DiscordEmbedBuilder.EmbedAuthor()
+				{
+					Name = $"@{user.Username}",
+					IconUrl = user.AvatarUrl
+				};
+			}
+
+			return embed.Build();
+		}
+
+		public Uri GetCurrentSong()
+		{
+			return new Uri(WebUtility.UrlEncode(this.PathToCurrentSong));
 		}
 
 		/// <summary>
