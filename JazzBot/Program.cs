@@ -84,6 +84,7 @@ namespace JazzBot
 				.AddSingleton<MusicService>()
 				.AddSingleton(new YoutubeService(CfgJson.Youtube))
 				.AddSingleton(new LavalinkService(CfgJson, this.Client))
+				.AddScoped<DatabaseContext>()
 				.AddSingleton(this)
 				.BuildServiceProvider(true);
 

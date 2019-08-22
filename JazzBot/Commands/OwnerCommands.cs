@@ -27,8 +27,13 @@ namespace JazzBot.Commands
 	{
 		private Bot Bot { get; }
 
-		public OwnerCommands(Bot bot)
-			=> this.Bot = bot;
+		private DatabaseContext Database { get; }
+
+		public OwnerCommands(Bot bot, DatabaseContext db)
+		{
+			this.Bot = bot;
+			this.Database = db;
+		}
 
 		[Command("FillPlaylist")]
 		[Description("Заполняет определенный плейлист по имени")]
@@ -98,19 +103,16 @@ namespace JazzBot.Commands
 			if (presenceText.Length > 128)
 				throw new ArgumentException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
 
-			var db = new DatabaseContext();
+
 			var bId = (long) context.Client.CurrentUser.Id;
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == bId);
+			var config = await this.Database.Configs.SingleOrDefaultAsync(x => x.Id == bId);
 			config.Presence = presenceText;
-			db.Configs.Update(config);
-			if (await db.SaveChangesAsync() <= 0)
+			this.Database.Configs.Update(config);
+			if (await this.Database.SaveChangesAsync() <= 0)
 			{
-				db.Dispose();
 				throw new CustomJbException("Не удалось обновить БД", ExceptionType.DatabaseException);
 			}
 			await context.Client.UpdateStatusAsync(new DiscordActivity(presenceText, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
-			db.Dispose();
-
 		}
 
 		[Command("FixedReport")]
@@ -141,12 +143,11 @@ namespace JazzBot.Commands
 			string updatePresence = $"J!update, новое обновление {DateTime.Now:dd.MM.yyyy}";
 			await context.Client.UpdateStatusAsync(new DiscordActivity(updatePresence, ActivityType.ListeningTo), UserStatus.Online)
 				.ConfigureAwait(false);
-			var db = new DatabaseContext();
 			var bId = (long) context.Client.CurrentUser.Id;
-			var config = await db.Configs.FirstOrDefaultAsync(x => x.Id == bId);
+			var config = await this.Database.Configs.FirstOrDefaultAsync(x => x.Id == bId);
 			config.Presence = updatePresence;
-			db.Configs.Update(config);
-			if (await db.SaveChangesAsync() <= 0)
+			this.Database.Configs.Update(config);
+			if (await this.Database.SaveChangesAsync() <= 0)
 				throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
 
 
@@ -164,15 +165,14 @@ namespace JazzBot.Commands
 		{
 			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
 
-			var db = new DatabaseContext();
-			db.Playlist.RemoveRange(db.Playlist.Where(x => x.PlaylistName == playlistName));
-			if (await db.SaveChangesAsync() <= 0)
+			this.Database.Playlist.RemoveRange(this.Database.Playlist.Where(x => x.PlaylistName == playlistName));
+			if (await this.Database.SaveChangesAsync() <= 0)
 				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
 			var songs = new List<Songs>();
 			string text = "";
 
 			var sr = new StreamReader(file.FullName);
-			for (int i = db.Playlist.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
+			for (int i = this.Database.Playlist.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
 			{
 				text = await sr.ReadLineAsync();
 				if (text == null)
@@ -184,11 +184,10 @@ namespace JazzBot.Commands
 			sr.DiscardBufferedData();
 			sr.Dispose();
 
-			await db.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
+			await this.Database.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
 
-			if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
+			if (await this.Database.SaveChangesAsync().ConfigureAwait(false) <= 0)
 				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
-			db.Dispose();
 		}
 
 		private async Task CreateExcelAsync(DiscordClient client)
@@ -197,86 +196,84 @@ namespace JazzBot.Commands
 
 			using (var package = new ExcelPackage())
 			{
-				using (var db = new DatabaseContext())
+				client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Обновление начато", DateTime.Now);
+
+				ExcelWorksheet infoWorksheet = package.Workbook.Worksheets.Add("Info");
+
+				// Filling infoworksheet.
+				infoWorksheet.Cells[1, 1].Value = "Big Daddy's Playlist";
+				infoWorksheet.Cells[1, 1, 1, 10].Merge = true;
+				infoWorksheet.Cells[1, 1, 1, 10].Style.Font.Bold = true;
+
+				infoWorksheet.Cells[2, 1].Value = "Количество песен";
+				infoWorksheet.Cells[2, 2].Value = await this.Database.Playlist.CountAsync();
+
+				infoWorksheet.Cells[3, 1].Value = "Дата последнего обновления";
+				infoWorksheet.Cells[3, 2].Value = DateTime.Now.ToString("dddd, MMM dd yyyy", new CultureInfo("ru-RU"));
+
+				infoWorksheet.Cells[4, 1].Value = "Длина всех плейлистов";
+				infoWorksheet.Cells.AutoFitColumns(1, 40);
+
+				// We will pass value here after we would know length of every playlist and get the sum.
+				client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Инфо-страница заполнена", DateTime.Now);
+
+				// Filling info for each playlist in DB.
+				foreach (var playlist in this.Database.Playlist.Select(x => x.PlaylistName).Distinct())
 				{
-					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Обновление начато", DateTime.Now);
+					TimeSpan plDuration = TimeSpan.Zero;
 
-					ExcelWorksheet infoWorksheet = package.Workbook.Worksheets.Add("Info");
+					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Начата запись в таблицу {playlist}", DateTime.Now);
 
-					// Filling infoworksheet.
-					infoWorksheet.Cells[1, 1].Value = "Big Daddy's Playlist";
-					infoWorksheet.Cells[1, 1, 1, 10].Merge = true;
-					infoWorksheet.Cells[1, 1, 1, 10].Style.Font.Bold = true;
-
-					infoWorksheet.Cells[2, 1].Value = "Количество песен";
-					infoWorksheet.Cells[2, 2].Value = await db.Playlist.CountAsync();
-
-					infoWorksheet.Cells[3, 1].Value = "Дата последнего обновления";
-					infoWorksheet.Cells[3, 2].Value = DateTime.Now.ToString("dddd, MMM dd yyyy", new CultureInfo("ru-RU"));
-
-					infoWorksheet.Cells[4, 1].Value = "Длина всех плейлистов";
-					infoWorksheet.Cells.AutoFitColumns(1, 40);
-
-					// We will pass value here after we would know length of every playlist and get the sum.
-					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Инфо-страница заполнена", DateTime.Now);
-
-					// Filling info for each playlist in DB.
-					foreach (var playlist in db.Playlist.Select(x => x.PlaylistName).Distinct())
+					ExcelWorksheet playlistWorksheet = package.Workbook.Worksheets.Add(playlist);
+					playlistWorksheet.Cells[2, 1].Value = "№";
+					playlistWorksheet.Cells[2, 2].Value = "Title";
+					playlistWorksheet.Cells[2, 3].Value = "Artist";
+					playlistWorksheet.Cells[2, 4].Value = "Album";
+					playlistWorksheet.Cells[2, 5].Value = "Date";
+					playlistWorksheet.Cells[2, 6].Value = "Requested by";
+					foreach (var cell in playlistWorksheet.Cells[2, 1, 2, 6])
 					{
-						TimeSpan plDuration = TimeSpan.Zero;
-
-						client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Начата запись в таблицу {playlist}", DateTime.Now);
-
-						ExcelWorksheet playlistWorksheet = package.Workbook.Worksheets.Add(playlist);
-						playlistWorksheet.Cells[2, 1].Value = "№";
-						playlistWorksheet.Cells[2, 2].Value = "Title";
-						playlistWorksheet.Cells[2, 3].Value = "Artist";
-						playlistWorksheet.Cells[2, 4].Value = "Album";
-						playlistWorksheet.Cells[2, 5].Value = "Date";
-						playlistWorksheet.Cells[2, 6].Value = "Requested by";
-						foreach (var cell in playlistWorksheet.Cells[2, 1, 2, 6])
-						{
-							cell.Style.Border.BorderAround(ExcelBorderStyle.Thick, System.Drawing.Color.Black);
-							cell.Style.Font.Size = 24;
-						}
-
-						string[] songs = await db.Playlist.Where(x => x.PlaylistName == playlist).Select(x => x.Path).ToArrayAsync();
-						var songsFiles = new List<File>();
-						foreach (var song in songs)
-						{
-							songsFiles.Add(File.Create(song));
-						}
-						songsFiles = songsFiles.OrderBy(x => x.Tag.FirstPerformer + x.Tag.Year.ToString() + x.Tag.Album + x.Tag.Track).ToList();
-						int songNum = 1, currentRow = 3;
-						foreach (var song in songsFiles)
-						{
-							playlistWorksheet.Cells[currentRow, 1].Value = songNum;
-							playlistWorksheet.Cells[currentRow, 2].Value = $"{song.Tag.Track}.{song.Tag.Title}";
-							playlistWorksheet.Cells[currentRow, 3].Value = song.Tag.FirstPerformer;
-							playlistWorksheet.Cells[currentRow, 4].Value = song.Tag.Album;
-							playlistWorksheet.Cells[currentRow, 5].Value = song.Tag.Year;
-							if (ulong.TryParse(song.Tag.FirstComposer, out ulong addedById))
-							{
-								var user = await client.GetUserAsync(addedById).ConfigureAwait(false);
-								playlistWorksheet.Cells[currentRow, 6].Value = $"@{user.Username}";
-							}
-							else
-								playlistWorksheet.Cells[currentRow, 6].Value = "~~~~~~~~~~~~~";
-							songNum++;
-							currentRow++;
-							plDuration = plDuration.Add(song.Properties.Duration);
-						}
-						playlistWorksheet.Cells[3, 1, currentRow - 1, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin, System.Drawing.Color.Black);
-						playlistWorksheet.Cells[3, 1, currentRow, 6].Style.Font.Size = 10;
-						playlistWorksheet.Cells.AutoFitColumns(0.5, 80.0);
-						playlistWorksheet.Cells[1, 1].Value = $"Длительность плейлиста: {plDuration:dd\\.hh\\:mm\\:ss}";
-						overallPlDuration = overallPlDuration.Add(plDuration);
-						client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Закончена запись в таблицу {playlist}", DateTime.Now);
+						cell.Style.Border.BorderAround(ExcelBorderStyle.Thick, System.Drawing.Color.Black);
+						cell.Style.Font.Size = 24;
 					}
-					infoWorksheet.Cells[4, 2].Value = overallPlDuration.ToString(@"dd\.hh\:mm\:ss");
-					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Запись закончена", DateTime.Now);
-					package.SaveAs(new FileInfo($@"..\..\..\Playlists\{DateTime.Today:d}.xlsx"));
+
+					string[] songs = await this.Database.Playlist.Where(x => x.PlaylistName == playlist).Select(x => x.Path).ToArrayAsync();
+					var songsFiles = new List<File>();
+					foreach (var song in songs)
+					{
+						songsFiles.Add(File.Create(song));
+					}
+					songsFiles = songsFiles.OrderBy(x => x.Tag.FirstPerformer + x.Tag.Year.ToString() + x.Tag.Album + x.Tag.Track).ToList();
+					int songNum = 1, currentRow = 3;
+					foreach (var song in songsFiles)
+					{
+						playlistWorksheet.Cells[currentRow, 1].Value = songNum;
+						playlistWorksheet.Cells[currentRow, 2].Value = $"{song.Tag.Track}.{song.Tag.Title}";
+						playlistWorksheet.Cells[currentRow, 3].Value = song.Tag.FirstPerformer;
+						playlistWorksheet.Cells[currentRow, 4].Value = song.Tag.Album;
+						playlistWorksheet.Cells[currentRow, 5].Value = song.Tag.Year;
+						if (ulong.TryParse(song.Tag.FirstComposer, out ulong addedById))
+						{
+							var user = await client.GetUserAsync(addedById).ConfigureAwait(false);
+							playlistWorksheet.Cells[currentRow, 6].Value = $"@{user.Username}";
+						}
+						else
+							playlistWorksheet.Cells[currentRow, 6].Value = "~~~~~~~~~~~~~";
+						songNum++;
+						currentRow++;
+						plDuration = plDuration.Add(song.Properties.Duration);
+					}
+					playlistWorksheet.Cells[3, 1, currentRow - 1, 6].Style.Border.BorderAround(ExcelBorderStyle.Thin, System.Drawing.Color.Black);
+					playlistWorksheet.Cells[3, 1, currentRow, 6].Style.Font.Size = 10;
+					playlistWorksheet.Cells.AutoFitColumns(0.5, 80.0);
+					playlistWorksheet.Cells[1, 1].Value = $"Длительность плейлиста: {plDuration:dd\\.hh\\:mm\\:ss}";
+					overallPlDuration = overallPlDuration.Add(plDuration);
+					client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, $"Закончена запись в таблицу {playlist}", DateTime.Now);
 				}
+				infoWorksheet.Cells[4, 2].Value = overallPlDuration.ToString(@"dd\.hh\:mm\:ss");
+				client.DebugLogger.LogMessage(LogLevel.Info, client.CurrentUser.Username, "Запись закончена", DateTime.Now);
+				package.SaveAs(new FileInfo($@"..\..\..\Playlists\{DateTime.Today:d}.xlsx"));
+
 			}
 		}
 	}

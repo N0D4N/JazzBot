@@ -27,7 +27,14 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class TagCommands : BaseCommandModule
 	{
-		private static ImmutableArray<string> ForbiddenNames { get; } = new ImmutableArray<string>() { "create", "make", "delete", "remove", "force_delete", "force_remove", "edit", "modify", "force_edit", "force_modify", "info", "list", "@everyone", "@here", "transfer", "give", "claim", "userstats", "userstat", "serverstats", "serverstat" };
+		private static ImmutableArray<string> ForbiddenNames { get; } = ImmutableArray.CreateRange(new string[] { "create", "make", "delete", "remove", "force_delete", "force_remove", "edit", "modify", "force_edit", "force_modify", "info", "list", "@everyone", "@here", "transfer", "give", "claim", "userstats", "userstat", "serverstats", "serverstat" });
+
+		private DatabaseContext Database { get; }
+
+		public TagCommands(DatabaseContext db)
+		{
+			this.Database = db;
+		}
 
 		[Command("Create")]
 		[Description("Создает тег с заданным названием и контентом")]
@@ -60,24 +67,22 @@ namespace JazzBot.Commands
 				TimesUsed = 0
 			};
 
-			var db = new DatabaseContext();
-			if (db.Tags?.Any(t => t.Name == tag.Name && t.GuildId == tag.GuildId) == true)
+			if (this.Database.Tags?.Any(t => t.Name == tag.Name && t.GuildId == tag.GuildId) == true)
 			{
-				db.Dispose();
 				throw new ArgumentException("Тег с таким именем существует на данном сервере.", nameof(name));
+			}
+
+			await this.Database.Tags.AddAsync(tag).ConfigureAwait(false);
+			var modCount = await this.Database.SaveChangesAsync();
+			if (modCount > 0)
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithTitle("Тег успешно создан")).ConfigureAwait(false);
 			}
 			else
 			{
-				await db.Tags.AddAsync(tag).ConfigureAwait(false);
-				var modCount = await db.SaveChangesAsync();
-				db.Dispose();
-				if (modCount > 0)
-				{
-					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
-						.WithTitle("Тег успешно создан")).ConfigureAwait(false);
-				}
-				else
-					throw new CustomJbException($"Не удалось создать тег {name}. Попробуйте снова.", ExceptionType.DatabaseException);
+				throw new CustomJbException($"Не удалось создать тег {name}. Попробуйте снова.",
+					ExceptionType.DatabaseException);
 			}
 		}
 
@@ -90,23 +95,20 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться так же как и команды.", nameof(name));
 
-			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
 			var uId = (long) context.User.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				db.Dispose();
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
-				db.Tags.Remove(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
-				db.Dispose();
+				this.Database.Tags.Remove(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
@@ -114,7 +116,11 @@ namespace JazzBot.Commands
 
 				}
 				else
-					throw new CustomJbException($"Не удалось удалить тег {name}. Убедитесь в том что тег существует, в правильности написания названия и в том что вы являетесь владельцем тега.", ExceptionType.DatabaseException);
+				{
+					throw new CustomJbException(
+						$"Не удалось удалить тег {name}. Убедитесь в том что тег существует, в правильности написания названия и в том что вы являетесь владельцем тега.",
+						ExceptionType.DatabaseException);
+				}
 			}
 		}
 
@@ -128,20 +134,17 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 
-			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 			var gId = (long) context.Guild.Id;
-			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
+			Tag tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				db.Dispose();
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия названия тега.", nameof(name));
 			}
 			else
 			{
-				db.Tags.Remove(tag);
-				var modCount = await db.SaveChangesAsync();
-				db.Dispose();
+				this.Database.Tags.Remove(tag);
+				var modCount = await this.Database.SaveChangesAsync();
 				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
@@ -171,26 +174,23 @@ namespace JazzBot.Commands
 			if (newContent.Length > 2000)
 				throw new ArgumentException("Длина содержимого тега не должна превышать.", nameof(newContent));
 
-			var db = new DatabaseContext();
 
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
 			var uId = (long) context.User.Id;
 
-			Tag tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
+			Tag tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				db.Dispose();
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
-				db.Tags.Update(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
-				db.Dispose();
+				this.Database.Tags.Update(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
@@ -220,30 +220,27 @@ namespace JazzBot.Commands
 			if (newContent.Length > 2000)
 				throw new ArgumentException("Контент тега не может содержать больше 2000 символов.", nameof(newContent));
 
-			var db = new DatabaseContext();
 
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
 			else
 			{
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
-				db.Tags.Update(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
+				this.Database.Tags.Update(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle("Тег успешно изменен")).ConfigureAwait(false);
-					db.Dispose();
 				}
 				else
 				{
-					db.Dispose();
 					throw new CustomJbException("Не удалось изменить тег", ExceptionType.DatabaseException);
 				}
 			}
@@ -254,12 +251,10 @@ namespace JazzBot.Commands
 		[Cooldown(2, 600, CooldownBucketType.Channel)]
 		public async Task List(CommandContext context)
 		{
-			var db = new DatabaseContext();
 
 			var gId = (long) context.Guild.Id;
 
-			var tagsArray = await db.Tags.Where(t => t.GuildId == gId).ToArrayAsync().ConfigureAwait(false);
-			db.Dispose();
+			var tagsArray = await this.Database.Tags.Where(t => t.GuildId == gId).ToArrayAsync().ConfigureAwait(false);
 			if (tagsArray?.Any() == true)
 			{
 				string tagsNames = string.Join(", ", tagsArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());
@@ -297,13 +292,11 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
-			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
-			db.Dispose();
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
@@ -338,24 +331,21 @@ namespace JazzBot.Commands
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться как команды.", nameof(name));
 			if (memberToGive.Id == context.Member.Id)
 				throw new ArgumentException("Вы не можете передать себе владельство над тегом", nameof(memberToGive));
-			var db = new DatabaseContext();
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
 			var uId = (long) context.User.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				db.Dispose();
 				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
 				tag.OwnerId = (long) memberToGive.Id;
-				db.Tags.Update(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
-				db.Dispose();
+				this.Database.Tags.Update(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount > 0)
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Владельство над тегом {Formatter.InlineCode(tag.Name)} успешно передано {memberToGive.Mention}"))
@@ -371,9 +361,8 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(name))
 				throw new ArgumentException("Название тега не должно быть пустым", nameof(name));
-			var db = new DatabaseContext();
 			var gId = (long) context.Guild.Id;
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			DiscordUser owner = null;
 			var ownId = (ulong) tag.OwnerId;
 			try
@@ -383,9 +372,8 @@ namespace JazzBot.Commands
 			catch (NotFoundException)
 			{
 				tag.OwnerId = (long) context.User.Id;
-				db.Tags.Update(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
-				db.Dispose();
+				this.Database.Tags.Update(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
@@ -396,7 +384,6 @@ namespace JazzBot.Commands
 			}
 			finally
 			{
-				db.Dispose();
 				owner = await context.Client.GetUserAsync(ownId).ConfigureAwait(false);
 				throw new CustomJbException($"Не удалось получить владельство над тегом {tag.Name}, так как его владелец {owner.Username}#{owner.Discriminator} все еще находится на сервере", ExceptionType.Unknown);
 			}
@@ -410,15 +397,13 @@ namespace JazzBot.Commands
 			if (member == null)
 				member = context.Guild.CurrentMember;
 
-			var db = new DatabaseContext();
 			var embed = new DiscordEmbedBuilder()
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl);
 
 			var gId = (long) context.Guild.Id;
 			var mId = (long) member.Id;
 
-			var tags = await db.Tags.Where(x => x.OwnerId == mId && x.GuildId == gId).ToListAsync();
-			db.Dispose();
+			var tags = await this.Database.Tags.Where(x => x.OwnerId == mId && x.GuildId == gId).ToListAsync();
 
 			if (tags?.Any() == false)
 			{
@@ -440,12 +425,10 @@ namespace JazzBot.Commands
 		[Aliases("serverstat")]
 		public async Task ServerStats(CommandContext context)
 		{
-			var db = new DatabaseContext();
 
 			var gId = (long) context.Guild.Id;
 
-			var serverTags = await db.Tags.Where(x => x.GuildId == gId).ToListAsync();
-			db.Dispose();
+			var serverTags = await this.Database.Tags.Where(x => x.GuildId == gId).ToListAsync();
 			if (serverTags?.Any() == false)
 			{
 				await context.RespondAsync("На данном сервере нет тегов").ConfigureAwait(false);
@@ -486,16 +469,13 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
 				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или быть называться также как и команды.", nameof(name));
 
-			var db = new DatabaseContext();
-
 			var gId = (long) context.Guild.Id;
 
-			var tag = await db.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
+			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
 				var nL = new NormalizedLevenshtein();
-				var tags = await db.Tags.Where(t => t.GuildId == gId).OrderBy(t => nL.Distance(t.Name, name)).ToArrayAsync().ConfigureAwait(false);
-				db.Dispose();
+				var tags = await this.Database.Tags.Where(t => t.GuildId == gId).OrderBy(t => nL.Distance(t.Name, name)).ToArrayAsync().ConfigureAwait(false);
 				if (tags?.Any() == false)
 					throw new ArgumentException("Тегов на этом сервере не найдено");
 				string suggestions =
@@ -511,9 +491,8 @@ namespace JazzBot.Commands
 				string content = tag.TagContent.Replace("@here", "@\u200bhere").Replace("@everyone", "@\u200beveryone").Trim();
 				await context.RespondAsync($"\u200b{content}").ConfigureAwait(false);
 				tag.TimesUsed++;
-				db.Tags.Update(tag);
-				var modCount = await db.SaveChangesAsync().ConfigureAwait(false);
-				db.Dispose();
+				this.Database.Tags.Update(tag);
+				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount <= 0)
 					throw new CustomJbException("Не удалось обновить количество использований в базе данных", ExceptionType.DatabaseException);
 			}

@@ -33,12 +33,15 @@ namespace JazzBot.Commands
 
 		private YoutubeService Youtube { get; }
 
-		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot, YoutubeService youtube)
+		private DatabaseContext Database { get; }
+
+		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot, YoutubeService youtube, DatabaseContext db)
 		{
 			this.Lavalink = lavalink;
 			this.Music = music;
 			this.Bot = bot;
 			this.Youtube = youtube;
+			this.Database = db;
 		}
 
 		public override async Task BeforeExecutionAsync(CommandContext context)
@@ -191,8 +194,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(songName))
 				throw new ArgumentException("Название песни не должно быть пустым", nameof(songName));
-			var db = new DatabaseContext();
-			var songs = await db.Playlist.ToArrayAsync().ConfigureAwait(false);
+			var songs = await this.Database.Playlist.ToArrayAsync().ConfigureAwait(false);
 			var playNexts = new List<PlayNextElement>();
 			var nL = new NormalizedLevenshtein();
 			foreach (var song in songs)
@@ -220,25 +222,22 @@ namespace JazzBot.Commands
 					if (res >= 1 && res <= playNexts.Count)
 					{
 						var gId = (long) context.Guild.Id;
-						var guild = await db.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
-						db.Dispose();
+						var guild = await this.Database.Guilds.SingleOrDefaultAsync(g => g.IdOfGuild == gId).ConfigureAwait(false);
 						this.GuildMusic.LocalMusic.EnqueueToPlayNext(playNexts[res - 1].PathToFile);
 						await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 							.WithTitle($"Следующей песней будет {playNexts[res - 1].Title}")).ConfigureAwait(false);
 					}
 					else
 					{
-						db.Dispose();
 						throw new ArgumentException("Данное число выходит за границы", nameof(res));
 					}
 				}
 				else if (msg.Result.Content.ToLowerInvariant() == "x")
 				{
-					db.Dispose();
+					return;
 				}
 				else
 				{
-					db.Dispose();
 					throw new ArgumentException("Ответ не является числом или время вышло", nameof(msg));
 				}
 			}
@@ -280,8 +279,7 @@ namespace JazzBot.Commands
 		[Description("Показывает список доступных плейлистов")]
 		public async Task Playlists(CommandContext context)
 		{
-			var db = new DatabaseContext();
-			var pls = db.Playlist.Select(x => x.PlaylistName).Distinct();
+			var pls = this.Database.Playlist.Select(x => x.PlaylistName).Distinct();
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Список доступных плейлистов")
 				.WithDescription(string.Join(',', pls.Select(x => Formatter.InlineCode(x))))).ConfigureAwait(false);
