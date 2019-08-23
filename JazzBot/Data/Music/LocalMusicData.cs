@@ -1,15 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System;
-using System.Net;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using DSharpPlus.Lavalink;
 using JazzBot.Enums;
 using JazzBot.Services;
 using JazzBot.Utilities;
-using DSharpPlus;
 using Microsoft.EntityFrameworkCore;
 using File = TagLib.File;
 
@@ -156,37 +152,15 @@ namespace JazzBot.Data.Music
 			}
 		}
 
-		///// <summary>
-		///// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>.
-		///// </summary>
-		///// <returns><see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/></returns>
-		//public async Task<LavalinkTrack> GetSongAsync(LavalinkService lavalink)
-		//{
-		//	var db = new DatabaseContext();
-		//	var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
-		//	if (playlistLength < this.IdOfCurrentSong)
-		//		this.Shuffle();
-		//	else
-		//		await this.ChangeCurrentSong(true).ConfigureAwait(false);
-		//	db.Dispose();
-
-		//	// Songs in PlayNextList have higher priority than default playback.
-		//	if (this.PlayNextStack.Any())
-		//	{
-		//		string path = this.PlayNextStack.Pop();
-		//		var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(path)).ConfigureAwait(false);
-		//		return result.Tracks.ElementAt(0);
-		//	}
-		//	else
-		//	{
-		//		var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(this.PathToCurrentSong)).ConfigureAwait(false);
-		//		return result.Tracks.ElementAt(0);
-		//	}
-		//}
-
+		/// <summary>
+		/// Checks if songs are present in this music source
+		/// </summary>
 		public bool IsPresent()
-			=> true;
+		=> true;
 
+		/// <summary>
+		/// Get <see cref="DiscordEmbed"/> representing info about currently playing song
+		/// </summary>
 		public async Task<DiscordEmbed> GetCurrentSongEmbed()
 		{
 			var currentSong = File.Create(this.PathToCurrentSong);
@@ -231,6 +205,9 @@ namespace JazzBot.Data.Music
 			return embed.Build();
 		}
 
+		/// <summary>
+		/// Get <see cref="Uri"/> for song to play
+		/// </summary>
 		public async Task<Uri> GetCurrentSong()
 		{
 			var db = new DatabaseContext();
@@ -240,7 +217,7 @@ namespace JazzBot.Data.Music
 			else
 				await this.ChangeCurrentSong(true).ConfigureAwait(false);
 			db.Dispose();
-			FileInfo file = new FileInfo(this.PathToCurrentSong);
+			var file = new FileInfo(this.PathToCurrentSong);
 			return new Uri(file.FullName, UriKind.Relative);
 		}
 

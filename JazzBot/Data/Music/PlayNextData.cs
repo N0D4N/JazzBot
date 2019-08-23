@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using File = TagLib.File;
 using JazzBot.Utilities;
-using System.IO;
-using System.Net;
+using File = TagLib.File;
 
 namespace JazzBot.Data.Music
 {
 	public sealed class PlayNextData : IMusicSource
 	{
+		/// <summary>
+		/// Queue of songs to play
+		/// </summary>
 		private Queue<string> PlayingQueue { get; }
 
+		/// <summary>
+		/// Current program
+		/// </summary>
 		private Program Program { get; }
 
 		public PlayNextData(Program program)
@@ -23,12 +27,17 @@ namespace JazzBot.Data.Music
 			this.Program = program;
 		}
 
-
+		/// <summary>
+		/// Checks if songs are present in this music source
+		/// </summary>
 		public bool IsPresent()
 		{
 			return this.PlayingQueue.Any();
 		}
 
+		/// <summary>
+		/// Get <see cref="DiscordEmbed"/> representing info about currently playing song
+		/// </summary>
 		public async Task<DiscordEmbed> GetCurrentSongEmbed()
 		{
 			var currentSong = File.Create(this.PlayingQueue.Peek());
@@ -73,10 +82,13 @@ namespace JazzBot.Data.Music
 			return embed.Build();
 		}
 
+		/// <summary>
+		/// Get <see cref="Uri"/> for song to play
+		/// </summary>
 		public Task<Uri> GetCurrentSong()
 		{
 			var currentSong = this.PlayingQueue.Dequeue();
-			FileInfo file = new FileInfo(currentSong);
+			var file = new FileInfo(currentSong);
 			return Task.FromResult(new Uri(file.FullName, UriKind.Relative));
 		}
 
@@ -85,6 +97,9 @@ namespace JazzBot.Data.Music
 			this.PlayingQueue.Enqueue(path);
 		}
 
+		/// <summary>
+		/// Clears queue of songs to play
+		/// </summary>
 		public void ClearQueue()
 			=> this.PlayingQueue.Clear();
 	}

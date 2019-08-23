@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Lavalink;
 using JazzBot.Utilities;
 
 namespace JazzBot.Data.Music
@@ -14,8 +13,14 @@ namespace JazzBot.Data.Music
 	/// </summary>
 	public sealed class RemoteMusicData : IMusicSource
 	{
+		/// <summary>
+		/// List of songs to play
+		/// </summary>
 		public List<RemoteMusicItem> Queue { get; }
 
+		/// <summary>
+		/// Current program
+		/// </summary>
 		private Program Program { get; }
 
 		public RemoteMusicData(Program program)
@@ -44,11 +49,17 @@ namespace JazzBot.Data.Music
 		public void Add(IEnumerable<RemoteMusicItem> songs)
 			=> this.Queue.AddRange(songs);
 
+		/// <summary>
+		/// Checks if songs are present in this music source
+		/// </summary>
 		public bool IsPresent()
 		{
 			return this.Queue.Any();
 		}
 
+		/// <summary>
+		/// Get <see cref="DiscordEmbed"/> representing info about currently playing song
+		/// </summary>
 		public Task<DiscordEmbed> GetCurrentSongEmbed()
 		{
 			var track = this.Queue[0];
@@ -64,6 +75,9 @@ namespace JazzBot.Data.Music
 			return Task.FromResult(embed.Build());
 		}
 
+		/// <summary>
+		/// Get <see cref="Uri"/> for song to play
+		/// </summary>
 		public Task<Uri> GetCurrentSong()
 		{
 			var song = this.Queue[0];
@@ -71,6 +85,9 @@ namespace JazzBot.Data.Music
 			return Task.FromResult(song.Track.Uri);
 		}
 
+		/// <summary>
+		/// Clears queue of songs to play
+		/// </summary>
 		public void ClearQueue()
 			=> this.Queue.Clear();
 	}

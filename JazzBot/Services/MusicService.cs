@@ -1,8 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using DSharpPlus.Lavalink;
 using JazzBot.Data.Music;
 
 namespace JazzBot.Services

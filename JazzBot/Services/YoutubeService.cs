@@ -7,8 +7,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using JazzBot.Data;
-using Newtonsoft.Json.Linq;
 using JazzBot.Data.Music;
+using Newtonsoft.Json.Linq;
 
 namespace JazzBot.Services
 {

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
 using JazzBot.Services;
-using JazzBot.Utilities;
-using File = TagLib.File;
 
 
 namespace JazzBot.Data.Music
@@ -69,8 +65,9 @@ namespace JazzBot.Data.Music
 			};
 		}
 
-
-
+		/// <summary>
+		/// Starts music playing in this guild
+		/// </summary>
 		public async Task Start()
 		{
 			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
@@ -80,24 +77,20 @@ namespace JazzBot.Data.Music
 			var trackUri = await musicSource.GetCurrentSong();
 			var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 
-			this.IsPlaying = true;
-			this.InternalPlay(trackLoad.Tracks.First());
-
-			//if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
-			//{
-			//	this.IsPlaying = true;
-			//	this.InternalPlay(trackLoad.Tracks.First());
-			//}
-			//else
-			//{
-			//	throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
-			//}
+			if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
+			{
+				this.IsPlaying = true;
+				this.InternalPlay(trackLoad.Tracks.First());
+			}
+			else
+			{
+				throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
+			}
 		}
 
 		/// <summary>
 		/// Skips currently playing song.
 		/// </summary>
-		/// <returns></returns>
 		public void Skip()
 		{
 			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected)
@@ -110,7 +103,6 @@ namespace JazzBot.Data.Music
 		/// Creates player in specified <see cref="DiscordChannel"/> in this <see cref="DiscordGuild"/>.
 		/// </summary>
 		/// <param name="channel">Voice channel in which player should be created</param>
-		/// <returns></returns>
 		public async Task CreatePlayerAsync(DiscordChannel channel)
 		{
 			if (this.LavalinkConnection != null && this.LavalinkConnection.IsConnected)
@@ -122,7 +114,6 @@ namespace JazzBot.Data.Music
 		/// <summary>
 		/// Destroys player in this <see cref="DiscordGuild"/>.
 		/// </summary>
-		/// <returns></returns>
 		public async Task DestroyPlayerAsync()
 		{
 			if (this.LavalinkConnection == null)
