@@ -13,17 +13,14 @@ namespace JazzBot.Data.Music
 {
 	public sealed class PlayNextData : IMusicSource
 	{
-		private Stack<string> PlayingQueue { get; }
+		private Queue<string> PlayingQueue { get; }
 
 		private Program Program { get; }
 
-		private Bot Bot { get; }
-
-		public PlayNextData(Program program, Bot bot)
+		public PlayNextData(Program program)
 		{
-			this.PlayingQueue = new Stack<string>();
+			this.PlayingQueue = new Queue<string>();
 			this.Program = program;
-			this.Bot = bot;
 		}
 
 
@@ -56,7 +53,7 @@ namespace JazzBot.Data.Music
 			// Checking if cover art is present to this file.
 			else if (currentSong.Tag.Pictures?.Any() == true)
 			{
-				var msg = await this.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
+				var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
 				currentSong.Tag.Comment = msg.Attachments[0].Url;
 				currentSong.Save();
 				embed.ThumbnailUrl = currentSong.Tag.Comment;
@@ -78,8 +75,16 @@ namespace JazzBot.Data.Music
 
 		public Uri GetCurrentSong()
 		{
-			var currentSong = this.PlayingQueue.Pop();
+			var currentSong = this.PlayingQueue.Dequeue();
 			return new Uri(WebUtility.UrlEncode(currentSong));
 		}
+
+		public void Enqueue(string path)
+		{
+			this.PlayingQueue.Enqueue(path);
+		}
+
+		public void ClearQueue()
+			=> this.PlayingQueue.Clear();
 	}
 }

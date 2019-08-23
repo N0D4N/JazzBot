@@ -11,5 +11,7 @@ namespace JazzBot.Data.Music
 		Task<DiscordEmbed> GetCurrentSongEmbed();
 
 		Uri GetCurrentSong();
+
+		void ClearQueue();
 	}
 }

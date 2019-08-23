@@ -55,10 +55,9 @@ namespace JazzBot.Data.Music
 
 		public Bot Bot { get; }
 
-		public LocalMusicData(DiscordGuild guild, Program currentProgram, Bot bot)
+		public LocalMusicData(DiscordGuild guild, Program currentProgram)
 		{
 			this.Program = currentProgram;
-			this.Bot = bot;
 			this.Guild = guild;
 			var gId = (long) this.Guild.Id;
 			var db = new DatabaseContext();
@@ -242,6 +241,13 @@ namespace JazzBot.Data.Music
 		public Uri GetCurrentSong()
 		{
 			return new Uri(WebUtility.UrlEncode(this.PathToCurrentSong));
+		}
+
+		/// <summary>
+		/// Does nothing because we don't want to clear local queue
+		/// </summary>
+		public void ClearQueue()
+		{
 		}
 
 		/// <summary>

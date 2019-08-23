@@ -21,7 +21,7 @@ namespace JazzBot.Data.Music
 		/// <summary>
 		/// Shows if something is played in this guild.
 		/// </summary>
-		public bool IsPlaying { get; set; } = false;
+		public bool IsPlaying { get; set; }
 
 		/// <summary>
 		/// Guild for which this data is stored.
@@ -49,24 +49,11 @@ namespace JazzBot.Data.Music
 		public LavalinkGuildConnection LavalinkConnection { get; private set; }
 
 		/// <summary>
-		/// Current song of type <see cref="LavalinkTrack"/> used for <see cref="LavalinkGuildConnection"/>.
-		/// </summary>
-		private LavalinkTrack Track { get; set; } // Not used for now
-
-		/// <summary>
-		/// Music from local source
-		/// </summary>
-		public LocalMusicData LocalMusic { get; }
-
-		/// <summary>
-		/// Music from remote source
-		/// </summary>
-		public RemoteMusicData RemoteMusic { get; }
-
-		/// <summary>
 		/// Current bot program.
 		/// </summary>
 		private Program CurrentProgram { get; }
+
+		public IMusicSource[] MusicSources { get; }
 
 		public GuildMusicData(LavalinkService lavalink, DiscordGuild guild, Program program)
 		{
@@ -74,10 +61,12 @@ namespace JazzBot.Data.Music
 			this.Guild = guild;
 			this.Lavalink = lavalink;
 
-
-			this.LocalMusic = new LocalMusicData(this.Guild);
-
-			this.RemoteMusic = new RemoteMusicData();
+			this.MusicSources = new IMusicSource[]
+			{
+				new RemoteMusicData(this.CurrentProgram),
+				new PlayNextData(this.CurrentProgram),
+				new LocalMusicData(this.Guild, this.CurrentProgram)
+			};
 		}
 
 		/// <summary>
@@ -93,17 +82,23 @@ namespace JazzBot.Data.Music
 
 		}
 
-		/// <summary>
-		/// Shuffles queue in remote music if there are any elements else shuffles playlist in local music
-		/// </summary>
-		public void Shuffle()
+		public async Task Start()
 		{
-			if (this.RemoteMusic.Queue.Any())
-			{
-				this.RemoteMusic.Shuffle();
+			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
 				return;
+
+			var musicSource = this.MusicSources.First(x => x.IsPresent());
+			var trackUri = musicSource.GetCurrentSong();
+			var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
+			if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
+			{
+				this.IsPlaying = true;
+				this.InternalPlay(trackLoad.Tracks.First());
 			}
-			this.LocalMusic.Shuffle();
+			else
+			{
+				throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
+			}
 		}
 
 		/// <summary>
@@ -143,11 +138,11 @@ namespace JazzBot.Data.Music
 			if (this.LavalinkConnection.IsConnected)
 				this.LavalinkConnection.Disconnect();
 
-			this.LocalMusic.PlayNextStack.Clear();
-			this.RemoteMusic.Queue.Clear();
+			foreach (var musicSource in this.MusicSources)
+				musicSource.ClearQueue();
 
 			//this.LavalinkConnection.PlaybackFinished -= this.PlaybackFinished;
-
+			this.IsPlaying = false;
 			this.LavalinkConnection = null;
 			await this.PlayingMessage.DeleteAsync().ConfigureAwait(false);
 			this.PlayingMessage = null;
@@ -175,64 +170,8 @@ namespace JazzBot.Data.Music
 		/// <returns><see cref="DiscordEmbed"/> with info about currently playing song</returns>
 		public async Task<DiscordEmbed> NowPlayingEmbedAsync()
 		{
-			if (this.RemoteMusic.Queue.Any())
-			{
-				var track = this.RemoteMusic.Queue[0];
-				var embed = new DiscordEmbedBuilder
-				{
-					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",
-					Color = track.RequestedByMember.Color,
-					Timestamp = DateTime.Now + track.Track.Length,
-					Description = $"{Formatter.MaskedUrl(track.Track.Title, track.Track.Uri)} - {track.Track.Author}",
-				}.AddField("Длительность", track.Track.Length.ToString(@"mm\:ss"), true)
-				.WithFooter("Приблизительное время окончания");
-
-				return embed.Build();
-			}
-			else
-			{
-				if (this.LocalMusic.PathToCurrentSong == null)
-					await this.LocalMusic.ChangeCurrentSong(false);
-				var currentSong = File.Create(this.LocalMusic.PathToCurrentSong);
-				var embed = new DiscordEmbedBuilder
-				{
-					Title = $"{DiscordEmoji.FromGuildEmote(this.CurrentProgram.Client, 518868301099565057)} Сейчас играет",
-					Color = DiscordColor.Black,
-					Timestamp = DateTimeOffset.Now + currentSong.Properties.Duration
-				}
-				.AddField("Название", currentSong.Tag.Title ?? "Неизвестное название")
-				.AddField("Исполнитель", currentSong.Tag.FirstPerformer ?? "Неизвестный исполнитель")
-				.AddField("Альбом", currentSong.Tag.Album ?? "Неизвестный альбом", true)
-				.AddField("Дата", currentSong.Tag.Year.ToString(), true)
-				.AddField("Длительность", currentSong.Properties.Duration.ToString(@"mm\:ss"), true)
-				.AddField("Жанр", currentSong.Tag.FirstGenre ?? "Неизвестный жанр", true)
-				.WithFooter("Приблизительное время окончания");
-
-				if (currentSong.Tag.IsCoverArtLinkPresent())
-				{
-					embed.ThumbnailUrl = currentSong.Tag.Comment;
-				}
-				// Checking if cover art is present to this file.
-				else if (currentSong.Tag.Pictures?.Any() == true)
-				{
-					var msg = await this.CurrentProgram.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
-					currentSong.Tag.Comment = msg.Attachments[0].Url;
-					currentSong.Save();
-					embed.ThumbnailUrl = currentSong.Tag.Comment;
-				}
-
-				// Checking if this song was requested to add by some user.
-				if (ulong.TryParse(currentSong.Tag.FirstComposer, out ulong requestedById))
-				{
-					var user = await this.CurrentProgram.Client.GetUserAsync(requestedById).ConfigureAwait(false);
-					embed.Author = new DiscordEmbedBuilder.EmbedAuthor()
-					{
-						Name = $"@{user.Username}",
-						IconUrl = user.AvatarUrl
-					};
-				}
-				return embed.Build();
-			}
+			var musicSource = this.MusicSources.First(x => x.IsPresent());
+			return await musicSource.GetCurrentSongEmbed();
 
 		}
 
@@ -247,10 +186,8 @@ namespace JazzBot.Data.Music
 		private async Task PlaybackFinished(TrackFinishEventArgs e)
 		{
 			await Task.Delay(600).ConfigureAwait(false);
-			this.IsPlaying = false;
 			if (this.LavalinkConnection != null)
 			{
-				var track = this.RemoteMusic.Queue.Any() ? this.RemoteMusic.GetSong() : await this.LocalMusic.GetSongAsync(this.Lavalink).ConfigureAwait(false);
 				if (this.IsMessageLast())
 					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				else
@@ -259,14 +196,16 @@ namespace JazzBot.Data.Music
 					this.PlayingMessage = await this.PlayingMessage.Channel.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 					await plMsg.DeleteAsync().ConfigureAwait(false);
 				}
-				this.RemoteMusic.Pop();
-				this.InternalPlay(track);
+
+				var musicSource = this.MusicSources.First(x => x.IsPresent());
+				var trackUri = musicSource.GetCurrentSong();
+				var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
+				this.InternalPlay(trackLoad.Tracks.First());
 			}
 		}
 
 		private void InternalPlay(LavalinkTrack track)
 		{
-			this.IsPlaying = true;
 			this.LavalinkConnection.Play(track);
 		}
 	}

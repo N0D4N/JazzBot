@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using JazzBot.Utilities;
 
@@ -8,12 +12,17 @@ namespace JazzBot.Data.Music
 	/// <summary>
 	/// Songs from remote source
 	/// </summary>
-	public sealed class RemoteMusicData
+	public sealed class RemoteMusicData : IMusicSource
 	{
 		public List<RemoteMusicItem> Queue { get; }
 
-		public RemoteMusicData()
-			=> this.Queue = new List<RemoteMusicItem>();
+		private Program Program { get; }
+
+		public RemoteMusicData(Program program)
+		{
+			this.Program = program;
+			this.Queue = new List<RemoteMusicItem>();
+		}
 
 		/// <summary>
 		/// Shuffles queue
@@ -51,5 +60,34 @@ namespace JazzBot.Data.Music
 				this.Queue.RemoveAt(0);
 		}
 
+		public bool IsPresent()
+		{
+			return this.Queue.Any();
+		}
+
+		public Task<DiscordEmbed> GetCurrentSongEmbed()
+		{
+			var track = this.Queue[0];
+			var embed = new DiscordEmbedBuilder
+			{
+				Title = $"{DiscordEmoji.FromGuildEmote(this.Program.Client, 518868301099565057)} Сейчас играет",
+				Color = track.RequestedByMember.Color,
+				Timestamp = DateTime.Now + track.Track.Length,
+				Description = $"{Formatter.MaskedUrl(track.Track.Title, track.Track.Uri)} - {track.Track.Author}",
+			}.AddField("Длительность", track.Track.Length.ToString(@"mm\:ss"), true)
+			.WithFooter("Приблизительное время окончания");
+
+			return Task.FromResult(embed.Build());
+		}
+
+		public Uri GetCurrentSong()
+		{
+			var song = this.Queue[0];
+			this.Queue.RemoveAt(0);
+			return song.Track.Uri;
+		}
+
+		public void ClearQueue()
+			=> this.Queue.Clear();
 	}
 }
