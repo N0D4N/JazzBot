@@ -88,7 +88,7 @@ namespace JazzBot.Data.Music
 				return;
 
 			var musicSource = this.MusicSources.First(x => x.IsPresent());
-			var trackUri = musicSource.GetCurrentSong();
+			var trackUri = await musicSource.GetCurrentSong();
 			var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 			if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
 			{
@@ -198,7 +198,7 @@ namespace JazzBot.Data.Music
 				}
 
 				var musicSource = this.MusicSources.First(x => x.IsPresent());
-				var trackUri = musicSource.GetCurrentSong();
+				var trackUri = await musicSource.GetCurrentSong();
 				var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 				this.InternalPlay(trackLoad.Tracks.First());
 			}

@@ -42,18 +42,12 @@ namespace JazzBot.Data.Music
 		public string PlaylistName { get; set; } //Not used for now
 
 		/// <summary>
-		/// List that stores songs that should be played after currently playing song.
-		/// </summary>
-		public Stack<string> PlayNextStack { get; }
-
-		/// <summary>
 		/// Guild for which this data is stored.
 		/// </summary>
 		public DiscordGuild Guild { get; }
 
 		public Program Program { get; }
 
-		public Bot Bot { get; }
 
 		public LocalMusicData(DiscordGuild guild, Program currentProgram)
 		{
@@ -66,7 +60,6 @@ namespace JazzBot.Data.Music
 			this.Seed = dGuild.Seed;
 			this.PlaylistName = dGuild.PlaylistName;
 			this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
-			this.PlayNextStack = new Stack<string>();
 		}
 
 		/// <summary>
@@ -163,33 +156,33 @@ namespace JazzBot.Data.Music
 			}
 		}
 
-		/// <summary>
-		/// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>.
-		/// </summary>
-		/// <returns><see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/></returns>
-		public async Task<LavalinkTrack> GetSongAsync(LavalinkService lavalink)
-		{
-			var db = new DatabaseContext();
-			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
-			if (playlistLength < this.IdOfCurrentSong)
-				this.Shuffle();
-			else
-				await this.ChangeCurrentSong(true).ConfigureAwait(false);
-			db.Dispose();
+		///// <summary>
+		///// Gets <see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/>.
+		///// </summary>
+		///// <returns><see cref="LavalinkTrack"/> from <see cref="PathToCurrentSong"/> or top element in <see cref="PlayNextStack"/></returns>
+		//public async Task<LavalinkTrack> GetSongAsync(LavalinkService lavalink)
+		//{
+		//	var db = new DatabaseContext();
+		//	var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
+		//	if (playlistLength < this.IdOfCurrentSong)
+		//		this.Shuffle();
+		//	else
+		//		await this.ChangeCurrentSong(true).ConfigureAwait(false);
+		//	db.Dispose();
 
-			// Songs in PlayNextList have higher priority than default playback.
-			if (this.PlayNextStack.Any())
-			{
-				string path = this.PlayNextStack.Pop();
-				var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(path)).ConfigureAwait(false);
-				return result.Tracks.ElementAt(0);
-			}
-			else
-			{
-				var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(this.PathToCurrentSong)).ConfigureAwait(false);
-				return result.Tracks.ElementAt(0);
-			}
-		}
+		//	// Songs in PlayNextList have higher priority than default playback.
+		//	if (this.PlayNextStack.Any())
+		//	{
+		//		string path = this.PlayNextStack.Pop();
+		//		var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(path)).ConfigureAwait(false);
+		//		return result.Tracks.ElementAt(0);
+		//	}
+		//	else
+		//	{
+		//		var result = await lavalink.LavalinkNode.GetTracksAsync(new FileInfo(this.PathToCurrentSong)).ConfigureAwait(false);
+		//		return result.Tracks.ElementAt(0);
+		//	}
+		//}
 
 		public bool IsPresent()
 			=> true;
@@ -218,7 +211,7 @@ namespace JazzBot.Data.Music
 			// Checking if cover art is present to this file.
 			else if (currentSong.Tag.Pictures?.Any() == true)
 			{
-				var msg = await this.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
+				var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
 				currentSong.Tag.Comment = msg.Attachments[0].Url;
 				currentSong.Save();
 				embed.ThumbnailUrl = currentSong.Tag.Comment;
@@ -238,9 +231,17 @@ namespace JazzBot.Data.Music
 			return embed.Build();
 		}
 
-		public Uri GetCurrentSong()
+		public async Task<Uri> GetCurrentSong()
 		{
-			return new Uri(WebUtility.UrlEncode(this.PathToCurrentSong));
+			var db = new DatabaseContext();
+			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
+			if (playlistLength < this.IdOfCurrentSong)
+				this.Shuffle();
+			else
+				await this.ChangeCurrentSong(true).ConfigureAwait(false);
+			db.Dispose();
+			FileInfo file = new FileInfo(this.PathToCurrentSong);
+			return new Uri(file.FullName);
 		}
 
 		/// <summary>
@@ -250,11 +251,5 @@ namespace JazzBot.Data.Music
 		{
 		}
 
-		/// <summary>
-		/// Adds song to <see cref="PlayNextStack"/>.
-		/// </summary>
-		/// <param name="path">Path to song</param>
-		public void EnqueueToPlayNext(string path)
-			=> this.PlayNextStack.Push(path);
 	}
 }

@@ -80,11 +80,11 @@ namespace JazzBot.Data.Music
 			return Task.FromResult(embed.Build());
 		}
 
-		public Uri GetCurrentSong()
+		public Task<Uri> GetCurrentSong()
 		{
 			var song = this.Queue[0];
 			this.Queue.RemoveAt(0);
-			return song.Track.Uri;
+			return Task.FromResult(song.Track.Uri);
 		}
 
 		public void ClearQueue()

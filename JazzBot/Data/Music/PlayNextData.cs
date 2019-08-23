@@ -73,10 +73,11 @@ namespace JazzBot.Data.Music
 			return embed.Build();
 		}
 
-		public Uri GetCurrentSong()
+		public Task<Uri> GetCurrentSong()
 		{
 			var currentSong = this.PlayingQueue.Dequeue();
-			return new Uri(WebUtility.UrlEncode(currentSong));
+			FileInfo file = new FileInfo(currentSong);
+			return Task.FromResult(new Uri(file.FullName));
 		}
 
 		public void Enqueue(string path)
