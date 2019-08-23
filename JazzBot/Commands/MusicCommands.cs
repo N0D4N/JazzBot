@@ -27,7 +27,7 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class MusicCommands : BaseCommandModule
 	{
-		private static ImmutableArray<string> CommandsThatIgnoreVoiceState { get; } = ImmutableArray.CreateRange(new string[] { "playlists", "playlist" });
+		private static ImmutableArray<string> CommandsThatIgnoreVoiceState { get; } = ImmutableArray.CreateRange(new[] { "playlists", "playlist" });
 
 		private LavalinkService Lavalink { get; }
 
@@ -208,9 +208,9 @@ namespace JazzBot.Commands
 			if (string.IsNullOrWhiteSpace(playlistName))
 				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistName));
 
-			var musicSource = this.GuildMusic.MusicSources[(int) MusicSourceType.LocalMusicData] as LocalMusicData;
+			var localMS = this.GuildMusic.MusicSources[(int) MusicSourceType.LocalMusicData] as LocalMusicData;
 
-			await musicSource.ChangePlaylistAsync(playlistName);
+			await localMS.ChangePlaylistAsync(playlistName);
 
 
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)

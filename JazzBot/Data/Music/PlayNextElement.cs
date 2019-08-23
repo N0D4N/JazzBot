@@ -24,11 +24,6 @@
 			this.Coefficient = coef;
 		}
 
-		public PlayNextElement(string path, string name)
-		{
-			this.PathToFile = path;
-			this.Title = name;
-			this.Coefficient = 0.0;
-		}
+
 	}
 }

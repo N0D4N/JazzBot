@@ -44,22 +44,6 @@ namespace JazzBot.Data.Music
 		public void Add(IEnumerable<RemoteMusicItem> songs)
 			=> this.Queue.AddRange(songs);
 
-		/// <summary>
-		/// Get first song in queue
-		/// </summary>
-		/// <returns>First song in queue</returns>
-		public LavalinkTrack GetSong()
-			=> this.Queue[0].Track;
-
-		/// <summary>
-		/// Deletes first song in queue
-		/// </summary>
-		public void Pop()
-		{
-			if (this.Queue.Any())
-				this.Queue.RemoveAt(0);
-		}
-
 		public bool IsPresent()
 		{
 			return this.Queue.Any();

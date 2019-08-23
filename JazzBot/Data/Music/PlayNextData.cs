@@ -77,7 +77,7 @@ namespace JazzBot.Data.Music
 		{
 			var currentSong = this.PlayingQueue.Dequeue();
 			FileInfo file = new FileInfo(currentSong);
-			return Task.FromResult(new Uri(file.FullName));
+			return Task.FromResult(new Uri(file.FullName, UriKind.Relative));
 		}
 
 		public void Enqueue(string path)

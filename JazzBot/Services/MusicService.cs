@@ -32,10 +32,5 @@ namespace JazzBot.Services
 			guildMusicData = this.MusicData.AddOrUpdate(guild.Id, new GuildMusicData(this.Lavalink, guild, this.CurrentProgram), (k, v) => v);
 			return Task.FromResult(guildMusicData);
 		}
-
-
-
-		public Task<LavalinkLoadResult> GetTracksAsync(FileInfo file)
-			=> this.Lavalink.LavalinkNode.GetTracksAsync(file);
 	}
 }

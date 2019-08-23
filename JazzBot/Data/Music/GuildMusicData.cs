@@ -69,18 +69,7 @@ namespace JazzBot.Data.Music
 			};
 		}
 
-		/// <summary>
-		/// Starts playback.
-		/// </summary>
-		/// <param name="track"> Track that should be played </param>
-		public void Play(LavalinkTrack track)
-		{
-			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
-				return;
 
-			this.InternalPlay(track);
-
-		}
 
 		public async Task Start()
 		{
@@ -90,15 +79,19 @@ namespace JazzBot.Data.Music
 			var musicSource = this.MusicSources.First(x => x.IsPresent());
 			var trackUri = await musicSource.GetCurrentSong();
 			var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
-			if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
-			{
-				this.IsPlaying = true;
-				this.InternalPlay(trackLoad.Tracks.First());
-			}
-			else
-			{
-				throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
-			}
+
+			this.IsPlaying = true;
+			this.InternalPlay(trackLoad.Tracks.First());
+
+			//if (trackLoad.LoadResultType == LavalinkLoadResultType.TrackLoaded)
+			//{
+			//	this.IsPlaying = true;
+			//	this.InternalPlay(trackLoad.Tracks.First());
+			//}
+			//else
+			//{
+			//	throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
+			//}
 		}
 
 		/// <summary>

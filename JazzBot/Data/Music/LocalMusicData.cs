@@ -241,7 +241,7 @@ namespace JazzBot.Data.Music
 				await this.ChangeCurrentSong(true).ConfigureAwait(false);
 			db.Dispose();
 			FileInfo file = new FileInfo(this.PathToCurrentSong);
-			return new Uri(file.FullName);
+			return new Uri(file.FullName, UriKind.Relative);
 		}
 
 		/// <summary>
