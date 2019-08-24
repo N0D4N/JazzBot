@@ -73,11 +73,9 @@ namespace JazzBot.Commands
 			if (this.GuildMusic.IsPlaying)
 				return;
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
-
+			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 			await this.GuildMusic.Start();
-			await Task.Delay(3000);
-			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 		}
 
 		[Command("Play")]

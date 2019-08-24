@@ -56,6 +56,7 @@ namespace JazzBot.Data.Music
 			this.Seed = dGuild.Seed;
 			this.PlaylistName = dGuild.PlaylistName;
 			this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
+			this.ChangeCurrentSong(false);
 		}
 
 		/// <summary>
@@ -210,6 +211,8 @@ namespace JazzBot.Data.Music
 		/// </summary>
 		public async Task<Uri> GetCurrentSong()
 		{
+			var file = new FileInfo(this.PathToCurrentSong);
+
 			var db = new DatabaseContext();
 			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
 			if (playlistLength < this.IdOfCurrentSong)
@@ -217,7 +220,6 @@ namespace JazzBot.Data.Music
 			else
 				await this.ChangeCurrentSong(true).ConfigureAwait(false);
 			db.Dispose();
-			var file = new FileInfo(this.PathToCurrentSong);
 			return new Uri(file.FullName, UriKind.Relative);
 		}
 
