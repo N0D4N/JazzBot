@@ -72,8 +72,6 @@ namespace JazzBot.Commands
 		{
 			if (this.GuildMusic.IsPlaying)
 				return;
-			var localMS = this.GuildMusic.MusicSources[(int) MusicSourceType.LocalMusicData] as LocalMusicData;
-			await localMS.ChangeCurrentSong(false);
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 

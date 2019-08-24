@@ -73,6 +73,8 @@ namespace JazzBot.Data.Music
 			if (this.LavalinkConnection == null || !this.LavalinkConnection.IsConnected || this.IsPlaying)
 				return;
 
+
+
 			var musicSource = this.MusicSources.First(x => x.IsPresent());
 			var trackUri = await musicSource.GetCurrentSong();
 			var trackLoad = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
