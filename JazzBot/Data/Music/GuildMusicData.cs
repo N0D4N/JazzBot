@@ -178,9 +178,9 @@ namespace JazzBot.Data.Music
 					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				else
 				{
-					var plMsg = this.PlayingMessage;
-					this.PlayingMessage = await this.PlayingMessage.Channel.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-					await plMsg.DeleteAsync().ConfigureAwait(false);
+					var chn = this.PlayingMessage.Channel;
+					await this.PlayingMessage.DeleteAsync();
+					this.PlayingMessage = await chn.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 				}
 
 				var musicSource = this.MusicSources.First(x => x.IsPresent());

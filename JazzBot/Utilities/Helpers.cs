@@ -104,8 +104,9 @@ namespace JazzBot.Utilities
 
 		public static bool IsCoverArtLinkPresent(this Tag tag)
 		{
-			return (!string.IsNullOrEmpty(tag.Comment) || !string.IsNullOrWhiteSpace(tag.Comment))
-				&& (tag.Comment.StartsWith("https://media.discordapp.net/attachments/") || tag.Comment.StartsWith("https://cdn.discordapp.com/"));
+			var comment = tag.Comment;
+			return (!string.IsNullOrEmpty(comment) || !string.IsNullOrWhiteSpace(comment))
+				&& (comment.StartsWith("https://media.discordapp.net/attachments/") || comment.StartsWith("https://cdn.discordapp.com/"));
 		}
 
 		public static DiscordColor RandomColor()
