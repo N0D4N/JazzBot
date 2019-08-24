@@ -157,11 +157,6 @@ namespace JazzBot.Commands
 			var remoteMusic = this.GuildMusic.MusicSources[(int) MusicSourceType.RemoteMusicData] as RemoteMusicData;
 			remoteMusic.Add(tracks);
 
-
-
-			if (this.GuildMusic.PlayingMessage == null)
-				this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
-
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
 			if (this.GuildMusic.IsPlaying)
 			{
