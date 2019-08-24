@@ -217,6 +217,7 @@ namespace JazzBot.Commands
 		[Command("PlayNext")]
 		[Description("Ищет песню по названию и воспроизводит ее следующей")]
 		[Aliases("pn", "enqueue")]
+		[Cooldown(5, 15, CooldownBucketType.Guild)]
 		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songName)
 		{
 			if (string.IsNullOrWhiteSpace(songName))
@@ -280,6 +281,8 @@ namespace JazzBot.Commands
 
 		[Command("Skip")]
 		[Description("Останавливает воспроизведение текущей песни и начинает воспроизведение следующей в очереди песни")]
+		[Aliases("s")]
+		[Cooldown(5, 15, CooldownBucketType.Guild)]
 		public async Task Skip(CommandContext context)
 		{
 			this.GuildMusic.Skip();
