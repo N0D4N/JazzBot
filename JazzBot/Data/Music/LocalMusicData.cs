@@ -56,7 +56,6 @@ namespace JazzBot.Data.Music
 			this.Seed = dGuild.Seed;
 			this.PlaylistName = dGuild.PlaylistName;
 			this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
-			this.ChangeCurrentSong(false);
 		}
 
 		/// <summary>

@@ -73,10 +73,11 @@ namespace JazzBot.Commands
 			if (this.GuildMusic.IsPlaying)
 				return;
 			await this.GuildMusic.CreatePlayerAsync(context.Member.VoiceState.Channel).ConfigureAwait(false);
-			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 
 
 			await this.GuildMusic.Start();
+			await Task.Delay(3000);
+			this.GuildMusic.PlayingMessage = await context.RespondAsync(embed: await this.GuildMusic.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
 		}
 
 		[Command("Play")]
@@ -238,10 +239,9 @@ namespace JazzBot.Commands
 			var listMsg = await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Предолагаемый список песен")
 				.WithDescription(description.ToString())
-				.WithFooter($"Отправьте {Formatter.InlineCode("x")} для отмены")).ConfigureAwait(false);
+				.WithFooter($"Отправьте {Formatter.InlineCode("0")} для отмены")).ConfigureAwait(false);
 
 			var msg = await interactivity.WaitForMessageAsync(xm => xm.Author.Id == context.User.Id, TimeSpan.FromSeconds(45));
-			await listMsg.DeleteAsync().ConfigureAwait(false);
 
 			if (!msg.TimedOut)
 			{
@@ -257,21 +257,24 @@ namespace JazzBot.Commands
 
 
 					}
+					else if (res == 0)
+					{
+						await listMsg.ModifyAsync("Выбор отменен", null).ConfigureAwait(false);
+						await Task.Delay(TimeSpan.FromSeconds(30));
+						await listMsg.DeleteAsync();
+					}
 					else
 					{
 						await listMsg.ModifyAsync("Данное число выходит за границы", null).ConfigureAwait(false);
+						await Task.Delay(TimeSpan.FromSeconds(30));
+						await listMsg.DeleteAsync();
 					}
-				}
-				else if (msg.Result.Content.ToLowerInvariant() == "x")
-				{
-					await listMsg.ModifyAsync("Выбор отменен", null).ConfigureAwait(false);
-					await Task.Delay(TimeSpan.FromSeconds(30));
-					await listMsg.DeleteAsync();
 				}
 				else
 				{
 					await listMsg.ModifyAsync("Ответ не является числом или время вышло", null).ConfigureAwait(false);
-
+					await Task.Delay(TimeSpan.FromSeconds(30));
+					await listMsg.DeleteAsync();
 				}
 			}
 
