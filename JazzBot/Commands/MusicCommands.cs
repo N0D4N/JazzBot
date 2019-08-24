@@ -195,7 +195,6 @@ namespace JazzBot.Commands
 			await context.RespondAsync("Бот отключен").ConfigureAwait(false);
 		}
 
-
 		[Command("SwitchPlaylist")]
 		[Description("Сменить текущий плейлист")]
 		[Aliases("sp")]
@@ -208,7 +207,6 @@ namespace JazzBot.Commands
 			var localMS = this.GuildMusic.MusicSources[(int) MusicSourceType.LocalMusicData] as LocalMusicData;
 
 			await localMS.ChangePlaylistAsync(playlistName);
-
 
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Плейлист успешно изменен на {playlistName}")).ConfigureAwait(false);
@@ -254,7 +252,8 @@ namespace JazzBot.Commands
 						await listMsg.ModifyAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 							.WithTitle($"Следующей песней будет {playNexts[res - 1].Title}").Build()).ConfigureAwait(false);
 
-
+						await Task.Delay(TimeSpan.FromSeconds(30));
+						await listMsg.DeleteAsync();
 					}
 					else if (res == 0)
 					{
