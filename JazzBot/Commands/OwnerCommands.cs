@@ -166,10 +166,9 @@ namespace JazzBot.Commands
 			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
 
 			this.Database.Playlist.RemoveRange(this.Database.Playlist.Where(x => x.PlaylistName == playlistName));
-			if (await this.Database.SaveChangesAsync() <= 0)
-				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+			await this.Database.SaveChangesAsync();
 			var songs = new List<Songs>();
-			string text = "";
+			string text = "nonwhitespacetext";
 
 			var sr = new StreamReader(file.FullName);
 			for (int i = this.Database.Playlist.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
@@ -184,9 +183,10 @@ namespace JazzBot.Commands
 			sr.DiscardBufferedData();
 			sr.Dispose();
 
-			await this.Database.Playlist.AddRangeAsync(songs).ConfigureAwait(false);
+			await this.Database.Playlist.AddRangeAsync(songs);
 
-			if (await this.Database.SaveChangesAsync().ConfigureAwait(false) <= 0)
+			int count = await this.Database.SaveChangesAsync();
+			if (count <= 0)
 				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
 		}
 
