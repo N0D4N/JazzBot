@@ -57,7 +57,6 @@ namespace JazzBot.Commands
 		[Aliases("fillap")]
 		public async Task FillAllPlaylists(CommandContext context)
 		{
-			var songs = new List<Songs>();
 			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
 			{
 				await this.UpdatePlaylistAsync(file).ConfigureAwait(false);

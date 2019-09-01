@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -17,28 +16,20 @@ namespace JazzBot.Commands
 	[Group("InfoCommands")]
 	[Description("Команды показывающие информацию о боте")]
 	[Aliases("info", "inf")]
-	public sealed class Info : BaseCommandModule
+	public sealed class InfoCommands : BaseCommandModule
 	{
+		private Bot Bot { get; }
+
+		public InfoCommands(Bot bot)
+		{
+			this.Bot = bot;
+		}
+
 		[Command("BotInfo")]
 		[Description("Показывает информацию о этом боте")]
 		[Aliases("about")]
 		public async Task BotInfo(CommandContext context)
 		{
-			var jbv = typeof(Bot)
-				.GetTypeInfo()
-				.Assembly
-				?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-				?.InformationalVersion
-
-				??
-
-				typeof(Bot)
-				.GetTypeInfo()
-				.Assembly
-				.GetName()
-				.Version
-				.ToString(3);
-
 			long memoryBytes = Process.GetCurrentProcess().PrivateMemorySize64;
 
 			var dspv = context.Client.VersionString;
@@ -49,17 +40,17 @@ namespace JazzBot.Commands
 			var embed = new DiscordEmbedBuilder
 			{
 
-				Description = $"{Formatter.MaskedUrl(context.Client.CurrentUser.Username, new Uri("https://github.com/N0D4N/JazzBot"))} - создан на C# c помощью библиотеки {Formatter.MaskedUrl("DSharpPlus", new Uri("https://github.com/DSharpPlus/DSharpPlus"))}",
+				Description = $"{Formatter.MaskedUrl(this.Bot.LogName, new Uri("https://github.com/N0D4N/JazzBot"))} - создан на C# c помощью библиотеки {Formatter.MaskedUrl("DSharpPlus", new Uri("https://github.com/DSharpPlus/DSharpPlus"))}",
 				Color = DiscordColor.Black,
 				Timestamp = DateTimeOffset.Now,
 				ThumbnailUrl = context.Client.CurrentUser.AvatarUrl
 			}
 			.WithAuthor($"{owner.Username}", iconUrl: owner.AvatarUrl)
-			.AddField("Память занимаемая приложением", $"{memoryBytes.ToSize(SizeUnits.MB)}MB")
-			.AddField("Пинг", context.Client.Ping.ToString() + " мс", true)
+			.AddField("Память занимаемая приложением", $"{memoryBytes.ToSize(SizeUnits.MB)} MB")
+			.AddField("Пинг", context.Client.Ping + " мс", true)
 			.AddField("Время работы", this.ProcessUptime(), true)
 			.AddField("Количество обслуживаемых серверов", context.Client.Guilds.Count.ToString(), true)
-			.AddField("Версия бота", jbv, true)
+			.AddField("Версия бота", this.Bot.Version, true)
 			.AddField("Версия DSharpPlus", dspv, true)
 			.AddField("Версия .NET Core", dncv, true);
 			await context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);

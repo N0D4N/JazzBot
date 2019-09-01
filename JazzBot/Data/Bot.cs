@@ -2,6 +2,7 @@
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using System.Reflection;
 
 namespace JazzBot.Data
 {
@@ -34,13 +35,31 @@ namespace JazzBot.Data
 		public DiscordChannel CoverArtsChannel { get; private set; }
 
 
-		public JazzBotConfig Config {get;}
+		public JazzBotConfig Config { get; }
+
+		public string Version { get; }
+
+		public string LogName { get; set; }
 
 
 		public Bot(JazzBotConfig config, DiscordClient client)
 		{
 			this.PathToDirectoryWithPlaylists = config.Miscellaneous.PathToDirectoryWithPlaylists;
 			this.Config = config;
+			this.Version = typeof(Bot)
+								.GetTypeInfo()
+								.Assembly
+								.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+								?.InformationalVersion
+
+							??
+
+							typeof(Bot)
+								.GetTypeInfo()
+								.Assembly
+								.GetName()
+								.Version
+								.ToString(3);
 			client.Ready += this.Client_Ready;
 		}
 

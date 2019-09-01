@@ -36,7 +36,6 @@ namespace JazzBot
 
 		private IServiceProvider Services { get; set; }
 
-		private string LogName { get; set; } = null;
 
 		public static void Main(string[] args)
 		{
@@ -112,11 +111,11 @@ namespace JazzBot
 			this.Commands.CommandErrored += this.Commands_CommandErrored;
 
 
-			this.Commands.RegisterCommands<Ungrupped>();
+			this.Commands.RegisterCommands<UngruppedCommands>();
 			this.Commands.RegisterCommands<MusicCommands>();
 			this.Commands.RegisterCommands<OwnerCommands>();
 			this.Commands.RegisterCommands<TagCommands>();
-			this.Commands.RegisterCommands<Info>();
+			this.Commands.RegisterCommands<InfoCommands>();
 			this.Commands.SetHelpFormatter<JazzBotHelpFormatter>();
 
 			var icfg = new InteractivityConfiguration
@@ -136,21 +135,22 @@ namespace JazzBot
 
 		private Task Voice_VoiceServerUpdate(VoiceServerUpdateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Voice server in {e.Guild.Name} changed to {e.Endpoint}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, $"Voice server in {e.Guild.Name} changed to {e.Endpoint}", DateTime.Now);
 			return Task.CompletedTask;
 		}
 
 
 		private async Task Client_Ready(ReadyEventArgs e)
 		{
-			if (this.LogName == null)
-				this.LogName = e.Client.CurrentUser.Username;
+			if (this.Bot.LogName == null)
+			{
+				this.Bot.LogName = e.Client.CurrentUser.Username;
 
-			Console.Title = this.LogName;
+				Console.Title = this.Bot.LogName;
+			}
 
 
-
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, "Бот готов к работе.", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Бот готов к работе.", DateTime.Now);
 
 			var db = new DatabaseContext();
 
@@ -181,7 +181,7 @@ namespace JazzBot
 
 		private async Task Client_ClientError(ClientErrorEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Error, this.Bot.LogName, $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
 
 			var chn = this.Bot.ErrorChannel;
@@ -213,19 +213,19 @@ namespace JazzBot
 
 		private Task Client_GuildAvailable(GuildCreateEventArgs e)
 		{
-			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"Доступен сервер: {e.Guild.Name}", DateTime.Now);
+			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, $"Доступен сервер: {e.Guild.Name}", DateTime.Now);
 			return Task.CompletedTask;
 		}
 
 		private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
 		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, this.LogName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
 			return Task.CompletedTask;
 		}
 
 		private async Task Commands_CommandErrored(CommandErrorEventArgs e)
 		{
-			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, this.LogName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+			e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, this.Bot.LogName, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
 
 
 			var ex = e.Exception;

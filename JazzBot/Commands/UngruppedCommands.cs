@@ -14,11 +14,11 @@ using JazzBot.Utilities;
 
 namespace JazzBot.Commands
 {
-	public sealed class Ungrupped : BaseCommandModule
+	public sealed class UngruppedCommands : BaseCommandModule
 	{
 		private Bot Bot { get; }
 
-		public Ungrupped(Bot bot)
+		public UngruppedCommands(Bot bot)
 			=> this.Bot = bot;
 
 		[Command("UserInfo")]
