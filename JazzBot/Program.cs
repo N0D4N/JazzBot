@@ -36,6 +36,7 @@ namespace JazzBot
 
 		private IServiceProvider Services { get; set; }
 
+		private string DeleteEmojiName { get; set; }
 
 		public static void Main(string[] args)
 		{
@@ -149,6 +150,7 @@ namespace JazzBot
 				Console.Title = this.Bot.LogName;
 			}
 
+			this.DeleteEmojiName = DiscordEmoji.FromName(e.Client, ":no_entry_sign:").GetDiscordName();
 
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Бот готов к работе.", DateTime.Now);
 
@@ -200,15 +202,17 @@ namespace JazzBot
 		/// </summary>
 		private async Task Client_ReactionAdded(MessageReactionAddEventArgs e)
 		{
-			if (e.Message?.Author == null)
-				return;
-			if (e.Client.CurrentApplication.Owners.All(x => x.Id != e.User.Id) || e.Message.Author.Id != e.Client.CurrentUser.Id)
-				return;
-			var deleteEmoji = DiscordEmoji.FromName(e.Client, ":no_entry_sign:");
-			if (e.Emoji.GetDiscordName() != deleteEmoji.GetDiscordName())
-				return;
+			if (e.Client.CurrentApplication.Owners.Any(x => x.Id == e.User.Id))
+			{
+				DiscordMessage msg = null;
+				if (e.Message?.Author == null)
+					msg = await e.Channel.GetMessageAsync(e.Message.Id);
+				else
+					msg = e.Message;
 
-			await e.Message.DeleteAsync().ConfigureAwait(false);
+				if (msg.Author.IsCurrent && e.Emoji.GetDiscordName() == this.DeleteEmojiName)
+					await e.Message.DeleteAsync().ConfigureAwait(false);
+			}
 		}
 
 		private Task Client_GuildAvailable(GuildCreateEventArgs e)
