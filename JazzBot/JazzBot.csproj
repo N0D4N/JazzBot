@@ -24,10 +24,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00623" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00623" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00623" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00623" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00624" />
     <PackageReference Include="EPPlus" Version="4.5.3.2" />
     <PackageReference Include="F23.StringSimilarity" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
@@ -38,7 +38,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
-    <PackageReference Include="taglib" Version="2.1.0" />
+    <PackageReference Include="TagLibSharp" Version="2.2.0" />
   </ItemGroup>
 
 
