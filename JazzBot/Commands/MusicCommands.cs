@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +26,7 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class MusicCommands : BaseCommandModule
 	{
-		private static ImmutableArray<string> CommandsThatIgnoreVoiceState { get; } = ImmutableArray.CreateRange(new[] { "playlists", "playlist" });
+		private static readonly string[] CommandsThatIgnoreVoiceState = { "playlists", "playlist" };
 
 		private LavalinkService Lavalink { get; }
 
