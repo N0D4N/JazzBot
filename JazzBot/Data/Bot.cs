@@ -41,6 +41,9 @@ namespace JazzBot.Data
 
 		public string LogName { get; set; }
 
+		public string DeleteEmojiName { get; set; }
+
+
 
 		public Bot(JazzBotConfig config, DiscordClient client)
 		{

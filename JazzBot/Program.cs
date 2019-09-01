@@ -36,8 +36,6 @@ namespace JazzBot
 
 		private IServiceProvider Services { get; set; }
 
-		private string DeleteEmojiName { get; set; }
-
 		public static void Main(string[] args)
 		{
 			var prog = new Program();
@@ -150,7 +148,8 @@ namespace JazzBot
 				Console.Title = this.Bot.LogName;
 			}
 
-			this.DeleteEmojiName = DiscordEmoji.FromName(e.Client, ":no_entry_sign:").GetDiscordName();
+			if (string.IsNullOrWhiteSpace(this.Bot.DeleteEmojiName))
+				this.Bot.DeleteEmojiName = DiscordEmoji.FromName(e.Client, ":no_entry_sign:").GetDiscordName();
 
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Бот готов к работе.", DateTime.Now);
 
@@ -210,7 +209,7 @@ namespace JazzBot
 				else
 					msg = e.Message;
 
-				if (msg.Author.IsCurrent && e.Emoji.GetDiscordName() == this.DeleteEmojiName)
+				if (msg.Author.IsCurrent && e.Emoji.GetDiscordName() == this.Bot.DeleteEmojiName)
 					await e.Message.DeleteAsync().ConfigureAwait(false);
 			}
 		}
