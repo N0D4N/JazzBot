@@ -50,7 +50,6 @@ namespace JazzBot.Utilities
 		public static DiscordEmbedBuilder CommandErrorEmbed(DiscordMember member, Command command)
 		{
 			return ErrorEmbed()
-				.AddField("Примечание", $"Если вы считаете что бот неправ воспользуйтесь командой {Formatter.InlineCode("report")}", false)
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl)
 				.WithFooter($"Комманда \"{command.QualifiedName}\"");
 		}

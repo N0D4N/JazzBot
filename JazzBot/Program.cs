@@ -235,8 +235,6 @@ namespace JazzBot
 			// Check if exception is result of command prechecks.
 			if (ex is ChecksFailedException exep)
 			{
-
-
 				var failedchecks = exep.FailedChecks.First();
 				// Bot is lacking permissions.
 				if (failedchecks is RequireBotPermissionsAttribute reqbotperm)
@@ -293,7 +291,7 @@ namespace JazzBot
 			// In most cases exception caused by user that inputted wrong info.
 			else if (ex is ArgumentException argEx)
 			{
-				var description = new StringBuilder($"Произошла ошибка, скорее всего, связанная с данными вводимыми пользователями, с сообщением: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
+				var description = new StringBuilder($"Сообщение: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
 				if (!string.IsNullOrEmpty(argEx.ParamName))
 					description.AppendLine($"Название параметра {Formatter.InlineCode(argEx.ParamName)}.");
 				await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
