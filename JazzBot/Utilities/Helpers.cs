@@ -26,25 +26,26 @@ namespace JazzBot.Utilities
 		/// <returns>Pseudorandom number within <paramref name="minValue"/> and <paramref name="maxValue"/></returns>
 		public static int CryptoRandom(int minValue, int maxValue)
 		{
-			var provider = new RNGCryptoServiceProvider();
-			var uint32Buffer = new byte[4];
 			if (minValue > maxValue)
 				throw new ArgumentOutOfRangeException(nameof(minValue));
 			if (minValue == maxValue)
 				return minValue;
-			long diff = maxValue - minValue;
-			while (true)
-			{
-				provider.GetBytes(uint32Buffer);
-				uint rand = BitConverter.ToUInt32(uint32Buffer, 0);
+			var provider = new RNGCryptoServiceProvider();
 
-				long max = (1 + (long) uint.MaxValue);
-				long remainder = max % diff;
-				if (rand < max - remainder)
-				{
-					return (int) (minValue + (rand % diff));
-				}
-			}
+			int diff = maxValue - minValue;
+			int remainder, rand, result;
+			var buffer = new byte[4];
+
+			do
+			{
+				provider.GetBytes(buffer);
+				rand = Math.Abs(BitConverter.ToInt32(buffer, 0));
+				remainder = rand % diff;
+				result = remainder + minValue;
+			} while (result > maxValue || result < minValue);
+
+			return result;
+
 		}
 
 		/// <summary>
