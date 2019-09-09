@@ -109,7 +109,7 @@ namespace JazzBot.Data.Music
 		{
 			if (this.LavalinkConnection != null && this.LavalinkConnection.IsConnected)
 				return;
-			this.LavalinkConnection = await this.Lavalink.LavalinkNode.ConnectAsync(channel).ConfigureAwait(false);
+			this.LavalinkConnection = await this.Lavalink.LavalinkNode.ConnectAsync(channel);
 			this.LavalinkConnection.PlaybackFinished += this.PlaybackFinished;
 		}
 
@@ -175,12 +175,12 @@ namespace JazzBot.Data.Music
 			if (this.LavalinkConnection != null)
 			{
 				if (this.IsMessageLast())
-					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+					await this.PlayingMessage.ModifyAsync(embed: await this.NowPlayingEmbedAsync()).ConfigureAwait(false);
 				else
 				{
 					var chn = this.PlayingMessage.Channel;
 					await this.PlayingMessage.DeleteAsync();
-					this.PlayingMessage = await chn.SendMessageAsync(embed: await this.NowPlayingEmbedAsync().ConfigureAwait(false)).ConfigureAwait(false);
+					this.PlayingMessage = await chn.SendMessageAsync(embed: await this.NowPlayingEmbedAsync()).ConfigureAwait(false);
 				}
 
 				var musicSource = this.MusicSources.First(x => x.IsPresent());
