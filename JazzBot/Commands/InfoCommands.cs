@@ -40,7 +40,7 @@ namespace JazzBot.Commands
 
 			var dspVersion = context.Client.VersionString;
 
-			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(3);
+			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2)
 			var owner = context.Client.CurrentApplication.Owners.First();
 
 			var description = new StringBuilder();
