@@ -40,7 +40,7 @@ namespace JazzBot.Commands
 
 			var dspVersion = context.Client.VersionString;
 
-			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2)
+			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
 			var owner = context.Client.CurrentApplication.Owners.First();
 
 			var description = new StringBuilder();
@@ -50,6 +50,8 @@ namespace JazzBot.Commands
 
 			description.AppendLine(
 					$"{Formatter.MaskedUrl(this.Bot.LogName, botReposUri)} - создан на C# c помощью библиотеки {Formatter.MaskedUrl("DSharpPlus", dspReposUri)}")
+				.AppendLine()
+				.AppendLine($"Префиксы - {string.Join(", ", this.Bot.Config.Discord.Prefixes.Select(x => Formatter.InlineCode(x)))}")
 				.AppendLine()
 				.AppendLine("Статистика бота")
 				.AppendLine($"```cs")
