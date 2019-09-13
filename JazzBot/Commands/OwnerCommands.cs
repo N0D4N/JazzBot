@@ -68,12 +68,12 @@ namespace JazzBot.Commands
 
 		[Command("Exit")]
 		[Description("Выключает бота")]
-		public async Task Restart(CommandContext context)
+		public async Task Restart(CommandContext context, [Description("Code to exit bot with. 0 is for exiting bot completely. Any other for restart.")] int exitCode)
 		{
 			await context.RespondAsync("Бот будет выключен через 1 секунду").ConfigureAwait(false);
 			await context.Client.UpdateStatusAsync(new DiscordActivity("Выключается", ActivityType.Playing), UserStatus.DoNotDisturb).ConfigureAwait(false);
 			await context.Client.DisconnectAsync();
-			Environment.Exit(0);
+			Environment.Exit(exitCode);
 		}
 
 		[Command("test")]
