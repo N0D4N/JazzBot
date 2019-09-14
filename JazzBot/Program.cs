@@ -15,6 +15,7 @@ using JazzBot.Attributes;
 using JazzBot.Commands;
 using JazzBot.Data;
 using JazzBot.Enums;
+using JazzBot.Exceptions;
 using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -165,7 +166,7 @@ namespace JazzBot
 				};
 				await db.Configs.AddAsync(config);
 				if (await db.SaveChangesAsync() <= 0)
-					throw new CustomJbException("Не удалось обновить БД", ExceptionType.DatabaseException);
+					throw new DatabaseException("Не удалось обновить БД", DatabaseActionType.Update);
 				await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 
 			}
@@ -289,59 +290,21 @@ namespace JazzBot
 					return;
 				}
 			}
-			// In most cases exception caused by user that inputted wrong info.
-			else if (ex is ArgumentException argEx)
+			else if (ex is DatabaseException dbEx)
 			{
-				var description = new StringBuilder($"Сообщение: \n{Formatter.InlineCode(argEx.Message)}\n в \n{Formatter.InlineCode(argEx.Source)}");
-				if (!string.IsNullOrEmpty(argEx.ParamName))
-					description.AppendLine($"Название параметра {Formatter.InlineCode(argEx.ParamName)}.");
+				var description = new StringBuilder("Произошла ошибка в работе БД, возможно стоит попробовать чуть позже.");
+				description.AppendLine(	string.IsNullOrWhiteSpace(dbEx.Message)
+					? $"Тип действия: {dbEx.ActionType.ToString()}"
+					: $"Сообщение - {Formatter.InlineCode(dbEx.Message)}. Тип действия: {dbEx.ActionType.ToString()}");
+
 				await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-					.WithTitle("Argument exception")
 					.WithDescription(description.ToString())).ConfigureAwait(false);
 				return;
 			}
-			else if (ex is CustomJbException jbEx)
+			else if(ex is DiscordUserInputException inputEx)
 			{
-				switch (jbEx.ExceptionType)
-				{
-					case ExceptionType.DatabaseException:
-						var embedDb = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Database exception")
-							.WithDescription($"Произошла ошибка связанная с работой БД с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}");
-						await e.Context.RespondAsync(embed: embedDb).ConfigureAwait(false);
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: embedDb).ConfigureAwait(false);
-						break;
-
-					case ExceptionType.PlaylistException:
-						var embedPl = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Playlist exception")
-							.WithDescription($"Произошла ошибка с работой плейлистов (скорее всего плейлиста не существует) с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}");
-						await e.Context.RespondAsync(embed: embedPl).ConfigureAwait(false);
-						break;
-
-					case ExceptionType.ForInnerPurposes:
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Inner Purposes Exception")
-							.WithDescription($"Произошла внутренняя ошибка с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
-						break;
-
-					case ExceptionType.Unknown:
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
-						break;
-
-					case ExceptionType.Default:
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
-						break;
-					default:
-						await this.Bot.ErrorChannel.SendMessageAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-							.WithTitle("Неизвестная или дефолтная ошибка")
-							.WithDescription($"с сообщением: \n{Formatter.InlineCode(jbEx.Message)}\n в \n{Formatter.InlineCode(jbEx.Source)}")).ConfigureAwait(false);
-						break;
-				}
+				await e.Context.RespondAsync($"{inputEx.Message}. Название параметра {inputEx.ArgumentName}").ConfigureAwait(false);
+				return;
 			}
 			else if (ex is CommandNotFoundException commandNotFoundException)
 			{

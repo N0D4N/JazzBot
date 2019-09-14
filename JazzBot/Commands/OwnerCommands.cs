@@ -10,6 +10,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using JazzBot.Data;
 using JazzBot.Enums;
+using JazzBot.Exceptions;
 using JazzBot.Services;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -41,11 +42,11 @@ namespace JazzBot.Commands
 		public async Task FillPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")]string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))
-				throw new ArgumentException("Название плейлиста не может быть пустым или состоять из пробелов", nameof(name));
+				throw new DiscordUserInputException("Название плейлиста не может быть пустым или состоять из пробелов", nameof(name));
 			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + name + ".txt");
 			if (!file.Exists)
 			{
-				throw new ArgumentException($"Файла плейлиста {name}.txt не существует", nameof(name));
+				throw new DiscordUserInputException($"Файла плейлиста {name}.txt не существует", nameof(name));
 			}
 			await this.UpdatePlaylistAsync(name).ConfigureAwait(false);
 			await this.CreateExcelAsync(context.Client).ConfigureAwait(false);
@@ -97,10 +98,10 @@ namespace JazzBot.Commands
 		public async Task UpdatePresence(CommandContext context, [RemainingText, Description("Строчка которая будет отображаться в статусе")]string presenceText)
 		{
 			if (string.IsNullOrWhiteSpace(presenceText))
-				throw new ArgumentException("Строчка статус не должна быть пустой или состоять только из пробелов.", nameof(presenceText));
+				throw new DiscordUserInputException("Строчка статус не должна быть пустой или состоять только из пробелов.", nameof(presenceText));
 
 			if (presenceText.Length > 128)
-				throw new ArgumentException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
+				throw new DiscordUserInputException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));
 
 
 			var bId = (long) context.Client.CurrentUser.Id;
@@ -109,7 +110,7 @@ namespace JazzBot.Commands
 			this.Database.Configs.Update(config);
 			if (await this.Database.SaveChangesAsync() <= 0)
 			{
-				throw new CustomJbException("Не удалось обновить БД", ExceptionType.DatabaseException);
+				throw new DatabaseException("Не удалось обновить \"presence\" бота в базе данных", DatabaseActionType.Update);
 			}
 			await context.Client.UpdateStatusAsync(new DiscordActivity(presenceText, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 		}
@@ -123,14 +124,15 @@ namespace JazzBot.Commands
 					[RemainingText, Description("Id пользователя")] ulong userId)
 		{
 			if (!context.Client.Guilds.TryGetValue(guildId, out var guild))
-				throw new ArgumentException($"Не удалось найти сервер с таким id {guildId}, проверьте правильность ввода если необходимо", nameof(guildId));
+				throw new DiscordUserInputException($"Не удалось найти сервер с таким id {guildId}, проверьте правильность ввода если необходимо", nameof(guildId));
 			if (!guild.Members.TryGetValue(userId, out var user))
 			{
 				await context.RespondAsync("Пользователь покинул сервер (скорее всего о-О)").ConfigureAwait(false);
 				return;
 			}
 			if (!guild.Channels.TryGetValue(channelId, out var channel))
-				throw new ArgumentException($"Не удалось найти канал с таким id {channelId}, проверьте правильность ввода если необходимо", nameof(channelId));
+				throw new DiscordUserInputException($"Не удалось найти канал с таким id {channelId}, проверьте правильность ввода если необходимо", nameof(channelId));
+
 			await channel.SendMessageAsync($"{user.Mention}, ошибка о которой вы сообщили была исправлена, спасибо за сотрудничество").ConfigureAwait(false);
 		}
 
@@ -147,7 +149,7 @@ namespace JazzBot.Commands
 			config.Presence = updatePresence;
 			this.Database.Configs.Update(config);
 			if (await this.Database.SaveChangesAsync() <= 0)
-				throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
+				throw new DatabaseException("Не удалось обновить \"presence\" бота в базе данных", DatabaseActionType.Update);
 
 
 		}
@@ -186,7 +188,7 @@ namespace JazzBot.Commands
 
 			int count = await this.Database.SaveChangesAsync();
 			if (count <= 0)
-				throw new CustomJbException("Не удалось сохранить обновленный плейлист в БД", ExceptionType.DatabaseException);
+				throw new DatabaseException("Не удалось сохранить обновленный плейлист в БД", DatabaseActionType.Update);
 		}
 
 		private async Task CreateExcelAsync(DiscordClient client)

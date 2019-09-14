@@ -15,6 +15,7 @@ using F23.StringSimilarity;
 using JazzBot.Attributes;
 using JazzBot.Data;
 using JazzBot.Enums;
+using JazzBot.Exceptions;
 using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -44,13 +45,13 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Содержимое тега")] string contents)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или иметь такое же название как команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или иметь такое же название как команды.", nameof(name));
 
 			if (string.IsNullOrWhiteSpace(contents))
-				throw new ArgumentException("Содержимое тега не может быть пустым или содержать только пробелы.", nameof(contents));
+				throw new DiscordUserInputException("Содержимое тега не может быть пустым или содержать только пробелы.", nameof(contents));
 
 			if (contents.Length > 2000)
-				throw new ArgumentException("Длина содержимого тега не может превышать 2000 символов.", nameof(contents));
+				throw new DiscordUserInputException("Длина содержимого тега не может превышать 2000 символов.", nameof(contents));
 
 			name = name.ToLowerInvariant();
 
@@ -68,7 +69,7 @@ namespace JazzBot.Commands
 
 			if (this.Database.Tags?.Any(t => t.Name == tag.Name && t.GuildId == tag.GuildId) == true)
 			{
-				throw new ArgumentException("Тег с таким именем существует на данном сервере.", nameof(name));
+				throw new DiscordUserInputException("Тег с таким именем существует на данном сервере.", nameof(name));
 			}
 
 			await this.Database.Tags.AddAsync(tag).ConfigureAwait(false);
@@ -80,8 +81,7 @@ namespace JazzBot.Commands
 			}
 			else
 			{
-				throw new CustomJbException($"Не удалось создать тег {name}. Попробуйте снова.",
-					ExceptionType.DatabaseException);
+				throw new DatabaseException($"Не удалось создать тег {name}. Попробуйте снова.", DatabaseActionType.Add);
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Название тега который нужно удалить")] string name)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться так же как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться так же как и команды.", nameof(name));
 
 			name = name.ToLowerInvariant();
 
@@ -102,7 +102,7 @@ namespace JazzBot.Commands
 			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
@@ -116,9 +116,9 @@ namespace JazzBot.Commands
 				}
 				else
 				{
-					throw new CustomJbException(
+					throw new DatabaseException(
 						$"Не удалось удалить тег {name}. Убедитесь в том что тег существует, в правильности написания названия и в том что вы являетесь владельцем тега.",
-						ExceptionType.DatabaseException);
+						DatabaseActionType.Remove);
 				}
 			}
 		}
@@ -131,14 +131,14 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Название тега который нужно удалить")]string name)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 
 			name = name.ToLowerInvariant();
 			var gId = (long) context.Guild.Id;
 			Tag tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия названия тега.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия названия тега.", nameof(name));
 			}
 			else
 			{
@@ -150,7 +150,7 @@ namespace JazzBot.Commands
 						.WithTitle($"Тег {name} успешно удален")).ConfigureAwait(false);
 				}
 				else
-					throw new CustomJbException($"Не удалось удалить тег {name}. Убедитесь в том что тег существует и правильности написания названия.", ExceptionType.DatabaseException);
+					throw new DatabaseException($"Не удалось удалить тег {name}. Убедитесь в том что тег существует и правильности написания названия.", DatabaseActionType.Remove);
 			}
 
 		}
@@ -164,14 +164,14 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Новое содержимое тега")]string newContent)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 
 
 			if (string.IsNullOrWhiteSpace(newContent))
-				throw new ArgumentException("Содержимое тега не может быть пустым или содержать одни пробелы.", nameof(newContent));
+				throw new DiscordUserInputException("Содержимое тега не может быть пустым или содержать одни пробелы.", nameof(newContent));
 
 			if (newContent.Length > 2000)
-				throw new ArgumentException("Длина содержимого тега не должна превышать.", nameof(newContent));
+				throw new DiscordUserInputException("Длина содержимого тега не должна превышать.", nameof(newContent));
 
 
 			name = name.ToLowerInvariant();
@@ -182,7 +182,7 @@ namespace JazzBot.Commands
 			Tag tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
@@ -197,7 +197,7 @@ namespace JazzBot.Commands
 
 				}
 				else
-					throw new CustomJbException($"Не удалось изменить тег {name}", ExceptionType.DatabaseException);
+					throw new DatabaseException($"Не удалось изменить тег {name}", DatabaseActionType.Update);
 			}
 
 		}
@@ -211,13 +211,13 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Новое содержимое тега")]string newContent)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 
 			if (string.IsNullOrWhiteSpace(newContent))
-				throw new ArgumentException("Контент тега не может быть пустым или содержать одни пробелы.", nameof(newContent));
+				throw new DiscordUserInputException("Контент тега не может быть пустым или содержать одни пробелы.", nameof(newContent));
 
 			if (newContent.Length > 2000)
-				throw new ArgumentException("Контент тега не может содержать больше 2000 символов.", nameof(newContent));
+				throw new DiscordUserInputException("Контент тега не может содержать больше 2000 символов.", nameof(newContent));
 
 
 			name = name.ToLowerInvariant();
@@ -226,7 +226,7 @@ namespace JazzBot.Commands
 
 			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
 			else
 			{
 				tag.TagContent = newContent;
@@ -240,7 +240,7 @@ namespace JazzBot.Commands
 				}
 				else
 				{
-					throw new CustomJbException("Не удалось изменить тег", ExceptionType.DatabaseException);
+					throw new DatabaseException($"Не удалось изменить тег {name}", DatabaseActionType.Update);
 				}
 			}
 		}
@@ -290,7 +290,7 @@ namespace JazzBot.Commands
 		public async Task Info(CommandContext context, [RemainingText, Description("Название тега")] string name)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться также как и команды.", nameof(name));
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
@@ -298,7 +298,7 @@ namespace JazzBot.Commands
 			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия.", nameof(name));
 			}
 			else
 			{
@@ -327,9 +327,10 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Название тега")] string name)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или называться как команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или называться как команды.", nameof(name));
 			if (memberToGive.Id == context.Member.Id)
-				throw new ArgumentException("Вы не можете передать себе владельство над тегом", nameof(memberToGive));
+				throw new DiscordUserInputException("Вы не можете передать себе владельство над тегом", nameof(memberToGive));
+
 			name = name.ToLowerInvariant();
 
 			var gId = (long) context.Guild.Id;
@@ -338,7 +339,7 @@ namespace JazzBot.Commands
 			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId && t.OwnerId == uId).ConfigureAwait(false);
 			if (tag == null)
 			{
-				throw new ArgumentException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
+				throw new DiscordUserInputException("Тега с таким названием на этом сервере не существует, убедитесь в правильности написания названия и в том что вы являетесь владельцем данного тега.", nameof(name));
 			}
 			else
 			{
@@ -350,7 +351,7 @@ namespace JazzBot.Commands
 						.WithTitle($"Владельство над тегом {Formatter.InlineCode(tag.Name)} успешно передано {memberToGive.Mention}"))
 						.ConfigureAwait(false);
 				else
-					throw new CustomJbException($"Не удалось передать владельство над тегом { Formatter.InlineCode(tag.Name) } - { memberToGive.Mention}", ExceptionType.DatabaseException);
+					throw new DatabaseException($"Не удалось передать владельство над тегом { Formatter.InlineCode(tag.Name) } - { memberToGive.Mention}", DatabaseActionType.Update);
 			}
 		}
 
@@ -359,7 +360,7 @@ namespace JazzBot.Commands
 		public async Task Claim(CommandContext context, [RemainingText, Description("Название тега")] string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))
-				throw new ArgumentException("Название тега не должно быть пустым", nameof(name));
+				throw new DiscordUserInputException("Название тега не должно быть пустым", nameof(name));
 			var gId = (long) context.Guild.Id;
 			var tag = await this.Database.Tags.SingleOrDefaultAsync(t => t.Name == name && t.GuildId == gId).ConfigureAwait(false);
 			DiscordUser owner = null;
@@ -377,15 +378,16 @@ namespace JazzBot.Commands
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Вы успешно получили владельство над тегом {tag.Name}")).ConfigureAwait(false);
+					return;
 				}
 				else
-					throw new CustomJbException("Не удалось обновить владельство над тегом  хотя его владелец покинул сервер", ExceptionType.DatabaseException);
+					throw new DatabaseException("Не удалось обновить владельство над тегом  хотя его владелец покинул сервер", DatabaseActionType.Save);
 			}
-			finally
-			{
-				owner = await context.Client.GetUserAsync(ownId).ConfigureAwait(false);
-				throw new CustomJbException($"Не удалось получить владельство над тегом {tag.Name}, так как его владелец {owner.Username}#{owner.Discriminator} все еще находится на сервере", ExceptionType.Unknown);
-			}
+			
+			owner = await context.Client.GetUserAsync(ownId).ConfigureAwait(false);
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithDescription($"Не удалось получить владельство над тегом {tag.Name}, так как его владелец {owner.Mention} все еще находится на сервере")).ConfigureAwait(false);
+			
 		}
 
 		[Command("UserStats")]
@@ -466,7 +468,7 @@ namespace JazzBot.Commands
 		public async Task ExecuteGroup(CommandContext context, [RemainingText, Description("Название тега для отображения")] string name)
 		{
 			if (string.IsNullOrWhiteSpace(name) || ForbiddenNames.Contains(name.ToLower()))
-				throw new ArgumentException("Название тега не может быть пустым, полностью состоять из пробелов или быть называться также как и команды.", nameof(name));
+				throw new DiscordUserInputException("Название тега не может быть пустым, полностью состоять из пробелов или быть называться также как и команды.", nameof(name));
 
 			var gId = (long) context.Guild.Id;
 
@@ -476,7 +478,7 @@ namespace JazzBot.Commands
 				var nL = new NormalizedLevenshtein();
 				var tags = await this.Database.Tags.Where(t => t.GuildId == gId).OrderBy(t => nL.Distance(t.Name, name)).ToArrayAsync().ConfigureAwait(false);
 				if (tags?.Any() == false)
-					throw new ArgumentException("Тегов на этом сервере не найдено");
+					throw new DiscordUserInputException("Тегов на этом сервере не найдено", nameof(tags));
 				string suggestions =
 					(tags.Length >= 10
 					?
@@ -493,7 +495,7 @@ namespace JazzBot.Commands
 				this.Database.Tags.Update(tag);
 				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
 				if (modCount <= 0)
-					throw new CustomJbException("Не удалось обновить количество использований в базе данных", ExceptionType.DatabaseException);
+					throw new DatabaseException("Не удалось обновить количество использований в базе данных", DatabaseActionType.Save);
 			}
 
 

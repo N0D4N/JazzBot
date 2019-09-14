@@ -10,6 +10,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using JazzBot.Attributes;
 using JazzBot.Data;
+using JazzBot.Exceptions;
 using JazzBot.Utilities;
 
 namespace JazzBot.Commands
@@ -35,12 +36,12 @@ namespace JazzBot.Commands
 		public async Task UserInfo(CommandContext context, [RemainingText, Description("Имя пользователя")] string memberName)
 		{
 			if (string.IsNullOrWhiteSpace(memberName))
-				throw new ArgumentException("Имя пользователя не может быть пустым или состоять из пробелов", nameof(memberName));
+				throw new DiscordUserInputException("Имя пользователя не может быть пустым или состоять из пробелов", nameof(memberName));
 			var member = context.Guild.Members.Values.FirstOrDefault(x => x.DisplayName == memberName || x.Username == memberName);
 			if (member != null)
 				await context.RespondAsync(embed: await this.MemberInfo(member, context).ConfigureAwait(false)).ConfigureAwait(false);
 			else
-				throw new ArgumentException($"Пользователя с никнеймом или юзернеймом {memberName} не найдено", nameof(memberName));
+				throw new DiscordUserInputException($"Пользователя с никнеймом или юзернеймом {memberName} не найдено", nameof(memberName));
 		}
 
 		[Command("Roll")]
@@ -73,7 +74,7 @@ namespace JazzBot.Commands
 		public async Task Choice(CommandContext context, [Description("Варианты среди которых нужно сделать выбор")] params string[] choices)
 		{
 			if (choices?.Any() != true)
-				throw new ArgumentException("Вы должны предоставить хотя бы 1 вариант для выбора", nameof(choices));
+				throw new DiscordUserInputException("Вы должны предоставить хотя бы 1 вариант для выбора", nameof(choices));
 			string x = choices[Helpers.CryptoRandom(0, choices.Length)].Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere");
 			await context.RespondAsync(x).ConfigureAwait(false);
 		}
@@ -84,7 +85,7 @@ namespace JazzBot.Commands
 		public async Task Ban(CommandContext context, [Description("ID пользователя которого нужно забанить")]ulong id, [RemainingText, Description("Причина бана")] string reason = "")
 		{
 			if (context.Member.Id == id)
-				throw new ArgumentException("Вы не можете забанить себя");
+				throw new DiscordUserInputException("Вы не можете забанить себя", nameof(id));
 			string userString = $"{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
 			string reasonString = string.IsNullOrWhiteSpace(reason) ? " отсутствует" : $": {reason}";
 
@@ -141,7 +142,7 @@ namespace JazzBot.Commands
 			[RemainingText, Description("Текст который нужно отправить")] string messageContent)
 		{
 			if (string.IsNullOrWhiteSpace(messageContent))
-				throw new ArgumentException("Содержимое сообщения не должно быть пустым", nameof(messageContent));
+				throw new DiscordUserInputException("Содержимое сообщения не должно быть пустым", nameof(messageContent));
 			var embed = new DiscordEmbedBuilder
 			{
 				Description = messageContent.Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere"),
@@ -165,7 +166,7 @@ namespace JazzBot.Commands
 		public async Task ErrorReport(CommandContext context, [RemainingText, Description("Описание ошибки")]string reportMessage)
 		{
 			if (string.IsNullOrWhiteSpace(reportMessage))
-				throw new ArgumentException("Сообщение об ошибке не может быть пустым или содержать только пробелы", nameof(reportMessage));
+				throw new DiscordUserInputException("Сообщение об ошибке не может быть пустым или содержать только пробелы", nameof(reportMessage));
 			var interactivity = context.Client.GetInteractivity();
 
 			var errMsg = await this.Bot.ReportChannel.SendMessageAsync(embed: new DiscordEmbedBuilder

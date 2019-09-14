@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using JazzBot.Enums;
+using JazzBot.Exceptions;
 using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -78,13 +79,13 @@ namespace JazzBot.Data.Music
 				if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
 				{
 					db.Dispose();
-					throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.DatabaseException);
+					throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
 				}
 			}
 			else
 			{
 				db.Dispose();
-				throw new CustomJbException($"Плейлиста {playlistName} не существует", ExceptionType.PlaylistException);
+				throw new DatabaseException($"Плейлиста {playlistName} не существует", DatabaseActionType.Get);
 			}
 		}
 
@@ -149,7 +150,7 @@ namespace JazzBot.Data.Music
 			else
 			{
 				db.Dispose();
-				throw new CustomJbException("Не удалось обновить базу данных", ExceptionType.ForInnerPurposes);
+				throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
 			}
 		}
 

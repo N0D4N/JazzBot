@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
+using JazzBot.Exceptions;
 using JazzBot.Services;
 
 
@@ -86,7 +86,7 @@ namespace JazzBot.Data.Music
 			}
 			else
 			{
-				throw new ArgumentException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
+				throw new DiscordUserInputException($"По ссылке {trackUri} не удалось загрузить трек", nameof(trackUri));
 			}
 		}
 

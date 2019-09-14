@@ -10,9 +10,9 @@ using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using JazzBot.Data;
 using JazzBot.Enums;
+using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.Extensions.PlatformAbstractions;
-using JazzBot.Services;
 
 namespace JazzBot.Commands
 {

@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Lavalink;
 using F23.StringSimilarity;
 using JazzBot.Data;
-using JazzBot.Services;
-using JazzBot.Utilities;
-using DSharpPlus.Entities;
-using Microsoft.EntityFrameworkCore;
 using JazzBot.Data.Music;
 using JazzBot.Enums;
+using JazzBot.Exceptions;
+using JazzBot.Services;
+using JazzBot.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace JazzBot.Commands
@@ -53,13 +54,13 @@ namespace JazzBot.Commands
 		{
 			if (!CommandsThatIgnoreVoiceState.Contains(context.Command.Name) && context.Member?.VoiceState.Channel == null)
 			{
-				throw new ArgumentException("Вы должны быть в голосовом канале", nameof(context.Member.VoiceState));
+				throw new DiscordUserInputException("Вы должны быть в голосовом канале", nameof(context.Member.VoiceState));
 			}
 
 			this.GuildMusic = await this.Music.GetOrCreateDataAsync(context.Guild).ConfigureAwait(false);
 
 			if (this.GuildMusic?.LavalinkConnection?.IsConnected == true && this.GuildMusic.LavalinkConnection.Channel.Id != context.Member.VoiceState.Channel.Id)
-				throw new ArgumentException("Вы должны находиться в том же голосовом канале что и бот", nameof(context.Member.VoiceState));
+				throw new DiscordUserInputException("Вы должны находиться в том же голосовом канале что и бот", nameof(context.Member.VoiceState));
 
 			await base.BeforeExecutionAsync(context).ConfigureAwait(false);
 		}
@@ -85,7 +86,7 @@ namespace JazzBot.Commands
 		{
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
-				throw new ArgumentException("Ошибка загрузки треков", nameof(trackUri));
+				throw new DiscordUserInputException("Ошибка загрузки треков", nameof(trackUri));
 
 			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)).ToArray();
 			var remoteMusic = this.GuildMusic.MusicSources[(int) MusicSourceType.RemoteMusicData] as RemoteMusicData;
@@ -119,7 +120,7 @@ namespace JazzBot.Commands
 				i++;
 			}
 			if (!searchResults.Any())
-				throw new ArgumentException("По заданному запросу на Youtube ничего не было найдено", nameof(searchQuery));
+				throw new DiscordUserInputException("По заданному запросу на Youtube ничего не было найдено", nameof(searchQuery));
 
 			var interactivity = context.Client.GetInteractivity();
 
@@ -149,7 +150,7 @@ namespace JazzBot.Commands
 			var selectedTrack = searchResults.ElementAt(result - 1);
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
-				throw new ArgumentException("По данной ссылке ничего не было найдено");
+				throw new DiscordUserInputException("По данной ссылке ничего не было найдено", nameof(selectedTrack));
 
 			var tracks = loadResult.Tracks.Select(x => new RemoteMusicItem(x, context.Member)).ToArray();
 
@@ -196,7 +197,7 @@ namespace JazzBot.Commands
 		public async Task SwitchPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")] string playlistName)
 		{
 			if (string.IsNullOrWhiteSpace(playlistName))
-				throw new ArgumentException("Название плейлиста не должно быть пустым", nameof(playlistName));
+				throw new DiscordUserInputException("Название плейлиста не должно быть пустым", nameof(playlistName));
 
 			var localMS = this.GuildMusic.MusicSources[(int) MusicSourceType.LocalMusicData] as LocalMusicData;
 
@@ -213,7 +214,7 @@ namespace JazzBot.Commands
 		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songName)
 		{
 			if (string.IsNullOrWhiteSpace(songName))
-				throw new ArgumentException("Название песни не должно быть пустым", nameof(songName));
+				throw new DiscordUserInputException("Название песни не должно быть пустым", nameof(songName));
 			var songs = await this.Database.Playlist.ToArrayAsync().ConfigureAwait(false);
 			var playNexts = new List<PlayNextElement>();
 			var nL = new NormalizedLevenshtein();
