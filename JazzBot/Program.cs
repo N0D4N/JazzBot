@@ -112,6 +112,7 @@ namespace JazzBot
 			this.Commands.RegisterCommands<OwnerCommands>();
 			this.Commands.RegisterCommands<TagCommands>();
 			this.Commands.RegisterCommands<InfoCommands>();
+			this.Commands.RegisterCommands<EmojiCommands>();
 			this.Commands.SetHelpFormatter<JazzBotHelpFormatter>();
 
 			var icfg = new InteractivityConfiguration

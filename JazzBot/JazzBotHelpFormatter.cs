@@ -98,6 +98,12 @@ namespace JazzBot
 					exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
 				}
 
+				if(command.ExecutionChecks.Any(x=> x is RequireBotPermissionsAttribute))
+				{
+					var perm = command.ExecutionChecks.Single(x => x is RequireBotPermissionsAttribute) as RequireBotPermissionsAttribute;
+					exChecksSb.AppendLine($"Требует у бота наличие прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
+				}
+
 				this.EmbedBuilder.AddField("Предусловия выполнения команды", exChecksSb.ToString().Trim(), false);
 			}
 
