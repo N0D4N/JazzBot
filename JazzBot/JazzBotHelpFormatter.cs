@@ -71,41 +71,11 @@ namespace JazzBot
 				this.EmbedBuilder.AddField("Аргументы", sb.ToString().Trim(), false);
 			}
 
-			if (command.ExecutionChecks.Any())
-			{
-				var exChecksSb = new StringBuilder();
+			var exChecks = this.GetExecutionChecks();
+			
 
-				if (command.ExecutionChecks.Any(x => x is OwnerOrPermissionAttribute))
-				{
-					var oOpa = command.ExecutionChecks.Single(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
-					exChecksSb.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(oOpa.Permissions.ToPermissionString())}.");
-				}
-
-				if (command.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
-				{
-					exChecksSb.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
-				}
-
-				if (command.ExecutionChecks.Any(x => x is CooldownAttribute))
-				{
-					var cooldown = command.ExecutionChecks.Single(x => x is CooldownAttribute) as CooldownAttribute;
-					exChecksSb.AppendLine($"Эта команда может быть использована {Formatter.InlineCode(cooldown.MaxUses.ToString())} раз/а в течении {Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
-				}
-
-				if (command.ExecutionChecks.Any(x => x is RequirePermissionsAttribute))
-				{
-					var perm = command.ExecutionChecks.Single(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
-					exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
-				}
-
-				if(command.ExecutionChecks.Any(x=> x is RequireBotPermissionsAttribute))
-				{
-					var perm = command.ExecutionChecks.Single(x => x is RequireBotPermissionsAttribute) as RequireBotPermissionsAttribute;
-					exChecksSb.AppendLine($"Требует у бота наличие прав {Formatter.Underline(perm.Permissions.ToPermissionString())}");
-				}
-
-				this.EmbedBuilder.AddField("Предусловия выполнения команды", exChecksSb.ToString().Trim(), false);
-			}
+			if(!string.IsNullOrWhiteSpace(exChecks))
+				this.EmbedBuilder.AddField("Предусловия выполнения команды", exChecks, false);
 
 			return this;
 		}
@@ -132,6 +102,60 @@ namespace JazzBot
 				this.EmbedBuilder.WithDescription("Список всех команд высшего уровня. Выберите чтобы увидеть больше информации.");
 
 			return new CommandHelpMessage(embed: this.EmbedBuilder.Build());
+		}
+
+		/// <summary>
+		/// Get a string representation of all execution checks for command and it's parents.
+		/// </summary>
+		/// <returns>String representation of all execution checks for command</returns>
+		private string GetExecutionChecks()
+		{
+
+			var cmd = this.Command;
+			var exChecksSb = new StringBuilder();
+
+			while(cmd != null)
+			{
+				if(cmd.ExecutionChecks?.Any() == true)
+				{
+					var cooldown = cmd.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) as CooldownAttribute;
+					if(cooldown != null)
+					{
+						exChecksSb.AppendLine($@"Эта команда может быть использована 
+							{Formatter.InlineCode(cooldown.MaxUses.ToString())} раз(а) в течении 
+								{Formatter.InlineCode(cooldown.Reset.TotalSeconds.ToString())} секунд в {Formatter.InlineCode(cooldown.BucketType.ToString())}.");
+					}
+
+					if(cmd.ExecutionChecks.Any(x => x is RequireNsfwAttribute))
+						exChecksSb.AppendLine($"Эта команда может быть выполнена только в канале с меткой NSFW");
+
+					if(cmd.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
+						exChecksSb.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
+
+
+					var ownerOrPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
+					if(ownerOrPerms != null)
+						exChecksSb.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(ownerOrPerms.Permissions.ToPermissionString())}.");
+
+
+					var perms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
+					if(perms != null)
+						exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perms.Permissions.ToPermissionString())}");
+
+
+					var botPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireBotPermissionsAttribute) as RequireBotPermissionsAttribute;
+					if(botPerms != null)
+						exChecksSb.AppendLine($"Требует у бота наличие прав {Formatter.Underline(botPerms.Permissions.ToPermissionString())}");
+
+
+					var userPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireUserPermissionsAttribute) as RequireUserPermissionsAttribute;
+					if(userPerms != null)
+						exChecksSb.AppendLine($"Требует у пользователя наличия прав {Formatter.Underline(userPerms.Permissions.ToPermissionString())}");
+				}
+				cmd = cmd?.Parent;
+			}
+			return exChecksSb.ToString().Trim();
+
 		}
 	}
 }
