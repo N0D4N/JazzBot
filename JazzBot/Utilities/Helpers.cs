@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using JazzBot.Data;
 using JazzBot.Enums;
 using Npgsql;
@@ -129,6 +131,39 @@ namespace JazzBot.Utilities
 				Password = Program.CfgJson.Database.Password,
 				Database = Program.CfgJson.Database.Database
 			}.ConnectionString;
+		}
+
+		public static Page[] GeneratePagesInEmbed(IEnumerable<string> input, DiscordEmbedBuilder embedBase = null, int charsOnPage = 500)
+		{
+			var embed = embedBase ?? new DiscordEmbedBuilder();
+
+			var result = new List<Page>();
+			var split = new List<string>();
+
+			var tempString = new StringBuilder();
+
+			int currentElement = 0;
+			while(currentElement < input.Count())
+			{
+				var currentString = input.ElementAt(currentElement);
+				if(tempString.Length + currentString.Length < charsOnPage)
+				{
+					tempString.Append(currentString);
+					currentElement++;
+				}
+				else
+				{
+					split.Add(tempString.ToString());
+					tempString.Clear();
+				}
+			}
+			int page = 1;
+			foreach(var el in split)
+			{
+				result.Add(new Page("", new DiscordEmbedBuilder(embed).WithDescription(el).WithFooter($"Страница {page}/{split.Count}")));
+				page++;
+			}
+			return result.ToArray();
 		}
 
 		#region unused_and_old_code_i_dont_want_to_delete

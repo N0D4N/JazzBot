@@ -248,34 +248,38 @@ namespace JazzBot.Commands
 		[Command("List")]
 		[Description("Показывает список тегов на этом сервере")]
 		[Cooldown(2, 600, CooldownBucketType.Channel)]
+		[RequireBotPermissions(Permissions.AddReactions)]
 		public async Task List(CommandContext context)
 		{
 
 			var gId = (long) context.Guild.Id;
 
-			var tagsArray = await this.Database.Tags.Where(t => t.GuildId == gId).ToArrayAsync().ConfigureAwait(false);
-			if (tagsArray?.Any() == true)
+			var tagsList = this.Database.Tags.Where(t => t.GuildId == gId).ToList();
+			if (tagsList?.Any() == true)
 			{
-				string tagsNames = string.Join(", ", tagsArray.OrderBy(x => x.Name).Select(xt => Formatter.InlineCode(xt.Name)).Distinct());
+				var tagNames = tagsList.OrderBy(x=> x.Name).Select(x => $"{Formatter.InlineCode(x.Name)},").ToList();
+				// Deleting last comma
+				tagNames[tagNames.Count - 1] = tagNames[tagNames.Count - 1].Remove(tagNames[tagNames.Count - 1].Length - 1);
+
+				int length = 0;
+				foreach(var tagName in tagNames)
+					length += tagName.Length;
+
 				var embedRespond = EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 					.WithTitle("Теги на этом сервере");
-				if (tagsNames.Length > 2048)
+	
+				if (length > 600)
 				{
-					var tags = tagsArray.OrderBy(x => x.Name).Select(x => $"{Formatter.InlineCode(x.Name)},").ToList();
-
-					// Deleting last coma.
-					tags[tags.Count - 1].Remove(tags[tags.Count - 1].Length - 1, 1);
-
-					tagsNames = this.TagNamesNormalizer(tags);
 					var interactivity = context.Client.GetInteractivity();
-					var tagsPaginated = interactivity.GeneratePagesInEmbed(tagsNames, SplitType.Character, embedRespond);
+					var tagsPaginated = Helpers.GeneratePagesInEmbed(tagNames, embedRespond, 500);
 					await interactivity.SendPaginatedMessageAsync
-						(context.Channel, context.User, tagsPaginated, behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis).ConfigureAwait(false);
+						(context.Channel, context.User, tagsPaginated, behaviour: PaginationBehaviour.WrapAround, deletion: PaginationDeletion.DeleteEmojis);
 
 				}
 				else
 				{
-					await context.RespondAsync(embed: embedRespond.WithDescription(tagsNames)).ConfigureAwait(false);
+					string tags = string.Join(' ', tagNames);
+					await context.RespondAsync(embed: embedRespond.WithDescription(tags)).ConfigureAwait(false);
 				}
 			}
 			else
@@ -500,32 +504,6 @@ namespace JazzBot.Commands
 
 
 		}
-
-		private string TagNamesNormalizer(IEnumerable<string> tagnames)
-		{
-			var separatedPartsTagNames = new List<string>();
-			var tempString = new StringBuilder();
-			int currentElement = 0;
-			while (currentElement != tagnames.Count())
-			{
-				if (tempString.Length + tagnames.ElementAt(currentElement).Length <= 500)
-				{
-					tempString.Append(tagnames.ElementAt(currentElement));
-					currentElement++;
-				}
-				else
-				{
-					while (tempString.Length < 500)
-					{
-						tempString.Append(' ');
-					}
-					separatedPartsTagNames.Add(tempString.ToString());
-					tempString.Clear();
-				}
-			}
-			return string.Concat(separatedPartsTagNames);
-		}
-
 
 	}
 

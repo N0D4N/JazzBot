@@ -118,7 +118,7 @@ namespace JazzBot
 
 			var icfg = new InteractivityConfiguration
 			{
-				Timeout = TimeSpan.FromSeconds(60)
+				Timeout = TimeSpan.FromSeconds(45)
 			};
 			this.Interactivity = this.Client.UseInteractivity(icfg);
 
