@@ -69,7 +69,11 @@ namespace JazzBot.Data.Music
 				Color = track.RequestedByMember.Color,
 				Timestamp = DateTime.Now + track.Track.Length,
 				Description = $"{Formatter.MaskedUrl(track.Track.Title, track.Track.Uri)} - {track.Track.Author}",
-			}.AddField("Длительность", track.Track.Length.ToString(@"mm\:ss"), true)
+			}.AddField("Длительность",
+			track.Track.Length.TotalHours > 0 
+			? track.Track.Length.ToString(@"hh\:mm\:ss") 
+			: track.Track.Length.ToString(@"hh\:mm"), 
+			true)
 			.WithFooter("Приблизительное время окончания");
 
 			return Task.FromResult(embed.Build());
