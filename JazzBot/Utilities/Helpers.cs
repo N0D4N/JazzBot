@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -164,6 +165,19 @@ namespace JazzBot.Utilities
 				page++;
 			}
 			return result.ToArray();
+		}
+
+		public static TimeSpan GetProcessUptime(Process process)
+		{
+			return DateTime.Now - process.StartTime;
+		}
+
+		public static string ToReadableString(this TimeSpan span)
+		{
+			return string.Format("{0}{1}:{2}",
+				span.Days > 0 ? span.Days.ToString() + "д. " : string.Empty,
+				span.Hours + "ч",
+				span.Minutes + "м");
 		}
 
 		#region unused_and_old_code_i_dont_want_to_delete

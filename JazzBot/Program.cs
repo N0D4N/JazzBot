@@ -58,7 +58,7 @@ namespace JazzBot
 			var cfg = new DiscordConfiguration
 			{
 				Token = CfgJson.Discord.Token,
-				TokenType = TokenType.Bot,
+				TokenType = TokenType.Bot,			
 
 				AutoReconnect = true,
 				LogLevel = LogLevel.Debug,
