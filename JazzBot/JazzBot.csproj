@@ -50,5 +50,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Builds\" />
+  </ItemGroup>
+
 
 </Project>

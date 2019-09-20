@@ -4,6 +4,9 @@
 ## Config file saves private information
 config.json
 
+## Directory to save builded and published projects
+Builds/
+
 ## This folders saves information just groupped to bot and isnt needed to succesful execution
 Playlists/
 
