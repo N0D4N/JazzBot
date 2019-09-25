@@ -6,7 +6,7 @@ using DSharpPlus.CommandsNext.Attributes;
 namespace JazzBot.Attributes
 {
 	/// <summary>
-	/// Specifies that command or group of commands can only be executed if user is connected to voice channel.
+	/// Defines that command or group of commands can only be executed if user is connected to voice channel.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 	public sealed class RequireVoiceConnectionAttribute	: CheckBaseAttribute
@@ -16,6 +16,10 @@ namespace JazzBot.Attributes
 		/// </summary>
 		public bool SameVoiceChannelAsBot { get; }
 
+		/// <summary>
+		/// Defines that command or group of commands can only be executed if user is connected to voice channel.
+		/// </summary>
+		/// <param name="sameVoiceChannelAsBot">Check if user must be connected to the same voice channel as bot.</param>
 		public RequireVoiceConnectionAttribute(bool sameVoiceChannelAsBot)
 		{
 			this.SameVoiceChannelAsBot = sameVoiceChannelAsBot;

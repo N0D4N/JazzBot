@@ -8,7 +8,7 @@ using DSharpPlus.CommandsNext.Attributes;
 namespace JazzBot.Attributes
 {
 	/// <summary>
-	/// Specifies that command or group of commands can only be executed by owner of the bot or user with specified permissions.
+	/// Defines that command or group of commands can only be executed by owner of the bot or user with specified permissions.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 	public sealed class OwnerOrPermissionAttribute : CheckBaseAttribute
@@ -18,6 +18,10 @@ namespace JazzBot.Attributes
 		/// </summary>
 		public Permissions Permissions { get; }
 
+		/// <summary>
+		/// Defines that command or group of commands can only be executed by owner of the bot or user with specified permissions.
+		/// </summary>
+		/// <param name="permissions">Permissions needed to execute command.</param>
 		public OwnerOrPermissionAttribute(Permissions permissions) => this.Permissions = permissions;
 
 		public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
