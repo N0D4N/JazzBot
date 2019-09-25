@@ -289,6 +289,13 @@ namespace JazzBot
 								$"не больше {cooldown.MaxUses} раз в {cooldown.Reset.TotalMinutes} минут")).ConfigureAwait(false);
 					return;
 				}
+
+				// User wasn't connected to voice channel. Optionally to the same voice channel as bot
+				if(failedchecks is RequireVoiceConnectionAttribute requireVoice)
+				{
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithDescription($"Вы должны быть подключены к {(requireVoice.SameVoiceChannelAsBot ? "тому же голосовому каналу что и бот" : "голосовому каналу")}")).ConfigureAwait(false);
+				}
 			}
 			else if (ex is DatabaseException dbEx)
 			{

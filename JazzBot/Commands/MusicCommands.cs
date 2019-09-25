@@ -10,6 +10,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Lavalink;
 using F23.StringSimilarity;
+using JazzBot.Attributes;
 using JazzBot.Data;
 using JazzBot.Data.Music;
 using JazzBot.Enums;
@@ -27,8 +28,6 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class MusicCommands : BaseCommandModule
 	{
-		private static readonly string[] CommandsThatIgnoreVoiceState = { "playlists", "playlist" };
-
 		private LavalinkService Lavalink { get; }
 
 		private Bot Bot { get; }
@@ -52,22 +51,13 @@ namespace JazzBot.Commands
 
 		public override async Task BeforeExecutionAsync(CommandContext context)
 		{
-			if (!CommandsThatIgnoreVoiceState.Contains(context.Command.Name) && context.Member?.VoiceState.Channel == null)
-			{
-				throw new DiscordUserInputException("Вы должны быть в голосовом канале", nameof(context.Member.VoiceState));
-			}
-
 			this.GuildMusic = await this.Music.GetOrCreateDataAsync(context.Guild).ConfigureAwait(false);
-
-			if (this.GuildMusic?.LavalinkConnection?.IsConnected == true && this.GuildMusic.LavalinkConnection.Channel.Id != context.Member.VoiceState.Channel.Id)
-				throw new DiscordUserInputException("Вы должны находиться в том же голосовом канале что и бот", nameof(context.Member.VoiceState));
-
-			await base.BeforeExecutionAsync(context).ConfigureAwait(false);
 		}
 
 		[Command("Start")]
 		[Description("Подключается и начинает проигрывать песню из плейлиста сервера")]
 		[Aliases("st")]
+		[RequireVoiceConnection(false)]
 		public async Task Start(CommandContext context)
 		{
 			if (this.GuildMusic.IsPlaying)
@@ -82,6 +72,7 @@ namespace JazzBot.Commands
 		[Description("Подключается и начинает воспроизведение трека из интернета по задданной ссылке или названию")]
 		[Aliases("p")]
 		[Priority(1)]
+		[RequireVoiceConnection(true)]
 		public async Task Play(CommandContext context, [RemainingText, Description("Ссылка на трек")]Uri trackUri)
 		{
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
@@ -183,6 +174,7 @@ namespace JazzBot.Commands
 		[Command("Leave")]
 		[Description("Покидает голосовой канал к которому подключен")]
 		[Aliases("lv", "l")]
+		[RequireVoiceConnection(true)]
 		public async Task Leave(CommandContext context)
 		{
 			this.GuildMusic.Stop();
@@ -194,6 +186,7 @@ namespace JazzBot.Commands
 		[Description("Сменить текущий плейлист")]
 		[Aliases("sp")]
 		[Cooldown(1, 300, CooldownBucketType.Guild)]
+		[RequireVoiceConnection(true)]
 		public async Task SwitchPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")] string playlistName)
 		{
 			if (string.IsNullOrWhiteSpace(playlistName))
@@ -211,6 +204,7 @@ namespace JazzBot.Commands
 		[Description("Ищет песню по названию и воспроизводит ее следующей")]
 		[Aliases("pn", "enqueue")]
 		[Cooldown(5, 15, CooldownBucketType.Guild)]
+		[RequireVoiceConnection(true)]
 		public async Task PlayNext(CommandContext context, [RemainingText, Description("Название песни")] string songName)
 		{
 			if (string.IsNullOrWhiteSpace(songName))
@@ -277,6 +271,7 @@ namespace JazzBot.Commands
 		[Description("Останавливает воспроизведение текущей песни и начинает воспроизведение следующей в очереди песни")]
 		[Aliases("s")]
 		[Cooldown(5, 15, CooldownBucketType.Guild)]
+		[RequireVoiceConnection(true)]
 		public async Task Skip(CommandContext context)
 		{
 			this.GuildMusic.Skip();
@@ -285,6 +280,7 @@ namespace JazzBot.Commands
 
 		[Command("Stop")]
 		[Description("Останавливает воспроизведение текущей песни и удаляет все песни из очередей")]
+		[RequireVoiceConnection(true)]
 		public async Task Stop(CommandContext context)
 		{
 			this.GuildMusic.Stop();
@@ -296,6 +292,7 @@ namespace JazzBot.Commands
 
 		[Command("Shuffle")]
 		[Description("Перемешивает список на воспроизведение в таком порядке - Песни из Интернета -> общая очередь из локального источника")]
+		[RequireVoiceConnection(true)]
 		public async Task Shuffle(CommandContext context)
 		{
 			var remoteMS = this.GuildMusic.MusicSources[(int) MusicSourceType.RemoteMusicData] as RemoteMusicData;

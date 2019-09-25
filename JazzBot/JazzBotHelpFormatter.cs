@@ -132,6 +132,10 @@ namespace JazzBot
 					if(cmd.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
 						exChecksSb.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
 
+					var voiceConn = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireVoiceConnectionAttribute) as RequireVoiceConnectionAttribute;
+					if(voiceConn != null)
+						exChecksSb.AppendLine($"Вы должны находиться в {(voiceConn.SameVoiceChannelAsBot ? "том же голосовом канале что и бот" : "в голосовом канале")}");
+
 
 					var ownerOrPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
 					if(ownerOrPerms != null)
@@ -150,7 +154,7 @@ namespace JazzBot
 
 					var userPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireUserPermissionsAttribute) as RequireUserPermissionsAttribute;
 					if(userPerms != null)
-						exChecksSb.AppendLine($"Требует у пользователя наличия прав {Formatter.Underline(userPerms.Permissions.ToPermissionString())}");
+						exChecksSb.AppendLine($"Требует у пользователя наличие прав {Formatter.Underline(userPerms.Permissions.ToPermissionString())}");
 				}
 				cmd = cmd?.Parent;
 			}
