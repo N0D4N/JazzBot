@@ -32,7 +32,7 @@ namespace JazzBot.Attributes
 			if(!this.SameVoiceChannelAsBot)
 				return Task.FromResult(true);
 
-			var botVoiceChannel = context.Member?.VoiceState?.Channel;
+			var botVoiceChannel = context.Guild.CurrentMember?.VoiceState?.Channel;
 
 			if(botVoiceChannel == null)
 				return Task.FromResult(false);
