@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Lavalink;
+using F23.StringSimilarity;
 using JazzBot.Attributes;
 using JazzBot.Commands;
 using JazzBot.Data;
@@ -315,7 +317,47 @@ namespace JazzBot
 			}
 			else if (ex is CommandNotFoundException commandNotFoundException)
 			{
-				// Ignore.
+				var cmdName = commandNotFoundException.CommandName;
+				var suggestedCommands = new List<Command>();
+				var nL = new NormalizedLevenshtein();
+
+				// Let's assumme that 0.33 is good Levenshtein distance
+
+				foreach(var cmd in this.Commands.RegisteredCommands.Values.Distinct())
+				{
+					if(cmd is CommandGroup cmdGroup)
+					{
+						foreach(var children in cmdGroup.Children)
+						{
+							if(Helpers.IsCommandSimilar(children, cmdName, nL))
+							{
+								suggestedCommands.Add(children);
+							}
+						}
+						if(cmdGroup.IsExecutableWithoutSubcommands && Helpers.IsCommandSimilar(cmdGroup, cmdName, nL))
+						{
+							suggestedCommands.Add(cmdGroup);
+						}
+					}
+					else
+					{
+						if(Helpers.IsCommandSimilar(cmd, cmdName, nL))
+							suggestedCommands.Add(cmd);
+
+					}
+				}
+
+				if(suggestedCommands.Any())
+				{
+					suggestedCommands.OrderBy(x => x.QualifiedName);
+					var description = new StringBuilder();
+					description.AppendLine($"Команды с названием {Formatter.InlineCode(cmdName)} не найдено. Вот возможные варианты того, что вы имели в виду:");
+					foreach(var cmd in suggestedCommands)
+						description.AppendLine(Formatter.InlineCode(cmd.QualifiedName));
+
+					await e.Context.RespondAsync(embed: EmbedTemplates.ErrorEmbed()
+						.WithDescription(description.ToString())).ConfigureAwait(false);
+				}
 				return;
 			}
 			else if (ex is InvalidOperationException invOpEx && invOpEx.Message == "No matching subcommands were found, and this group is not executable.")

@@ -157,6 +157,7 @@ namespace JazzBot.Commands
 		[Command("Nickname")]
 		[Description("Присваивает боту новый никнейм на данном сервере")]
 		[Aliases("nick")]
+		[RequireBotPermissions(Permissions.ChangeNickname)]
 		public async Task Nickname(CommandContext context, [RemainingText, Description("Новый никнейм")]string nickname)
 		{
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);

@@ -5,8 +5,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using F23.StringSimilarity;
 using JazzBot.Data;
 using JazzBot.Enums;
 using Npgsql;
@@ -178,6 +180,15 @@ namespace JazzBot.Utilities
 				span.Days > 0 ? span.Days.ToString() + "д. " : string.Empty,
 				span.Hours + "ч",
 				span.Minutes + "м");
+		}
+
+		public static bool IsCommandSimilar(Command command, string notFoundCommand, NormalizedLevenshtein normalizedLevenshtein, double goodDistance = 0.33)
+		{
+			return normalizedLevenshtein.Distance(command.Name, notFoundCommand) <= goodDistance
+				||
+				command?.Aliases?.Any(x => normalizedLevenshtein.Distance(x, notFoundCommand) <= goodDistance) == true
+				|| 
+				normalizedLevenshtein.Distance(command.QualifiedName, notFoundCommand) <= goodDistance;
 		}
 
 		#region unused_and_old_code_i_dont_want_to_delete
