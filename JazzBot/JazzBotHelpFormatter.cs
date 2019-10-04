@@ -134,7 +134,7 @@ namespace JazzBot
 
 					var voiceConn = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireVoiceConnectionAttribute) as RequireVoiceConnectionAttribute;
 					if(voiceConn != null)
-						exChecksSb.AppendLine($"Вы должны находиться в {(voiceConn.SameVoiceChannelAsBot ? "том же голосовом канале что и бот" : "в голосовом канале")}");
+						exChecksSb.AppendLine($"Вы должны находиться в {(voiceConn.SameVoiceChannelAsBot ? "том же голосовом канале что и бот" : "голосовом канале")}");
 
 
 					var ownerOrPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
