@@ -8,13 +8,13 @@ using DSharpPlus.Entities;
 namespace JazzBot.Commands
 {
 	[Group("Emoji")]
-	[Description("Комманды связанные с использованием эмодзей")]
+	[Description("Команды связанные с использованием эмодзей")]
 	[Aliases("e")]
 	[RequireBotPermissions(Permissions.UseExternalEmojis)]
 	public sealed class EmojiCommands : BaseCommandModule
 	{
 		[Command("React")]
-		[Description("Создает реакцию на сообщение с данным Id заданной эмодзей")]
+		[Description("Создает реакцию на сообщение с данным Id и заданной эмодзей")]
 		[Aliases("r")]
 		[RequirePermissions(Permissions.AddReactions)]
 		[Priority(1)]

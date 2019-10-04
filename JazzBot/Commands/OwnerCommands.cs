@@ -20,7 +20,7 @@ using File = TagLib.File;
 namespace JazzBot.Commands
 {
 	[Group("Owner")]
-	[Description("Комманды доступные только для владельца бота")]
+	[Description("Команды доступные только для владельца бота")]
 	[Aliases("o")]
 	[RequireOwner]
 	[ModuleLifespan(ModuleLifespan.Transient)]
@@ -98,7 +98,7 @@ namespace JazzBot.Commands
 		public async Task UpdatePresence(CommandContext context, [RemainingText, Description("Строчка которая будет отображаться в статусе")]string presenceText)
 		{
 			if (string.IsNullOrWhiteSpace(presenceText))
-				throw new DiscordUserInputException("Строчка статус не должна быть пустой или состоять только из пробелов.", nameof(presenceText));
+				throw new DiscordUserInputException("Строчка-статус не должна быть пустой или состоять только из пробелов.", nameof(presenceText));
 
 			if (presenceText.Length > 128)
 				throw new DiscordUserInputException("Длина строчки-статуса не должна превышать 128 символов.", nameof(presenceText));

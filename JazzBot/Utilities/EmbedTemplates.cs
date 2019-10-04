@@ -50,7 +50,7 @@ namespace JazzBot.Utilities
 		{
 			return ErrorEmbed()
 				.WithAuthor($"{member.Username}#{member.Discriminator}", iconUrl: member.AvatarUrl)
-				.WithFooter($"Комманда \"{command.QualifiedName}\"");
+				.WithFooter($"Команда \"{command.QualifiedName}\"");
 		}
 
 
