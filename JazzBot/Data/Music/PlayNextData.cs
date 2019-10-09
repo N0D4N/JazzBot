@@ -62,7 +62,7 @@ namespace JazzBot.Data.Music
 			// Checking if cover art is present to this file.
 			else if (currentSong.Tag.Pictures?.Any() == true)
 			{
-				var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures.ElementAt(0).Data.Data)).ConfigureAwait(false);
+				var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures[0].Data.Data)).ConfigureAwait(false);
 				currentSong.Tag.Comment = msg.Attachments[0].Url;
 				currentSong.Save();
 				embed.ThumbnailUrl = currentSong.Tag.Comment;

@@ -138,7 +138,7 @@ namespace JazzBot.Commands
 				return;
 			}
 
-			var selectedTrack = searchResults.ElementAt(result - 1);
+			var selectedTrack = searchResults[result-1];
 			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
 				throw new DiscordUserInputException("По данной ссылке ничего не было найдено", nameof(selectedTrack));
