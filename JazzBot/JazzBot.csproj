@@ -11,6 +11,9 @@
     <Description>C# Discord music bot</Description>
     <SignAssembly>false</SignAssembly>
     <ApplicationIcon></ApplicationIcon>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,10 +27,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00624" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00624" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00624" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00624" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00625" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00625" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00625" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00625" />
     <PackageReference Include="EPPlus" Version="4.5.3.2" />
     <PackageReference Include="F23.StringSimilarity" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />

@@ -36,41 +36,39 @@ namespace JazzBot.Commands
 		[Aliases("about")]
 		public async Task BotInfo(CommandContext context)
 		{
-			long memoryBytes = Process.GetCurrentProcess().PrivateMemorySize64;
+
+			var links = new StringBuilder();
+			var versions = new StringBuilder();
 
 			var dspVersion = context.Client.VersionString;
-
-			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
-			var owner = context.Client.CurrentApplication.Owners.First();
-
-			var description = new StringBuilder();
+			var dncversion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
 
 			var botRepos = new Uri("https://github.com/N0D4N/JazzBot");
 			var dspRepos = new Uri("https://github.com/DSharpPlus/DSharpPlus");
-			var lavalinkRepos = new Uri("https://github.com/Frederikam/Lavalink");
 			var botWiki = new Uri("https://github.com/N0D4N/JazzBot/wiki");
 			var supServerInvite = new Uri("https://discord.gg/xzynbQC");
 			var botInvite = new Uri($"https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=120966212&scope=bot");
 
-			description.AppendLine($"{this.Bot.LogName} — музыкальный бот созданый на C# c помощью библиотеки DSharpPlus")
-				.AppendLine()
-				.AppendLine("Полезные ссылки")
-				.AppendLine(Formatter.MaskedUrl("Репозиторий бота", botRepos))
+			links.AppendLine(Formatter.MaskedUrl("Репозиторий бота", botRepos))
 				.AppendLine(Formatter.MaskedUrl("Репозиторий DSharpPlus", dspRepos))
-				.AppendLine(Formatter.MaskedUrl("Репозиторий Lavalink", lavalinkRepos))
 				.AppendLine(Formatter.MaskedUrl("Вики бота", botWiki))
 				.AppendLine(Formatter.MaskedUrl("\"Около саппорт\" сервер", supServerInvite))
 				.AppendLine(Formatter.MaskedUrl("Пригласить бота на свой сервер", botInvite));
 
+			versions.AppendLine($"Версия бота — {this.Bot.Version}")
+				.AppendLine($"Версия DSharpPlus — {dspVersion}")
+				.AppendLine($"Версия .NET Core — {dncversion}");
 
 
 			var embed = new DiscordEmbedBuilder
 			{
-				Description = description.ToString(),
+				Description = $"{this.Bot.LogName} — музыкальный бот созданый на C# c помощью библиотеки DSharpPlus",
 				Color = DiscordColor.Black,
 				Timestamp = DateTimeOffset.Now,
 				ThumbnailUrl = context.Client.CurrentUser.AvatarUrl
-			};
+			}
+			.AddField("Полезные ссылки", links.ToString(), true)
+			.AddField("\u200b", versions.ToString(), true);
 			await context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 		}
 
@@ -81,9 +79,6 @@ namespace JazzBot.Commands
 		{
 			var curProcess = Process.GetCurrentProcess();
 			long memoryBytes = curProcess.PrivateMemorySize64;
-
-			var dspVersion = context.Client.VersionString;
-			var dncVersion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
 
 			var guildsMembersIds = context.Client.Guilds.Values.Select(x => x.Members.Values.Where(y => !y.IsBot).Select(z=> z.Id));
 			var ids = new List<ulong>();
@@ -103,9 +98,6 @@ namespace JazzBot.Commands
 				.AppendLine($"Пинг — {context.Client.Ping} мс")
 				.AppendLine($"Количество обслуживаемых серверов — {context.Client.Guilds.Count}")
 				.AppendLine($"Количество уникальных пользователей — {uniqueUsers}")
-				.AppendLine($"Версия бота — {this.Bot.Version}")
-				.AppendLine($"Версия DSharpPlus — {dspVersion}")
-				.AppendLine($"Версия .NET Core — {dncVersion}")
 				.AppendLine("```")
 				.AppendLine("Статистика Lavalink сервера")
 				.AppendLine($"```cs")

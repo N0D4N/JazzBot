@@ -35,8 +35,14 @@ namespace JazzBot.Data
 		public DiscordChannel CoverArtsChannel { get; private set; }
 
 
+		/// <summary>
+		/// Bot's config
+		/// </summary>
 		public JazzBotConfig Config { get; }
 
+		/// <summary>
+		/// Version of bot
+		/// </summary>
 		public string Version { get; }
 
 		public string LogName { get; set; }
@@ -49,20 +55,8 @@ namespace JazzBot.Data
 		{
 			this.PathToDirectoryWithPlaylists = config.Miscellaneous.PathToDirectoryWithPlaylists;
 			this.Config = config;
-			this.Version = typeof(Bot)
-								.GetTypeInfo()
-								.Assembly
-								.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-								?.InformationalVersion
-
-							??
-
-							typeof(Bot)
-								.GetTypeInfo()
-								.Assembly
-								.GetName()
-								.Version
-								.ToString(3);
+			this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString(3);
+			//this.NetCoreVersion = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
 			client.Ready += this.Client_Ready;
 		}
 
