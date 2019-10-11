@@ -28,8 +28,6 @@ namespace JazzBot.Commands
 	[ModuleLifespan(ModuleLifespan.Transient)]
 	public sealed class MusicCommands : BaseCommandModule
 	{
-		private LavalinkService Lavalink { get; }
-
 		private Bot Bot { get; }
 
 		private MusicService Music { get; }
@@ -40,9 +38,8 @@ namespace JazzBot.Commands
 
 		private DatabaseContext Database { get; }
 
-		public MusicCommands(LavalinkService lavalink, MusicService music, Bot bot, YoutubeService youtube, DatabaseContext db)
+		public MusicCommands(MusicService music, Bot bot, YoutubeService youtube, DatabaseContext db)
 		{
-			this.Lavalink = lavalink;
 			this.Music = music;
 			this.Bot = bot;
 			this.Youtube = youtube;
@@ -75,7 +72,7 @@ namespace JazzBot.Commands
 		[RequireVoiceConnection(true)]
 		public async Task Play(CommandContext context, [RemainingText, Description("Ссылка на трек")]Uri trackUri)
 		{
-			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
+			var loadResult = await this.Music.Lavalink.LavalinkNode.GetTracksAsync(trackUri);
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches || !loadResult.Tracks.Any())
 				throw new DiscordUserInputException("Ошибка загрузки треков", nameof(trackUri));
 
@@ -139,7 +136,7 @@ namespace JazzBot.Commands
 			}
 
 			var selectedTrack = searchResults[result-1];
-			var loadResult = await this.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
+			var loadResult = await this.Music.Lavalink.LavalinkNode.GetTracksAsync(new Uri($"https://youtu.be/{selectedTrack.VideoId}"));
 			if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed || !loadResult.Tracks.Any())
 				throw new DiscordUserInputException("По данной ссылке ничего не было найдено", nameof(selectedTrack));
 

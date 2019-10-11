@@ -7,12 +7,12 @@ namespace JazzBot.Services
 {
 	public sealed class MusicService
 	{
-		private LavalinkService Lavalink { get; }
+		public LavalinkService Lavalink { get; }
 
 		/// <summary>
 		/// Music data for <see cref="DiscordGuild"/> bot is in.
 		/// </summary>
-		public ConcurrentDictionary<ulong, GuildMusicData> MusicData { get; }
+		private ConcurrentDictionary<ulong, GuildMusicData> MusicData { get; }
 		private Program CurrentProgram { get; }
 
 		public MusicService(LavalinkService lavalink, Program program)
