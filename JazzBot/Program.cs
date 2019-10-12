@@ -154,31 +154,32 @@ namespace JazzBot
 
 			e.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Бот готов к работе.", DateTime.Now);
 
-			var db = new DatabaseContext();
-
-			var cuid = (long) e.Client.CurrentUser.Id;
-
-			var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid);
-			if (config == null)
+			using(var db = new DatabaseContext())
 			{
-				config = new Configs
+				var cuid = (long) e.Client.CurrentUser.Id;
+
+				var config = await db.Configs.SingleOrDefaultAsync(x => x.Id == cuid);
+				if(config == null)
 				{
-					Id = cuid,
-					Presence = "Music"
-				};
-				await db.Configs.AddAsync(config);
-				if (await db.SaveChangesAsync() <= 0)
-					throw new DatabaseException("Не удалось обновить БД", DatabaseActionType.Update);
-				await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
-
-			}
-			else
-			{
-				if (e.Client.CurrentUser.Presence?.Activity?.Name == null)
+					config = new Configs
+					{
+						Id = cuid,
+						Presence = "Music"
+					};
+					await db.Configs.AddAsync(config);
+					int rowsAffected = await db.SaveChangesAsync();
+					if(rowsAffected <= 0)
+						throw new DatabaseException("Не удалось обновить БД", DatabaseActionType.Update);
 					await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 
+				}
+				else
+				{
+					if(e.Client.CurrentUser.Presence?.Activity?.Name == null)
+						await e.Client.UpdateStatusAsync(new DiscordActivity(config.Presence, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
+
+				}
 			}
-			db.Dispose();
 		}
 
 		private async Task Client_ClientError(ClientErrorEventArgs e)

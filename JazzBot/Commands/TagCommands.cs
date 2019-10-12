@@ -72,8 +72,8 @@ namespace JazzBot.Commands
 			}
 
 			await this.Database.Tags.AddAsync(tag).ConfigureAwait(false);
-			var modCount = await this.Database.SaveChangesAsync();
-			if (modCount > 0)
+			int rowsAffected = await this.Database.SaveChangesAsync();
+			if (rowsAffected > 0)
 			{
 				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 					.WithTitle("Тег успешно создан")).ConfigureAwait(false);
@@ -106,8 +106,8 @@ namespace JazzBot.Commands
 			else
 			{
 				this.Database.Tags.Remove(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно удален")).ConfigureAwait(false);
@@ -142,8 +142,8 @@ namespace JazzBot.Commands
 			else
 			{
 				this.Database.Tags.Remove(tag);
-				var modCount = await this.Database.SaveChangesAsync();
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно удален")).ConfigureAwait(false);
@@ -188,8 +188,8 @@ namespace JazzBot.Commands
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
 				this.Database.Tags.Update(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Тег {name} успешно изменен")).ConfigureAwait(false);
@@ -231,8 +231,8 @@ namespace JazzBot.Commands
 				tag.TagContent = newContent;
 				tag.RevisionDate = DateTime.Now;
 				this.Database.Tags.Update(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle("Тег успешно изменен")).ConfigureAwait(false);
@@ -348,8 +348,8 @@ namespace JazzBot.Commands
 			{
 				tag.OwnerId = (long) memberToGive.Id;
 				this.Database.Tags.Update(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Владельство над тегом {Formatter.InlineCode(tag.Name)} успешно передано {memberToGive.Mention}"))
 						.ConfigureAwait(false);
@@ -376,8 +376,8 @@ namespace JazzBot.Commands
 			{
 				tag.OwnerId = (long) context.User.Id;
 				this.Database.Tags.Update(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount > 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected > 0)
 				{
 					await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 						.WithTitle($"Вы успешно получили владельство над тегом {tag.Name}")).ConfigureAwait(false);
@@ -496,8 +496,8 @@ namespace JazzBot.Commands
 				await context.RespondAsync($"\u200b{content}").ConfigureAwait(false);
 				tag.TimesUsed++;
 				this.Database.Tags.Update(tag);
-				var modCount = await this.Database.SaveChangesAsync().ConfigureAwait(false);
-				if (modCount <= 0)
+				int rowsAffected = await this.Database.SaveChangesAsync();
+				if (rowsAffected <= 0)
 					throw new DatabaseException("Не удалось обновить количество использований в базе данных", DatabaseActionType.Save);
 			}
 

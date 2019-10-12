@@ -116,7 +116,8 @@ namespace JazzBot.Commands
 			var config = await this.Database.Configs.SingleOrDefaultAsync(x => x.Id == bId);
 			config.Presence = presenceText;
 			this.Database.Configs.Update(config);
-			if (await this.Database.SaveChangesAsync() <= 0)
+			int rowsAffected = await this.Database.SaveChangesAsync();
+			if (rowsAffected <= 0)
 			{
 				throw new DatabaseException("Не удалось обновить \"presence\" бота в базе данных", DatabaseActionType.Update);
 			}
@@ -156,7 +157,8 @@ namespace JazzBot.Commands
 			var config = await this.Database.Configs.FirstOrDefaultAsync(x => x.Id == bId);
 			config.Presence = updatePresence;
 			this.Database.Configs.Update(config);
-			if (await this.Database.SaveChangesAsync() <= 0)
+			int rowsAffected = await this.Database.SaveChangesAsync();
+			if (rowsAffected <= 0)
 				throw new DatabaseException("Не удалось обновить \"presence\" бота в базе данных", DatabaseActionType.Update);
 
 
