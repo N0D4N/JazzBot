@@ -36,33 +36,41 @@ namespace JazzBot.Commands
 			this.Database = db;
 		}
 
-		[Command("FillPlaylist")]
-		[Description("Заполняет определенный плейлист по имени")]
-		[Aliases("fillp")]
-		public async Task FillPlaylist(CommandContext context, [RemainingText, Description("Название плейлиста")]string name)
-		{
-			if (string.IsNullOrWhiteSpace(name))
-				throw new DiscordUserInputException("Название плейлиста не может быть пустым или состоять из пробелов", nameof(name));
-			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + name + ".txt");
-			if (!file.Exists)
-			{
-				throw new DiscordUserInputException($"Файла плейлиста {name}.txt не существует", nameof(name));
-			}
-			await this.UpdatePlaylistAsync(name).ConfigureAwait(false);
-			await this.CreateExcelAsync(context.Client).ConfigureAwait(false);
-			await context.RespondAsync($"Плейлист {name} успешно обновлен").ConfigureAwait(false);
-		}
-
 		[Command("FillAllPlaylists")]
 		[Description("Перезаполняет все доступные плейлисты")]
 		[Aliases("fillap")]
 		public async Task FillAllPlaylists(CommandContext context)
 		{
-			foreach (var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
+			var songs = new List<Songs>();
+			foreach(var playlistName in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
 			{
-				await this.UpdatePlaylistAsync(file).ConfigureAwait(false);
-			}
+				var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
 
+				string text = "nonwhitespacetext";
+
+				using(var sr = new StreamReader(file.FullName))
+				{	
+					for(int i = songs.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
+					{
+						text = await sr.ReadLineAsync();
+						if(text == null)
+							break;
+						var songFile = File.Create(text);
+						songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+					}
+				}
+			}
+			int rowsAffected = 0;
+			context.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Начинаю обновление плейлистов в БД", DateTime.Now);
+			lock(this.Bot.UpdateMusicLock)
+			{
+				this.Database.Playlist.RemoveRange(this.Database.Playlist);
+				this.Database.Playlist.AddRange(songs);
+				rowsAffected = this.Database.SaveChanges();
+			}
+			context.Client.DebugLogger.LogMessage(LogLevel.Info, this.Bot.LogName, "Закончил обновление плейлистов в БД", DateTime.Now);
+			if(rowsAffected <= 0)
+				throw new DatabaseException("Не удалось обновить плейлисты, возможно документы остались не измененными?",DatabaseActionType.Update);
 			await this.CreateExcelAsync(context.Client);
 			await context.RespondAsync("Все плейлисты успешно обновлены").ConfigureAwait(false);
 		}
@@ -161,35 +169,6 @@ namespace JazzBot.Commands
 		public async Task Nickname(CommandContext context, [RemainingText, Description("Новый никнейм")]string nickname)
 		{
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);
-		}
-
-		private async Task UpdatePlaylistAsync(string playlistName)
-		{
-			var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
-
-			this.Database.Playlist.RemoveRange(this.Database.Playlist.Where(x => x.PlaylistName == playlistName));
-			await this.Database.SaveChangesAsync();
-			var songs = new List<Songs>();
-			string text = "nonwhitespacetext";
-
-			var sr = new StreamReader(file.FullName);
-			for (int i = this.Database.Playlist.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
-			{
-				text = await sr.ReadLineAsync();
-				if (text == null)
-					break;
-				var songFile = File.Create(text);
-				songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
-			}
-			sr.Close();
-			sr.DiscardBufferedData();
-			sr.Dispose();
-
-			await this.Database.Playlist.AddRangeAsync(songs);
-
-			int count = await this.Database.SaveChangesAsync();
-			if (count <= 0)
-				throw new DatabaseException("Не удалось сохранить обновленный плейлист в БД", DatabaseActionType.Update);
 		}
 
 		private async Task CreateExcelAsync(DiscordClient client)

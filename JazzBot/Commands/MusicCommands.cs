@@ -206,7 +206,11 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(songName))
 				throw new DiscordUserInputException("Название песни не должно быть пустым", nameof(songName));
-			var songs = await this.Database.Playlist.ToArrayAsync().ConfigureAwait(false);
+			var songs = new List<Songs>();
+			lock(this.Bot.UpdateMusicLock)
+			{
+				songs = this.Database.Playlist.ToList();
+			}
 			var playNexts = new List<PlayNextElement>();
 			var nL = new NormalizedLevenshtein();
 			foreach (var song in songs)
@@ -312,10 +316,14 @@ namespace JazzBot.Commands
 		[Description("Показывает список доступных плейлистов")]
 		public async Task Playlists(CommandContext context)
 		{
-			var pls = this.Database.Playlist.Select(x => x.PlaylistName).Distinct();
+			var playlists = new List<string>();
+			lock(this.Bot.UpdateMusicLock)
+			{
+				playlists = this.Database.Playlist.Select(x => x.PlaylistName).Distinct().ToList();
+			}
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Список доступных плейлистов")
-				.WithDescription(string.Join(',', pls.Select(x => Formatter.InlineCode(x))))).ConfigureAwait(false);
+				.WithDescription(string.Join(',', playlists.Select(x => Formatter.InlineCode(x))))).ConfigureAwait(false);
 		}
 
 		[Command("Playlist")]

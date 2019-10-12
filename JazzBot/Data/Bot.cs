@@ -49,6 +49,8 @@ namespace JazzBot.Data
 
 		public string DeleteEmojiName { get; set; }
 
+		public object UpdateMusicLock { get; } = new object();
+
 
 
 		public Bot(JazzBotConfig config, DiscordClient client)

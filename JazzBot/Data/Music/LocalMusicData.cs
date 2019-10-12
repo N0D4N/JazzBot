@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,12 +52,13 @@ namespace JazzBot.Data.Music
 			this.Program = currentProgram;
 			this.Guild = guild;
 			var gId = (long) this.Guild.Id;
-			var db = new DatabaseContext();
-			var dGuild = db.Guilds.Single(x => x.IdOfGuild == gId);
-			db.Dispose();
-			this.Seed = dGuild.Seed;
-			this.PlaylistName = dGuild.PlaylistName;
-			this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
+			using(var db = new DatabaseContext())
+			{
+				var dGuild = db.Guilds.Single(x => x.IdOfGuild == gId);
+				this.Seed = dGuild.Seed;
+				this.PlaylistName = dGuild.PlaylistName;
+				this.IdOfCurrentSong = dGuild.IdOfCurrentSong;
+			}
 			this.ChangeCurrentSong(false);
 		}
 
@@ -67,26 +69,33 @@ namespace JazzBot.Data.Music
 		/// <returns></returns>
 		public async Task ChangePlaylistAsync(string playlistName)
 		{
-			var db = new DatabaseContext();
-			if (await db.Playlist.Select(x => x.PlaylistName).ContainsAsync(this.PlaylistName).ConfigureAwait(false))
+			using(var db = new DatabaseContext())
 			{
-				var gId = (long) this.Guild.Id;
-				var guild = await db.Guilds.SingleOrDefaultAsync(x => x.IdOfGuild == gId).ConfigureAwait(false);
-				this.PlaylistName = playlistName;
-				guild.PlaylistName = playlistName;
-				this.Shuffle();
-				db.Guilds.Update(guild);
-				if (await db.SaveChangesAsync().ConfigureAwait(false) <= 0)
+				bool doesPlaylistExist = false;
+				lock(this.Program.Bot.UpdateMusicLock)
 				{
-					db.Dispose();
-					throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
+					doesPlaylistExist = db.Playlist.Select(x => x.PlaylistName).Distinct().Contains(this.PlaylistName);
+				}
+				if(doesPlaylistExist)
+				{
+					var gId = (long) this.Guild.Id;
+					var guild = await db.Guilds.SingleOrDefaultAsync(x => x.IdOfGuild == gId).ConfigureAwait(false);
+					this.PlaylistName = playlistName;
+					guild.PlaylistName = playlistName;
+					this.Shuffle();
+					db.Guilds.Update(guild);
+					int rowsAffected = 0;
+					lock(this.Program.Bot.UpdateMusicLock)
+					{
+						rowsAffected = db.SaveChanges();
+					}
+					if(rowsAffected <= 0)
+						throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
+					
+					return;
 				}
 			}
-			else
-			{
-				db.Dispose();
-				throw new DatabaseException($"Плейлиста {playlistName} не существует", DatabaseActionType.Get);
-			}
+			throw new DatabaseException($"Плейлиста {playlistName} не существует", DatabaseActionType.Get);
 		}
 
 		/// <summary>
@@ -109,9 +118,14 @@ namespace JazzBot.Data.Music
 		{
 			if (updateId)
 				this.IdOfCurrentSong++;
-			var db = new DatabaseContext();
-			var songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName).ToList();
-			db.Dispose();
+			var songs = new List<Songs>();
+			using(var db = new DatabaseContext())
+			{
+				lock(this.Program.Bot.UpdateMusicLock)
+				{
+					songs = db.Playlist.Where(x => x.PlaylistName == this.PlaylistName).ToList();
+				}
+			}
 			foreach (var song in songs)
 			{
 				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongId);
@@ -134,23 +148,19 @@ namespace JazzBot.Data.Music
 		/// </summary>
 		private void UpdateDb()
 		{
-			var db = new DatabaseContext();
-			var gId = (long) this.Guild.Id;
-			var guild = db.Guilds.Single(x => x.IdOfGuild == gId);
-			guild.IdOfCurrentSong = this.IdOfCurrentSong;
-			guild.IdOfGuild = (long) this.Guild.Id;
-			guild.PlaylistName = this.PlaylistName;
-			guild.Seed = this.Seed;
+			using(var db = new DatabaseContext())
+			{
+				var gId = (long) this.Guild.Id;
+				var guild = db.Guilds.Single(x => x.IdOfGuild == gId);
+				guild.IdOfCurrentSong = this.IdOfCurrentSong;
+				guild.IdOfGuild = (long) this.Guild.Id;
+				guild.PlaylistName = this.PlaylistName;
+				guild.Seed = this.Seed;
+				db.Guilds.Update(guild);
+				int rowsAffected = db.SaveChanges();
 
-			db.Guilds.Update(guild);
-			if (db.SaveChanges() > 0)
-			{
-				db.Dispose();
-			}
-			else
-			{
-				db.Dispose();
-				throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
+				if(rowsAffected <= 0)
+					throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
 			}
 		}
 
@@ -213,14 +223,20 @@ namespace JazzBot.Data.Music
 		public async Task<Uri> GetCurrentSong()
 		{
 			var file = new FileInfo(this.PathToCurrentSong);
+			int playlistLength = 0;
 
-			var db = new DatabaseContext();
-			var playlistLength = await db.Playlist.CountAsync().ConfigureAwait(false);
-			if (playlistLength < this.IdOfCurrentSong)
+			using(var db = new DatabaseContext())
+			{
+				lock(this.Program.Bot.UpdateMusicLock)
+				{
+					playlistLength = db.Playlist.Count(x => x.PlaylistName == this.PlaylistName);
+				}
+			}
+
+			if(playlistLength < this.IdOfCurrentSong)
 				this.Shuffle();
 			else
 				await this.ChangeCurrentSong(true).ConfigureAwait(false);
-			db.Dispose();
 			return new Uri(file.FullName, UriKind.Relative);
 		}
 
