@@ -42,21 +42,24 @@ namespace JazzBot.Commands
 		public async Task FillAllPlaylists(CommandContext context)
 		{
 			var songs = new List<Songs>();
-			foreach(var playlistName in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles().Select(x => Path.GetFileNameWithoutExtension(x.FullName)))
+			foreach(var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles("*.txt"))
 			{
-				var file = new FileInfo(this.Bot.PathToDirectoryWithPlaylists + "\\" + playlistName + ".txt");
+				var playlistName = Path.GetFileNameWithoutExtension(file.FullName);
 
 				string text = "nonwhitespacetext";
 
 				using(var sr = new StreamReader(file.FullName))
 				{	
-					for(int i = songs.Count() + 1; !string.IsNullOrWhiteSpace(text); i++)
+					for(int i = 1; !string.IsNullOrWhiteSpace(text); i++)
 					{
 						text = await sr.ReadLineAsync();
 						if(text == null)
 							break;
-						var songFile = File.Create(text);
-						songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+						if(System.IO.File.Exists(text))
+						{
+							using(var songFile = File.Create(text))
+								songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+						}
 					}
 				}
 			}

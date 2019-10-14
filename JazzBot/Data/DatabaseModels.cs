@@ -71,6 +71,7 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Name of playlist.
 		/// </summary>
+		[Key]
 		[Required]
 		[Column("Playlist_Name")]
 		public string PlaylistName { get; set; }

@@ -84,18 +84,14 @@ namespace JazzBot.Data.Music
 					guild.PlaylistName = playlistName;
 					this.Shuffle();
 					db.Guilds.Update(guild);
-					int rowsAffected = 0;
-					lock(this.Program.Bot.UpdateMusicLock)
-					{
-						rowsAffected = db.SaveChanges();
-					}
+					int rowsAffected = db.SaveChanges();
 					if(rowsAffected <= 0)
 						throw new DatabaseException("Не удалось обновить базу данных", DatabaseActionType.Update);
 					
-					return;
 				}
+				else
+					throw new DatabaseException($"Плейлиста {playlistName} не существует", DatabaseActionType.Get);
 			}
-			throw new DatabaseException($"Плейлиста {playlistName} не существует", DatabaseActionType.Get);
 		}
 
 		/// <summary>
@@ -103,7 +99,7 @@ namespace JazzBot.Data.Music
 		/// </summary>
 		public void Shuffle()
 		{
-			this.Seed = Helpers.CryptoRandom(0, 1000);
+			this.Seed = Helpers.CryptoRandom(int.MinValue, int.MaxValue);
 			this.IdOfCurrentSong = 1;
 			this.ChangeCurrentSong(false);
 
@@ -114,7 +110,7 @@ namespace JazzBot.Data.Music
 		/// </summary>
 		/// <param name="updateId">Specifies if id of current song should be changed</param>
 		/// <returns></returns>
-		public Task ChangeCurrentSong(bool updateId)
+		public void ChangeCurrentSong(bool updateId)
 		{
 			if (updateId)
 				this.IdOfCurrentSong++;
@@ -133,14 +129,18 @@ namespace JazzBot.Data.Music
 			string path = songs.OrderBy(x => x.Numing).ElementAt(this.IdOfCurrentSong).Path;
 			while (!System.IO.File.Exists(path))
 			{
-				this.IdOfCurrentSong++;
-				path = songs[this.IdOfCurrentSong].Path;
+				if(this.IdOfCurrentSong++ < songs.Count)
+					path = songs[this.IdOfCurrentSong].Path;
+				else
+				{
+					this.Shuffle();
+					return;
+				}
 			}
 			this.PathToCurrentSong = path;
 
 			if (updateId)
 				this.UpdateDb();
-			return Task.CompletedTask;
 		}
 
 		/// <summary>
@@ -220,7 +220,7 @@ namespace JazzBot.Data.Music
 		/// <summary>
 		/// Get <see cref="Uri"/> for song to play
 		/// </summary>
-		public async Task<Uri> GetCurrentSong()
+		public Task<Uri> GetCurrentSong()
 		{
 			var file = new FileInfo(this.PathToCurrentSong);
 			int playlistLength = 0;
@@ -236,8 +236,8 @@ namespace JazzBot.Data.Music
 			if(playlistLength < this.IdOfCurrentSong)
 				this.Shuffle();
 			else
-				await this.ChangeCurrentSong(true).ConfigureAwait(false);
-			return new Uri(file.FullName, UriKind.Relative);
+				this.ChangeCurrentSong(true);
+			return Task.FromResult(new Uri(file.FullName, UriKind.Relative));
 		}
 
 		/// <summary>
