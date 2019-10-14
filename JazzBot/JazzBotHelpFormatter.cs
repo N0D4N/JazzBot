@@ -118,8 +118,7 @@ namespace JazzBot
 			{
 				if(cmd.ExecutionChecks?.Any() == true)
 				{
-					var cooldown = cmd.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) as CooldownAttribute;
-					if(cooldown != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is CooldownAttribute) is CooldownAttribute cooldown)
 					{
 						exChecksSb.AppendLine($@"Эта команда может быть использована 
 							{Formatter.InlineCode(cooldown.MaxUses.ToString())} раз(а) в течении 
@@ -132,28 +131,23 @@ namespace JazzBot
 					if(cmd.ExecutionChecks.Any(x => x is RequireOwnerAttribute))
 						exChecksSb.AppendLine("Чтобы использовать эту команду вы должны быть владельцем бота.");
 
-					var voiceConn = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireVoiceConnectionAttribute) as RequireVoiceConnectionAttribute;
-					if(voiceConn != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is RequireVoiceConnectionAttribute) is RequireVoiceConnectionAttribute voiceConn)
 						exChecksSb.AppendLine($"Вы должны находиться в {(voiceConn.SameVoiceChannelAsBot ? "том же голосовом канале что и бот" : "голосовом канале")}");
 
 
-					var ownerOrPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) as OwnerOrPermissionAttribute;
-					if(ownerOrPerms != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is OwnerOrPermissionAttribute) is OwnerOrPermissionAttribute ownerOrPerms)
 						exChecksSb.AppendLine($"Чтобы использовать эту команду вы должны быть владельцем бота или иметь права {Formatter.InlineCode(ownerOrPerms.Permissions.ToPermissionString())}.");
 
 
-					var perms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) as RequirePermissionsAttribute;
-					if(perms != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is RequirePermissionsAttribute) is RequirePermissionsAttribute perms)
 						exChecksSb.AppendLine($"Требует у бота и участника прав {Formatter.Underline(perms.Permissions.ToPermissionString())}");
 
 
-					var botPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireBotPermissionsAttribute) as RequireBotPermissionsAttribute;
-					if(botPerms != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is RequireBotPermissionsAttribute) is RequireBotPermissionsAttribute botPerms)
 						exChecksSb.AppendLine($"Требует у бота наличие прав {Formatter.Underline(botPerms.Permissions.ToPermissionString())}");
 
 
-					var userPerms = cmd.ExecutionChecks.SingleOrDefault(x => x is RequireUserPermissionsAttribute) as RequireUserPermissionsAttribute;
-					if(userPerms != null)
+					if(cmd.ExecutionChecks.SingleOrDefault(x => x is RequireUserPermissionsAttribute) is RequireUserPermissionsAttribute userPerms)
 						exChecksSb.AppendLine($"Требует у пользователя наличие прав {Formatter.Underline(userPerms.Permissions.ToPermissionString())}");
 				}
 				cmd = cmd?.Parent;

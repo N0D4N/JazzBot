@@ -35,20 +35,19 @@ namespace JazzBot.Utilities
 				throw new ArgumentOutOfRangeException(nameof(minValue));
 			if (minValue == maxValue)
 				return minValue;
-			var provider = new RNGCryptoServiceProvider();
-
 			int diff = maxValue - minValue;
 			int remainder, rand, result;
 			var buffer = new byte[4];
-
-			do
+			using(var provider = new RNGCryptoServiceProvider())
 			{
-				provider.GetBytes(buffer);
-				rand = Math.Abs(BitConverter.ToInt32(buffer, 0));
-				remainder = rand % diff;
-				result = remainder + minValue;
-			} while (result > maxValue || result < minValue);
-
+				do
+				{
+					provider.GetBytes(buffer);
+					rand = Math.Abs(BitConverter.ToInt32(buffer, 0));
+					remainder = rand % diff;
+					result = remainder + minValue;
+				} while(result > maxValue || result < minValue);
+			}
 			return result;
 
 		}
@@ -58,18 +57,19 @@ namespace JazzBot.Utilities
 		/// </summary>
 		public static Task Shuffle<T>(this IList<T> list)
 		{
-			var provider = new RNGCryptoServiceProvider();
-			int n = list.Count;
-			while (n > 1)
-			{
-				byte[] box = new byte[sizeof(int)];
-				provider.GetBytes(box);
-				int bit = BitConverter.ToInt32(box, 0);
-				int k = Math.Abs(bit) % n;
-				n--;
-				T value = list[k];
-				list[k] = list[n];
-				list[n] = value;
+			using(var provider = new RNGCryptoServiceProvider())
+			{ int n = list.Count;
+				while(n > 1)
+				{
+					byte[] box = new byte[sizeof(int)];
+					provider.GetBytes(box);
+					int bit = BitConverter.ToInt32(box, 0);
+					int k = Math.Abs(bit) % n;
+					n--;
+					T value = list[k];
+					list[k] = list[n];
+					list[n] = value;
+				} 
 			}
 			return Task.CompletedTask;
 		}
@@ -117,9 +117,11 @@ namespace JazzBot.Utilities
 
 		public static DiscordColor RandomColor()
 		{
-			var provider = new RNGCryptoServiceProvider();
 			byte[] rgb = new byte[3];
-			provider.GetNonZeroBytes(rgb);
+			using(var provider = new RNGCryptoServiceProvider())
+			{
+				provider.GetNonZeroBytes(rgb);
+			}
 			return new DiscordColor(rgb[0], rgb[1], rgb[2]);
 		}
 
@@ -127,12 +129,12 @@ namespace JazzBot.Utilities
 		{
 			return new NpgsqlConnectionStringBuilder
 			{
-				Host = Program.CfgJson.Database.Hostname,
-				Port = Program.CfgJson.Database.Port,
+				Host = config.Hostname,
+				Port = config.Port,
 
-				Username = Program.CfgJson.Database.Username,
-				Password = Program.CfgJson.Database.Password,
-				Database = Program.CfgJson.Database.Database
+				Username = config.Username,
+				Password = config.Password,
+				Database = config.Database
 			}.ConnectionString;
 		}
 
