@@ -42,6 +42,7 @@ namespace JazzBot.Commands
 		public async Task FillAllPlaylists(CommandContext context)
 		{
 			var songs = new List<Songs>();
+			int songsPlaylistId = 0;
 			foreach(var file in new DirectoryInfo(this.Bot.PathToDirectoryWithPlaylists).GetFiles("*.txt"))
 			{
 				var playlistName = Path.GetFileNameWithoutExtension(file.FullName);
@@ -57,8 +58,11 @@ namespace JazzBot.Commands
 							break;
 						if(System.IO.File.Exists(text))
 						{
+							songsPlaylistId++;
 							using(var songFile = File.Create(text))
-								songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongId = i });
+							{
+								songs.Add(new Songs { Name = songFile.Tag.Title, Path = text, PlaylistName = playlistName, SongPlaylistId = i, SongTableId = songsPlaylistId });
+							}
 						}
 					}
 				}

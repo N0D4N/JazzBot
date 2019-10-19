@@ -124,7 +124,7 @@ namespace JazzBot.Data.Music
 			}
 			foreach (var song in songs)
 			{
-				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongId);
+				song.Numing = Helpers.OrderingFormula(this.Seed, song.SongPlaylistId);
 			}
 			string path = songs.OrderBy(x => x.Numing).ElementAt(this.IdOfCurrentSong).Path;
 			while (!System.IO.File.Exists(path))

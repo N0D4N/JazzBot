@@ -48,10 +48,9 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Id of song in table.
 		/// </summary>
-		[Key]
 		[Required]
-		[Column("Song_Id")]
-		public int SongId { get; set; }
+		[Column("Song_Playlist_Id")]
+		public int SongPlaylistId { get; set; }
 
 		/// <summary>
 		/// Path to song.
@@ -71,10 +70,14 @@ namespace JazzBot.Data
 		/// <summary>
 		/// Name of playlist.
 		/// </summary>
-		[Key]
 		[Required]
 		[Column("Playlist_Name")]
 		public string PlaylistName { get; set; }
+
+		[Key]
+		[Required]
+		[Column("Song_Table_Id")]
+		public int SongTableId { get; set; }
 
 		/// <summary>
 		/// Used to differ songs in guild playlist.
