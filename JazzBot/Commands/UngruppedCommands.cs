@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -92,7 +93,7 @@ namespace JazzBot.Commands
 			// Member is still in the guild.
 			if (context.Guild.Members.TryGetValue(id, out var member))
 			{
-				if (this.MemberRolePositionAndOwnerChecker(context.Member, member))
+				if (context.Member.Hierarchy > member.Hierarchy && context.Guild.CurrentMember.Hierarchy > member.Hierarchy)
 				{
 					try
 					{
@@ -105,7 +106,7 @@ namespace JazzBot.Commands
 					}
 				}
 				else
-					await context.RespondAsync("Вы не можете забанить пользователя с ролью выше вашей и/или владельца сервера");
+					await context.RespondAsync("Вы не можете забанить пользователя с ролью выше вашей, ролью выше бота или владельца сервера");
 			}
 			// Member is not in the guild.
 			else
@@ -159,49 +160,86 @@ namespace JazzBot.Commands
 			}
 		}
 
-		[Command("ErrorReport")]
-		[Description("Если произошла ошибка и вы хотите сообщить о ней - напишите подробное(или не очень) описание ошибки и репорт будет передан соответствующим лицам")]
-		[Aliases("report")]
-		[Cooldown(2, 120, CooldownBucketType.User)]
-		public async Task ErrorReport(CommandContext context, [RemainingText, Description("Описание ошибки")]string reportMessage)
-		{
-			if (string.IsNullOrWhiteSpace(reportMessage))
-				throw new DiscordUserInputException("Сообщение об ошибке не может быть пустым или содержать только пробелы", nameof(reportMessage));
-			var interactivity = context.Client.GetInteractivity();
-
-			var errMsg = await this.Bot.ReportChannel.SendMessageAsync(embed: new DiscordEmbedBuilder
-			{
-				Title = "Пришел юзер-репорт",
-				Description = reportMessage.Replace("@everyone", "@\u200beveryone").Replace("@here", "@\u200bhere"),
-				Timestamp = DateTimeOffset.Now
-			}.WithAuthor($"{context.User.Username}#{context.User.Discriminator} ({context.User.Id})", iconUrl: context.User.AvatarUrl ?? context.User.DefaultAvatarUrl)
-			.AddField("Id сервера", $"{context.Guild.Id}", false)
-			.AddField("Id канала", $"{context.Channel.Id}", false)
-			.AddField("Стоит ли сообщать о фиксе", "Да", false)).ConfigureAwait(false);
-
-			var cancelReportEmoji = DiscordEmoji.FromName(context.Client, ":no_entry_sign:");
-
-			var chsMsg = await context.RespondAsync(embed: new DiscordEmbedBuilder
-			{
-				Description = $"Спасибо за репорт как только ошибка будет исправлена и вам придет об этом сообщение, если вы не хотите получать сообщение с отчетом о фиксе - поставьте емодзи {cancelReportEmoji} (:no_entry_sign) под это сообщение",
-				Timestamp = DateTimeOffset.Now,
-			}.WithFooter($"По запросу {context.User.Username}#{context.User.Discriminator}", context.User.AvatarUrl)).ConfigureAwait(false);
-			await chsMsg.CreateReactionAsync(cancelReportEmoji).ConfigureAwait(false);
-			var intResult = await interactivity.WaitForReactionAsync(x => x.Emoji.GetDiscordName() == cancelReportEmoji.GetDiscordName(), chsMsg, context.User, TimeSpan.FromSeconds(25));
-			if (!intResult.TimedOut)
-			{
-				await errMsg.ModifyAsync(embed: new DiscordEmbedBuilder(errMsg.Embeds[0])
-					.AddField("Стоит ли сообщать об ошибке", "Уже нет", false).Build()).ConfigureAwait(false);
-
-			}
-		}
-
 		[Command("Update")]
 		[Description("Дает ссылку на информацию о последнем обновлении")]
 		public async Task Update(CommandContext context)
 		{
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithDescription(Formatter.MaskedUrl("Ссылка на последнее обновление", new Uri(this.Bot.Config.Miscellaneous.UpdateLink)))).ConfigureAwait(false);
+		}
+
+		[Command("SyncBans")]
+		[Description("Переносит баны из общего с ботом сервера в текущий")]
+		[RequirePermissions(Permissions.BanMembers)]
+		[RequireUserPermissions(Permissions.ManageGuild)]
+		[Cooldown(1, 300, CooldownBucketType.Guild)]
+		[Priority(1)]
+		public async Task SyncBans(CommandContext context, [Description("Id сервера баны из которого нужно взять")] ulong serverId)
+		{
+			var banServer = context.Client.Guilds.GetValueOrDefault(serverId);
+			await this.BanSyncer(context, banServer);
+		}
+
+		[Command("SyncBans")]
+		[Priority(0)]
+		public async Task SyncBans(CommandContext context, [RemainingText, Description("Название сервера баны из которого нужно взять")] string serverName)
+		{
+			if(string.IsNullOrWhiteSpace(serverName))
+			{
+				throw new DiscordUserInputException("Название сервера не может быть пустым или полностью состоять из пробелов");
+			}
+			serverName = serverName.ToLowerInvariant();
+			var banServer = context.Client.Guilds.Values.FirstOrDefault(x => x.Name.ToLowerInvariant() == serverName);
+			await this.BanSyncer(context, banServer);
+		}
+
+		
+
+		private async Task BanSyncer(CommandContext context, DiscordGuild banServer)
+		{
+			var member = await banServer?.GetMemberAsync(context.Member.Id);
+			if(banServer == null || member == null)
+			{
+				throw new DiscordUserInputException("Общего сервера с таким названием не найдено, возможно бот состоит в нескольких серверах с таким же названием. Вы можете попробовать воспользоваться перегрузкой и передать в качестве параметра Id сервера.", nameof(banServer.Name));
+			}
+			var manageGuildPerms = Permissions.ManageGuild;
+			var firstGuildChannel = banServer.Channels.Values.FirstOrDefault();
+			if(firstGuildChannel == null)
+			{
+				var hasPermissions = member?.Roles?.Any(x => x.Permissions.HasPermission(manageGuildPerms));
+				if(!hasPermissions.GetValueOrDefault(false) || !banServer.EveryoneRole.Permissions.HasPermission(manageGuildPerms))
+				{
+					throw new DiscordUserInputException($"На выбранном сервере у вас нет права {manageGuildPerms.ToPermissionString()}");
+				}
+			}
+			else if(!member.PermissionsIn(firstGuildChannel).HasPermission(manageGuildPerms))
+			{
+				throw new DiscordUserInputException($"На выбранном сервере у вас нет права {manageGuildPerms.ToPermissionString()}");
+			}
+			IReadOnlyList<DiscordBan> bans = null;
+			var curGuildBans = (await context.Guild.GetBansAsync())?.ToList();
+			try
+			{
+				bans = await banServer.GetBansAsync();
+			}
+			catch { }
+			if(bans?.Any() == true)
+			{
+				var toBan = bans.ToList();
+				if(curGuildBans?.Any() == true)
+				{
+					toBan = bans.Except(curGuildBans, new DiscordBanEqualityComparer()).ToList();
+				}
+				foreach(var ban in toBan)
+				{
+					try
+					{
+						await context.Guild.BanMemberAsync(ban.User.Id,
+							reason: $"Ответственный модератор: {context.Member.Username}#{context.Member.Discriminator}. Причина: синхронизация банов с сервером {banServer.Name}.");
+					}
+					catch { }
+				}
+			}
 		}
 
 		private Task<DiscordEmbed> MemberInfo(DiscordMember member, CommandContext context)
@@ -224,15 +262,6 @@ namespace JazzBot.Commands
 			.AddField("Участник присоединился", $"{(DateTimeOffset.Now - member.JoinedAt).Days} дней назад ({member.JoinedAt.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
 			.AddField("Роли", roles.ToString(), false)
 			.WithThumbnailUrl(member.AvatarUrl).Build());
-		}
-
-		private bool MemberRolePositionAndOwnerChecker(DiscordMember memberInvoked, DiscordMember memberToBan)
-		{
-			return ((memberToBan?.Roles?.Any() == true && memberInvoked?.Roles?.Any() == true
-						// Moderator have higher role than member he tries to ban.
-						&& memberInvoked.Roles.OrderByDescending(x => x.Position).First().Position > memberToBan.Roles.OrderByDescending(x => x.Position).First().Position)
-							|| memberToBan?.Roles?.Any() != true)
-								&& !memberToBan.IsOwner;
 		}
 	}
 }

@@ -25,11 +25,6 @@ namespace JazzBot.Data
 		public DiscordChannel RequestChannel { get; private set; }
 
 		/// <summary>
-		/// Channel where all user-reports should be posted.
-		/// </summary>
-		public DiscordChannel ReportChannel { get; private set; }
-
-		/// <summary>
 		/// Channel where coverarts for songs should be posted.
 		/// </summary>
 		public DiscordChannel CoverArtsChannel { get; private set; }
@@ -69,9 +64,6 @@ namespace JazzBot.Data
 
 			if (this.RequestChannel == null)
 				this.RequestChannel = await e.Client.GetChannelAsync(this.Config.Discord.RequestChannelId).ConfigureAwait(false);
-
-			if (this.ReportChannel == null)
-				this.ReportChannel = await e.Client.GetChannelAsync(this.Config.Discord.ReportChannelId).ConfigureAwait(false);
 
 			if (this.CoverArtsChannel == null)
 				this.CoverArtsChannel = await e.Client.GetChannelAsync(this.Config.Discord.CoverArtsChannelId).ConfigureAwait(false);

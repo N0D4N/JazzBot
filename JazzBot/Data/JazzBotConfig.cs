@@ -63,12 +63,6 @@ namespace JazzBot.Data
 		public ulong ErrorChannelId { get; private set; }
 
 		/// <summary>
-		/// ID of <see cref="DiscordChannel"/> where all user reports should be sent.
-		/// </summary>
-		[JsonProperty("ReportChannelID")]
-		public ulong ReportChannelId { get; private set; }
-
-		/// <summary>
 		/// ID of <see cref="DiscordChannel"/> where all user requests should be sent.
 		/// </summary>
 		[JsonProperty("RequestChannelID")]

@@ -131,27 +131,6 @@ namespace JazzBot.Commands
 			await context.Client.UpdateStatusAsync(new DiscordActivity(presenceText, ActivityType.ListeningTo), UserStatus.Online).ConfigureAwait(false);
 		}
 
-		[Command("FixedReport")]
-		[Description("Сообщает юзеру что ошибка зарепорченная им была исправлена")]
-		[Aliases("fixed")]
-		public async Task FixedReport(CommandContext context,
-			[Description("Id сервера")] ulong guildId,
-				[Description("Id канала")]ulong channelId,
-					[RemainingText, Description("Id пользователя")] ulong userId)
-		{
-			if (!context.Client.Guilds.TryGetValue(guildId, out var guild))
-				throw new DiscordUserInputException($"Не удалось найти сервер с таким id {guildId}, проверьте правильность ввода если необходимо", nameof(guildId));
-			if (!guild.Members.TryGetValue(userId, out var user))
-			{
-				await context.RespondAsync("Пользователь покинул сервер (скорее всего о-О)").ConfigureAwait(false);
-				return;
-			}
-			if (!guild.Channels.TryGetValue(channelId, out var channel))
-				throw new DiscordUserInputException($"Не удалось найти канал с таким id {channelId}, проверьте правильность ввода если необходимо", nameof(channelId));
-
-			await channel.SendMessageAsync($"{user.Mention}, ошибка о которой вы сообщили была исправлена, спасибо за сотрудничество").ConfigureAwait(false);
-		}
-
 		[Command("UpdateBot")]
 		[Description("Изменить статус бота на сообщение о новом обновлении")]
 		[Aliases("updbot")]
