@@ -4,6 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using JazzBot.Exceptions;
 
 namespace JazzBot.Commands
 {
@@ -42,6 +43,9 @@ namespace JazzBot.Commands
 		[Priority(0)]
 		public async Task React(CommandContext context, [Description("Id сообщения")] ulong messageId, [RemainingText, Description("Название эмодзи")] string emojiName)
 		{
+			if(string.IsNullOrWhiteSpace(emojiName))
+				throw new DiscordUserInputException("Название эмодзи не может быть пустым или состоять только из пробелов", nameof(emojiName));
+
 			if(!this.TryGetEmojiFromName(context.Client, emojiName, out DiscordEmoji emoji))
 			{
 				await context.RespondAsync($"Емодзи с названием {emojiName} не найдено").ConfigureAwait(false);
@@ -76,6 +80,9 @@ namespace JazzBot.Commands
 		[Priority(0)]
 		public async Task ExecuteGroup(CommandContext context, [RemainingText, Description("Id эмодзи")] string emojiName)
 		{
+			if(string.IsNullOrWhiteSpace(emojiName))
+				throw new DiscordUserInputException("Название эмодзи не может быть пустым или состоять только из пробелов", nameof(emojiName));
+
 			if(!this.TryGetEmojiFromName(context.Client, emojiName, out DiscordEmoji emoji))
 			{
 				await context.RespondAsync($"Емодзи с названием {emojiName} не найдено").ConfigureAwait(false);

@@ -156,6 +156,13 @@ namespace JazzBot.Commands
 		[RequireBotPermissions(Permissions.ChangeNickname)]
 		public async Task Nickname(CommandContext context, [RemainingText, Description("Новый никнейм")]string nickname)
 		{
+			if(string.IsNullOrWhiteSpace(nickname))
+				throw new DiscordUserInputException("Никнейм не может быть пустым или состоять из пробелов", nameof(nickname));
+
+			if(nickname.Length > 32)
+				throw new DiscordUserInputException("Никнейм не может быть больше 32 символов", nameof(nickname));
+
+
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);
 		}
 

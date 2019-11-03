@@ -99,6 +99,9 @@ namespace JazzBot.Commands
 		[Priority(0)]
 		public async Task Play(CommandContext context, [RemainingText, Description("Текст для поиска")]string searchQuery)
 		{
+			if(string.IsNullOrWhiteSpace(searchQuery))
+				throw new DiscordUserInputException("Название песни для поиска не может быть пустым или состоять из пробелов", nameof(searchQuery));
+
 			var searchResults = (await this.Youtube.SearchAsync(searchQuery)).ToArray();
 			var description = new StringBuilder();
 			int i = 1;
@@ -206,6 +209,7 @@ namespace JazzBot.Commands
 		{
 			if (string.IsNullOrWhiteSpace(songName))
 				throw new DiscordUserInputException("Название песни не должно быть пустым", nameof(songName));
+
 			var songs = new List<Songs>();
 			lock(this.Bot.UpdateMusicLock)
 			{
