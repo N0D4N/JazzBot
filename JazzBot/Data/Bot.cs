@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -40,6 +41,11 @@ namespace JazzBot.Data
 		/// </summary>
 		public string Version { get; }
 
+		/// <summary>
+		/// Version of .NET Core
+		/// </summary>
+		public string NetCoreVersion { get; }
+
 		public string LogName { get; set; }
 
 		public string DeleteEmojiName { get; set; }
@@ -53,7 +59,7 @@ namespace JazzBot.Data
 			this.PathToDirectoryWithPlaylists = config.Miscellaneous.PathToDirectoryWithPlaylists;
 			this.Config = config;
 			this.Version = Assembly.GetEntryAssembly().GetName().Version.ToString(3);
-			//this.NetCoreVersion = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
+			this.NetCoreVersion = Environment.Version.ToString(2);
 			client.Ready += this.Client_Ready;
 		}
 

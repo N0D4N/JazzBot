@@ -13,7 +13,6 @@ using JazzBot.Data;
 using JazzBot.Enums;
 using JazzBot.Services;
 using JazzBot.Utilities;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace JazzBot.Commands
 {
@@ -41,7 +40,6 @@ namespace JazzBot.Commands
 			var versions = new StringBuilder();
 
 			var dspVersion = context.Client.VersionString;
-			var dncversion = PlatformServices.Default.Application.RuntimeFramework.Version.ToString(2);
 
 			var botRepos = new Uri("https://github.com/N0D4N/JazzBot");
 			var dspRepos = new Uri("https://github.com/DSharpPlus/DSharpPlus");
@@ -57,7 +55,7 @@ namespace JazzBot.Commands
 
 			versions.AppendLine($"Версия бота — {this.Bot.Version}")
 				.AppendLine($"Версия DSharpPlus — {dspVersion}")
-				.AppendLine($"Версия .NET Core — {dncversion}");
+				.AppendLine($"Версия .NET Core — {this.Bot.NetCoreVersion}");
 
 
 			var embed = new DiscordEmbedBuilder
