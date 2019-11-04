@@ -48,26 +48,44 @@ namespace JazzBot.Commands
 		[Command("Roll")]
 		[Description("Выбирает случайное число между данными двумя целыми числами")]
 		[Aliases("random", "r")]
-		public async Task Roll(CommandContext context, [Description("Нижняя граница")] int? min = null, [Description("Верхняя граница")] int? max = null)
+		[Priority(2)]
+		public async Task Roll(CommandContext context, [Description("Нижняя граница")] int min, [Description("Верхняя граница")] int max)
 		{
-			// No arguments were provided.
-			if (min == null)
+			if(min > max)
 			{
-				min = 1;
-				max = 10;
+				int temp = max;
+				max = min;
+				min = temp;
 			}
-			// Only one argument were provided, so it will be maximum and minimum will be default "1".
-			else if (max == null)
-			{
-				max = min.Value;
-				min = 1;
-			}
-			int result = Helpers.CryptoRandom(min.Value, max.Value);
+			int result = Helpers.CryptoRandom(min, max);
 			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle($"Случайное число в границах [{min};{max}] = {result}")).ConfigureAwait(false);
 		}
 
+		[Command("Roll")]
+		[Priority(1)]
+		public async Task Roll(CommandContext context, [Description("Верхняя граница")] int max)
+		{
+			int min = 0;
+			if(max <= min)
+				throw new DiscordUserInputException("Верхняя граница должна быть больше 0", nameof(max));
 
+			int result = Helpers.CryptoRandom(min, max);
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle($"Случайное число в границах [{min};{max}] = {result}")).ConfigureAwait(false);
+		}
+
+		[Command("Roll")]
+		[Priority(0)]
+		public async Task Roll(CommandContext context)
+		{
+			int min = 0;
+			int max = 10;
+
+			int result = Helpers.CryptoRandom(min, max);
+			await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle($"Случайное число в границах [{min};{max}] = {result}")).ConfigureAwait(false);
+		}
 
 		[Command("Choice")]
 		[Description("Выбирает случайный вариант из представленных")]
