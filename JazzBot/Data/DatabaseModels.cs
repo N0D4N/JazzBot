@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using NpgsqlTypes;
 
 namespace JazzBot.Data
 {
@@ -112,18 +113,11 @@ namespace JazzBot.Data
 		public string TagContent { get; set; }
 
 		/// <summary>
-		/// Date of creation of tag.
+		/// Creation date of a tag
 		/// </summary>
-		[Column("Creation_date", TypeName = "timestamp with time zone")]
+		[Column("Creation_Date",TypeName = "date")]
 		[Required]
 		public DateTime CreationDate { get; set; }
-
-		/// <summary>
-		/// Date of last edit of tag.
-		/// </summary>
-		[Column("Latest_revision_date", TypeName = "timestamp with time zone")]
-		[Required]
-		public DateTime RevisionDate { get; set; }
 
 		/// <summary>
 		/// Id of guild tag belongs to.

@@ -18,6 +18,7 @@ using JazzBot.Exceptions;
 using JazzBot.Services;
 using JazzBot.Utilities;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace JazzBot.Commands
 {
@@ -59,7 +60,6 @@ namespace JazzBot.Commands
 				Id = Convert.ToInt64(DateTimeOffset.Now.ToUnixTimeMilliseconds()),
 				Name = name,
 				TagContent = contents,
-				RevisionDate = DateTime.Now,
 				GuildId = (long) context.Guild.Id,
 				OwnerId = (long) context.User.Id,
 				CreationDate = DateTime.Now,
@@ -186,7 +186,6 @@ namespace JazzBot.Commands
 			else
 			{
 				tag.TagContent = newContent;
-				tag.RevisionDate = DateTime.Now;
 				this.Database.Tags.Update(tag);
 				int rowsAffected = await this.Database.SaveChangesAsync();
 				if (rowsAffected > 0)
@@ -229,7 +228,6 @@ namespace JazzBot.Commands
 			else
 			{
 				tag.TagContent = newContent;
-				tag.RevisionDate = DateTime.Now;
 				this.Database.Tags.Update(tag);
 				int rowsAffected = await this.Database.SaveChangesAsync();
 				if (rowsAffected > 0)
@@ -317,7 +315,6 @@ namespace JazzBot.Commands
 				.WithAuthor($"Автор тега - {tagAuthor.Username}#{tagAuthor.Discriminator}", iconUrl: tagAuthor.AvatarUrl)
 				.WithFooter("Дата создания")
 				.AddField("Количество использований", tag.TimesUsed.ToString(), true)
-				.AddField("Дата последнего изменения", tag.RevisionDate.ToString("yyyy-MM-dd HH:mm:ss zzz"), true)
 				.AddField("ID тега", tag.Id.ToString(), true)).ConfigureAwait(false);
 			}
 		}
@@ -460,8 +457,8 @@ namespace JazzBot.Commands
 			}.AddField("Наиболее исползуемый тег", $"{maxUses.Name} ({maxUses.TimesUsed} использований)", false)
 			.AddField("Пользователь с наибольшим количеством тегов", $"<@{maxAmountOfTags.OwnerId}> ({maxAmountOfTags.AmountOfTags} тегов)", false)
 			.AddField("Пользователь, теги которого имеют наибольшее количество использованй", $"<@{maxAmountOfUses.OwnerId}> ({maxAmountOfUses.TimesUsed} использований)", false)
-			.AddField("Первый созданный тег", $"{serverTags.OrderByDescending(x => x.CreationDate).First().Name} ({serverTags.OrderByDescending(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})", false)
-			.AddField("Последний созданный тег", $"{serverTags.OrderBy(x => x.CreationDate).First().Name} ({serverTags.OrderBy(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy HH:mm:ss zzz", new CultureInfo("ru-Ru"))})");
+			.AddField("Первый созданный тег", $"{serverTags.OrderByDescending(x => x.CreationDate).First().Name} ({serverTags.OrderByDescending(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy", new CultureInfo("ru-Ru"))})", false)
+			.AddField("Последний созданный тег", $"{serverTags.OrderBy(x => x.CreationDate).First().Name} ({serverTags.OrderBy(x => x.CreationDate).First().CreationDate.ToString("dddd, MMM dd yyyy", new CultureInfo("ru-Ru"))})");
 			await context.RespondAsync(embed: embed).ConfigureAwait(false);
 		}
 
