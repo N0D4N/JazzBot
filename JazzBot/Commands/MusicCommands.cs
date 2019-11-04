@@ -245,30 +245,17 @@ namespace JazzBot.Commands
 
 						await listMsg.ModifyAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 							.WithTitle($"Следующей песней будет {playNexts[res - 1].Title}").Build()).ConfigureAwait(false);
-
-						await Task.Delay(TimeSpan.FromSeconds(30));
-						await listMsg.DeleteAsync();
 					}
 					else if (res == 0)
-					{
 						await listMsg.ModifyAsync("Выбор отменен", null).ConfigureAwait(false);
-						await Task.Delay(TimeSpan.FromSeconds(30));
-						await listMsg.DeleteAsync();
-					}
 					else
-					{
 						await listMsg.ModifyAsync("Данное число выходит за границы", null).ConfigureAwait(false);
-						await Task.Delay(TimeSpan.FromSeconds(30));
-						await listMsg.DeleteAsync();
-					}
 				}
 				else
-				{
 					await listMsg.ModifyAsync("Ответ не является числом или время вышло", null).ConfigureAwait(false);
-					await Task.Delay(TimeSpan.FromSeconds(30));
-					await listMsg.DeleteAsync();
-				}
 			}
+			await Task.Delay(TimeSpan.FromSeconds(30));
+			await listMsg.DeleteAsync();
 
 		}
 
