@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,6 @@ using JazzBot.Enums;
 using JazzBot.Exceptions;
 using JazzBot.Services;
 using JazzBot.Utilities;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace JazzBot.Commands
@@ -270,6 +270,29 @@ namespace JazzBot.Commands
 				}
 			}
 
+		}
+
+		[Command("PlayNextFile")]
+		[Description("Ищет песню через путь к файлу и воспроизводит ее следующей")]
+		[Aliases("pnf")]	
+		[RequireVoiceConnection(true)]
+		[RequireOwner]
+		public async Task PlayNextFile(CommandContext context, [RemainingText, Description("Путь к файлу")] string pathToFile)
+		{
+			if(string.IsNullOrWhiteSpace(pathToFile))
+				throw new DiscordUserInputException("Путь к файлу не может быть пустым", nameof(pathToFile));
+
+			if(!File.Exists(pathToFile))
+				throw new DiscordUserInputException("Такого файла не существует", nameof(pathToFile));
+
+			var pnData = this.GuildMusic.MusicSources[(int) MusicSourceType.PlayNextData] as PlayNextData;
+
+			pnData.Enqueue(pathToFile);
+			using(var file = TagLib.File.Create(pathToFile))
+			{
+				await context.RespondAsync(embed: EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+					.WithDescription($"Следующей песней будет {file.Tag.Title} - {file.Tag.FirstPerformer}.")).ConfigureAwait(false);
+			}
 		}
 
 		[Command("Skip")]
