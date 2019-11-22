@@ -238,143 +238,164 @@ namespace JazzBot
 				ex = ex.InnerException;
 
 			// Check if exception is result of command prechecks.
-			if (ex is ChecksFailedException exep)
+			switch(ex)
 			{
-				var failedchecks = exep.FailedChecks.First();
-				// Bot is lacking permissions.
-				if (failedchecks is RequireBotPermissionsAttribute reqbotperm)
+				case ChecksFailedException exep:
 				{
-					string permissionsLacking = reqbotperm.Permissions.ToPermissionString();
-					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithTitle($"{emoji} Боту не хватает прав")
-						.WithDescription(permissionsLacking)).ConfigureAwait(false);
-					return;
-				}
-
-				// User is lacking permissions.
-				if (failedchecks is RequireUserPermissionsAttribute requserperm)
-				{
-					string permissionsLacking = requserperm.Permissions.ToPermissionString();
-					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithTitle($"{emoji} Вам не хватает прав")
-						.WithDescription(permissionsLacking)).ConfigureAwait(false);
-					return;
-				}
-
-				// User is not owner of the bot.
-				if (failedchecks is RequireOwnerAttribute reqowner)
-				{
-					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-					.WithTitle($"{emoji} Команда доступна только владельцу")).ConfigureAwait(false);
-					return;
-				}
-
-				// User is not owner or don't have permissions.
-				if (failedchecks is OwnerOrPermissionAttribute ownerOrPermission)
-				{
-					string permissionsLacking = ownerOrPermission.Permissions.ToPermissionString();
-					var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithTitle($"{emoji} Вы не являетесь владельцем или вам не хватает прав")
-						.WithDescription(permissionsLacking)).ConfigureAwait(false);
-					return;
-				}
-
-				// Command shouldn't be executed so fast.
-				if (failedchecks is CooldownAttribute cooldown)
-				{
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithDescription("Вы пытаетесь использовать команду слишком часто, таймер - " +
-								$"не больше {cooldown.MaxUses} раз в {cooldown.Reset.TotalMinutes} минут")).ConfigureAwait(false);
-					return;
-				}
-
-				// User wasn't connected to voice channel. Optionally to the same voice channel as bot
-				if(failedchecks is RequireVoiceConnectionAttribute requireVoice)
-				{
-					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-						.WithDescription($"Вы должны быть подключены к {(requireVoice.SameVoiceChannelAsBot ? "тому же голосовому каналу что и бот" : "голосовому каналу")}")).ConfigureAwait(false);
-				}
-			}
-			else if (ex is DatabaseException dbEx)
-			{
-				var description = new StringBuilder("Произошла ошибка в работе БД, возможно стоит попробовать чуть позже.");
-				description.AppendLine(	string.IsNullOrWhiteSpace(dbEx.Message)
-					? $"Тип действия: {dbEx.ActionType.ToString()}"
-					: $"Сообщение - {Formatter.InlineCode(dbEx.Message)}. Тип действия: {dbEx.ActionType.ToString()}");
-
-				await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
-					.WithDescription(description.ToString())).ConfigureAwait(false);
-				return;
-			}
-			else if(ex is DiscordUserInputException inputEx)
-			{
-				await e.Context.RespondAsync($"{inputEx.Message}. Название параметра {inputEx.ArgumentName}").ConfigureAwait(false);
-				return;
-			}
-			else if (ex is CommandNotFoundException commandNotFoundException)
-			{
-				var cmdName = commandNotFoundException.CommandName;
-				var suggestedCommands = new List<Command>();
-				var nL = new NormalizedLevenshtein();
-
-				// Let's assumme that 0.33 is good Levenshtein distance
-
-				foreach(var cmd in this.Commands.RegisteredCommands.Values.Distinct())
-				{
-					if(cmd is CommandGroup cmdGroup)
+					var failedchecks = exep.FailedChecks.First();
+					switch(failedchecks)
 					{
-						foreach(var children in cmdGroup.Children)
+						// Bot is lacking permissions.
+						case RequireBotPermissionsAttribute reqbotperm:
 						{
-							if(Helpers.IsCommandSimilar(children, cmdName, nL))
+							string permissionsLacking = reqbotperm.Permissions.ToPermissionString();
+							var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+								.WithTitle($"{emoji} Боту не хватает прав")
+								.WithDescription(permissionsLacking)).ConfigureAwait(false);
+							break;
+						}
+
+						// User is lacking permissions.
+						case RequireUserPermissionsAttribute requserperm:
+						{
+							string permissionsLacking = requserperm.Permissions.ToPermissionString();
+							var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+								.WithTitle($"{emoji} Вам не хватает прав")
+								.WithDescription(permissionsLacking)).ConfigureAwait(false);
+							break;
+						}
+
+						// User is not owner of the bot.
+						case RequireOwnerAttribute reqowner:
+						{
+							var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithTitle($"{emoji} Команда доступна только владельцу")).ConfigureAwait(false);
+							break;
+						}
+						
+						// User is not owner or don't have permissions.
+						case OwnerOrPermissionAttribute ownerOrPermission:
+						{
+							string permissionsLacking = ownerOrPermission.Permissions.ToPermissionString();
+							var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+								.WithTitle($"{emoji} Вы не являетесь владельцем или вам не хватает прав")
+								.WithDescription(permissionsLacking)).ConfigureAwait(false);
+							break;
+						}
+
+						// Command shouldn't be executed so fast.
+						case CooldownAttribute cooldown:
+						{
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithDescription("Вы пытаетесь использовать команду слишком часто, таймер - " +
+									$"не больше {cooldown.MaxUses} раз в {cooldown.Reset.TotalMinutes} минут")).ConfigureAwait(false);
+							break;
+						}
+
+						// User wasn't connected to voice channel. Optionally to the same voice channel as bot
+						case RequireVoiceConnectionAttribute requireVoice:
+						{
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+							.WithDescription($"Вы должны быть подключены к {(requireVoice.SameVoiceChannelAsBot ? "тому же голосовому каналу что и бот" : "голосовому каналу")}")).ConfigureAwait(false);
+							break;
+						}
+
+						default:
+						{
+							await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+								.WithDescription($"Вам не хватает прав, чтобы узнать каких используйте {Formatter.InlineCode($"{this.Bot.Config.Discord.Prefixes.RandomElement()}help {e.Command.QualifiedName}")}"));
+							break;
+						}
+					}
+
+					break;
+				}
+
+				case DatabaseException dbEx:
+				{
+					var description = new StringBuilder("Произошла ошибка в работе БД, возможно стоит попробовать чуть позже.");
+					description.AppendLine(string.IsNullOrWhiteSpace(dbEx.Message)
+						? $"Тип действия: {dbEx.ActionType.ToString()}"
+						: $"Сообщение - {Formatter.InlineCode(dbEx.Message)}. Тип действия: {dbEx.ActionType.ToString()}");
+
+					await e.Context.RespondAsync(embed: EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+						.WithDescription(description.ToString())).ConfigureAwait(false);
+					break;
+				}
+
+				case DiscordUserInputException inputEx:
+				{
+					await e.Context.RespondAsync($"{inputEx.Message}. Название параметра {inputEx.ArgumentName}").ConfigureAwait(false);
+					break;
+				}
+
+				case CommandNotFoundException commandNotFoundException:
+				{
+					var cmdName = commandNotFoundException.CommandName;
+					var suggestedCommands = new List<Command>();
+					var nL = new NormalizedLevenshtein();
+
+					// Let's assumme that 0.33 is good Levenshtein distance
+
+					foreach(var cmd in this.Commands.RegisteredCommands.Values.Distinct())
+					{
+						if(cmd is CommandGroup cmdGroup)
+						{
+							foreach(var children in cmdGroup.Children)
 							{
-								suggestedCommands.Add(children);
+								if(Helpers.IsCommandSimilar(children, cmdName, nL))
+								{
+									suggestedCommands.Add(children);
+								}
+							}
+							if(cmdGroup.IsExecutableWithoutSubcommands && Helpers.IsCommandSimilar(cmdGroup, cmdName, nL))
+							{
+								suggestedCommands.Add(cmdGroup);
 							}
 						}
-						if(cmdGroup.IsExecutableWithoutSubcommands && Helpers.IsCommandSimilar(cmdGroup, cmdName, nL))
+						else
 						{
-							suggestedCommands.Add(cmdGroup);
+							if(Helpers.IsCommandSimilar(cmd, cmdName, nL))
+								suggestedCommands.Add(cmd);
+
 						}
 					}
-					else
+
+					if(suggestedCommands.Any())
 					{
-						if(Helpers.IsCommandSimilar(cmd, cmdName, nL))
-							suggestedCommands.Add(cmd);
+						suggestedCommands.OrderBy(x => x.QualifiedName);
+						var description = new StringBuilder();
+						description.AppendLine($"Команды с названием {Formatter.InlineCode(cmdName)} не найдено. Вот возможные варианты того, что вы имели в виду:");
+						foreach(var cmd in suggestedCommands)
+							description.AppendLine(Formatter.InlineCode(cmd.QualifiedName));
 
+						await e.Context.RespondAsync(embed: EmbedTemplates.ErrorEmbed()
+							.WithDescription(description.ToString())).ConfigureAwait(false);
 					}
+					break;
 				}
 
-				if(suggestedCommands.Any())
+				case InvalidOperationException invOpEx when invOpEx.Message == "No matching subcommands were found, and this group is not executable.":
 				{
-					suggestedCommands.OrderBy(x => x.QualifiedName);
-					var description = new StringBuilder();
-					description.AppendLine($"Команды с названием {Formatter.InlineCode(cmdName)} не найдено. Вот возможные варианты того, что вы имели в виду:");
-					foreach(var cmd in suggestedCommands)
-						description.AppendLine(Formatter.InlineCode(cmd.QualifiedName));
-
-					await e.Context.RespondAsync(embed: EmbedTemplates.ErrorEmbed()
-						.WithDescription(description.ToString())).ConfigureAwait(false);
+					//Ignore.
+					break;
 				}
-				return;
-			}
-			else if (ex is InvalidOperationException invOpEx && invOpEx.Message == "No matching subcommands were found, and this group is not executable.")
-			{
-				// Ignore.
-				return;
-			}
-			else
-			{
-				var embed = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
+
+				default:
+				{
+					var embed = EmbedTemplates.CommandErrorEmbed(e.Context.Member, e.Command)
 					.WithTitle("Произошла непредвиденная ошибка в работе команды")
 					.WithDescription($"Message: \n{Formatter.InlineCode(ex.Message)}\n в \n{Formatter.InlineCode(ex.Source)}");
-				await e.Context.RespondAsync(embed: embed).ConfigureAwait(false);
-				await this.Bot.ErrorChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+					await e.Context.RespondAsync(embed: embed).ConfigureAwait(false);
+					await this.Bot.ErrorChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+					break;
+				}
 			}
-
 		}
 
 	}

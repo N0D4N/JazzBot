@@ -193,6 +193,12 @@ namespace JazzBot.Utilities
 				normalizedLevenshtein.Distance(command.QualifiedName, notFoundCommand) <= goodDistance;
 		}
 
+		public static T RandomElement<T>(this IList<T> collection)
+		{
+			var elIndex = CryptoRandom(0, collection.Count);
+			return collection[elIndex];
+		}
+
 		#region unused_and_old_code_i_dont_want_to_delete
 		//public static bool IsFileLocked(FileInfo file)
 		//{
