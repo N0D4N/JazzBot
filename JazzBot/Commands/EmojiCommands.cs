@@ -4,7 +4,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using JazzBot.Exceptions;
+using JazzBot.Data;
 
 namespace JazzBot.Commands
 {
@@ -18,39 +18,9 @@ namespace JazzBot.Commands
 		[Description("Создает реакцию на сообщение с данным Id и заданной эмодзей")]
 		[Aliases("r")]
 		[RequirePermissions(Permissions.AddReactions)]
-		[Priority(1)]
-		public async Task React(CommandContext context, [Description("Id сообщения")] ulong messageId, [Description("Id эмодзи")] ulong emojiId)
+		public async Task React(CommandContext context, [Description("Id сообщения")] ulong messageId, [RemainingText, Description("Название или id эмодзи")] DiscordEmojiWrapper emojiWrapper)
 		{
-			if(!this.TryGetEmojiFromId(context.Client, emojiId, out DiscordEmoji emoji))
-			{
-				await context.RespondAsync($"Емодзи с Id {emojiId} не найдено").ConfigureAwait(false);
-				return;
-			}
-			DiscordMessage msg;
-			try
-			{
-				msg = await context.Channel.GetMessageAsync(messageId);
-			}
-			catch(Exception)
-			{
-				await context.RespondAsync($"Сообщения с Id {messageId} в данном канале не найдено").ConfigureAwait(false);
-				return;
-			}
-			await msg.CreateReactionAsync(emoji).ConfigureAwait(false);
-		}
-
-		[Command("React")]
-		[Priority(0)]
-		public async Task React(CommandContext context, [Description("Id сообщения")] ulong messageId, [RemainingText, Description("Название эмодзи")] string emojiName)
-		{
-			if(string.IsNullOrWhiteSpace(emojiName))
-				throw new DiscordUserInputException("Название эмодзи не может быть пустым или состоять только из пробелов", nameof(emojiName));
-
-			if(!this.TryGetEmojiFromName(context.Client, emojiName, out DiscordEmoji emoji))
-			{
-				await context.RespondAsync($"Емодзи с названием {emojiName} не найдено").ConfigureAwait(false);
-				return;
-			}
+			var emoji = emojiWrapper.Value;
 			DiscordMessage msg;
 			try
 			{
@@ -65,60 +35,10 @@ namespace JazzBot.Commands
 		}
 
 		[GroupCommand]
-		[Priority(1)]
-		public async Task ExecuteGroup(CommandContext context, [Description("Id эмодзи")] ulong emojiId)
+		public async Task ExecuteGroup(CommandContext context, [RemainingText, Description("Название или id эмодзи")] DiscordEmojiWrapper emojiWrapper)
 		{
-			if(!this.TryGetEmojiFromId(context.Client, emojiId, out DiscordEmoji emoji))
-			{
-				await context.RespondAsync($"Емодзи с Id {emojiId} не найдено").ConfigureAwait(false);
-				return;
-			}
+			var emoji = emojiWrapper.Value;
 			await context.RespondAsync(emoji).ConfigureAwait(false);
 		}
-
-		[GroupCommand]
-		[Priority(0)]
-		public async Task ExecuteGroup(CommandContext context, [RemainingText, Description("Id эмодзи")] string emojiName)
-		{
-			if(string.IsNullOrWhiteSpace(emojiName))
-				throw new DiscordUserInputException("Название эмодзи не может быть пустым или состоять только из пробелов", nameof(emojiName));
-
-			if(!this.TryGetEmojiFromName(context.Client, emojiName, out DiscordEmoji emoji))
-			{
-				await context.RespondAsync($"Емодзи с названием {emojiName} не найдено").ConfigureAwait(false);
-				return;
-			}
-			await context.RespondAsync(emoji).ConfigureAwait(false);
-		}
-
-		#region HelpingMethods
-		private bool TryGetEmojiFromName(DiscordClient client, string emojiName, out DiscordEmoji resultEmoji)
-		{
-			try
-			{
-				resultEmoji = DiscordEmoji.FromName(client, $":{emojiName}:");
-			}
-			catch(Exception)
-			{
-				resultEmoji = null;
-				return false;
-			}
-			return true;
-		}
-
-		private bool TryGetEmojiFromId(DiscordClient client, ulong emojiId, out DiscordEmoji resultEmoji)
-		{
-			try
-			{
-				resultEmoji = DiscordEmoji.FromGuildEmote(client, emojiId);
-			}
-			catch(Exception)
-			{
-				resultEmoji = null;
-				return false;
-			}
-			return true;
-		}
-		#endregion
 	}
 }

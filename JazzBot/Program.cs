@@ -105,7 +105,6 @@ namespace JazzBot
 			this.Commands = this.Client.UseCommandsNext(ccfg);
 
 
-
 			this.Commands.CommandExecuted += this.Commands_CommandExecuted;
 			this.Commands.CommandErrored += this.Commands_CommandErrored;
 
@@ -117,6 +116,9 @@ namespace JazzBot
 			this.Commands.RegisterCommands<InfoCommands>();
 			this.Commands.RegisterCommands<EmojiCommands>();
 			this.Commands.SetHelpFormatter<JazzBotHelpFormatter>();
+
+			this.Commands.RegisterConverter(new CustomEmojiConverter());
+			this.Commands.RegisterUserFriendlyTypeName<DiscordEmojiWrapper>("эмодзи");
 
 			var icfg = new InteractivityConfiguration
 			{
