@@ -12,9 +12,18 @@ using JazzBot.Data;
 using JazzBot.Enums;
 using JazzBot.Exceptions;
 using JazzBot.Services;
+using JazzBot.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
+using DSharpPlus.CommandsNext.Exceptions;
+using Microsoft.Extensions.DependencyInjection;
 using File = TagLib.File;
 
 namespace JazzBot.Commands
@@ -166,6 +175,87 @@ namespace JazzBot.Commands
 			await context.Guild.CurrentMember.ModifyAsync(x => x.Nickname = nickname).ConfigureAwait(false);
 		}
 
+		[Command("Evaluate")]
+		[Description("Компилирует и выполняет C# код")]
+		[Aliases("eval", "script", "scr")]
+		public async Task Evaluate(CommandContext context, [RemainingText, Description("С# код")] string code)
+		{
+			var codeStart = code.IndexOf("```") + 3;
+			codeStart = code.IndexOf("\n", codeStart) + 1;
+			var codeEnd = code.LastIndexOf("```");
+
+			if(codeStart == -1 || codeEnd == -1)			
+				throw new DiscordUserInputException("Код должен находиться внутри в блоке кода", nameof(code));
+
+			code = code.Substring(codeStart, codeEnd - codeStart);
+
+			var embed = EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
+				.WithTitle("Код компилируется и выполняется");
+
+			var msg = await context.RespondAsync(embed: embed);
+
+			var globals = new Globals() { Bot = this.Bot, Context = context, Database = this.Database };
+
+			var scriptsOptions = ScriptOptions.Default
+				.WithImports("System", "System.Diagnostics", "System.Reflection", "System.Text", "System.Collections.Generic", "System.Linq", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.CommandsNext",
+				"DSharpPlus.Entities", "JazzBot.Data", "JazzBot.Enums", "JazzBot.Services", "JazzBot.Utilities", "Microsoft.EntityFrameworkCore")
+				.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location)));
+
+			var compileSW = Stopwatch.StartNew();
+			var codeScript = CSharpScript.Create(code, scriptsOptions, typeof(Globals));
+			var compiledScript = codeScript.Compile();
+			compileSW.Stop();
+
+			if(compiledScript.Any(x=> x.Severity == DiagnosticSeverity.Error))
+			{
+				embed = EmbedTemplates.ErrorEmbed()
+					.WithDescription(compiledScript.Length > 1 ? $"Произошло {compiledScript.Length} ошибки/ошибок времени компиляции" : "Произошла ошибка компиляции");
+
+				foreach(var error in compiledScript.Take(5))
+				{
+					var ls = error.Location.GetLineSpan();
+					embed.AddField($"Ошибка в {ls.StartLinePosition.Line}", Formatter.InlineCode(error.GetMessage()));
+				}
+
+				await msg.ModifyAsync(embed: embed.Build());
+				return;
+			}
+
+			Exception runtimeException = null;
+
+			ScriptState<object> css = null;
+
+			var runtimeSW = Stopwatch.StartNew();
+			try
+			{
+				css = await codeScript.RunAsync(globals).ConfigureAwait(false);
+			}
+			catch(Exception ex)
+			{
+				runtimeException = ex;
+			}
+			runtimeSW.Stop();
+
+			if(runtimeException != null)
+			{
+				embed = EmbedTemplates.ErrorEmbed().WithDescription($"Произошла ошибка времени выполнения после {runtimeSW.ElapsedMilliseconds} мс");
+
+				await msg.ModifyAsync(embed: embed.Build());
+				return;
+			}
+
+			embed = EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember).WithDescription("Команда выполнена успешно");
+
+			embed.AddField("Результат выполнения", css.ReturnValue == null ? "Значения не возвращено" : Formatter.InlineCode(css.ReturnValue.ToString()))
+				.AddField("Время компиляции", compileSW.ElapsedMilliseconds.ToString("#,##0") + "мс", true)
+				.AddField("Время выполнения", runtimeSW.ElapsedMilliseconds.ToString("#,##0") + "мс", true);
+
+			if(css.ReturnValue != null)
+				embed.AddField("Тип результата", css.ReturnValue.GetType().ToString());
+
+			await msg.ModifyAsync(embed: embed.Build());
+		}
+
 		private async Task CreateExcelAsync(DiscordClient client)
 		{
 			var overallPlDuration = TimeSpan.Zero;
@@ -251,6 +341,15 @@ namespace JazzBot.Commands
 				package.SaveAs(new FileInfo($@"..\..\..\Playlists\{DateTime.Today:d}.xlsx"));
 
 			}
+		}
+
+		public class Globals
+		{
+			public CommandContext Context;
+
+			public DbContext Database;
+
+			public Bot Bot;
 		}
 	}
 }
