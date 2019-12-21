@@ -105,8 +105,8 @@ namespace JazzBot.Commands
 		{
 			if (context.Member.Id == id)
 				throw new DiscordUserInputException("Вы не можете забанить себя", nameof(id));
-			string userString = $"{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
-			string reasonString = string.IsNullOrWhiteSpace(reason) ? " отсутствует" : $": {reason}";
+			var userString = $"{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
+			var reasonString = string.IsNullOrWhiteSpace(reason) ? " отсутствует" : $": {reason}";
 
 			// Member is still in the guild.
 			if (context.Guild.Members.TryGetValue(id, out var member))
@@ -267,10 +267,10 @@ namespace JazzBot.Commands
 			{
 				var rolesList = member.Roles.OrderByDescending(x => x.Position).Select(x => x.Name).ToList();
 				rolesList.Add("everyone");
-				roles.AppendJoin(',', rolesList.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
+				roles = roles.AppendJoin(',', rolesList.Select(x => $"{Formatter.InlineCode($"@{x}")}"));
 			}
 			else
-				roles.AppendLine(Formatter.InlineCode("@everyone"));
+				roles = roles.AppendLine(Formatter.InlineCode("@everyone"));
 			return Task.FromResult(EmbedTemplates.ExecutedByEmbed(context.Member, context.Guild.CurrentMember)
 				.WithTitle("Информация об участнике")
 			.AddField("Пользователь", $"{ member.Username}#{member.Discriminator}", true)

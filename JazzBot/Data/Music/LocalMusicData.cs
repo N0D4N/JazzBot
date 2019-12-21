@@ -193,13 +193,14 @@ namespace JazzBot.Data.Music
 				.WithFooter("Приблизительное время окончания");
 
 				if(currentSong.Tag.IsCoverArtLinkPresent())
-				{
+				{	
 					embed.ThumbnailUrl = currentSong.Tag.Comment;
 				}
 				// Checking if cover art is present to this file.
-				else if(currentSong.Tag.Pictures?.Any() == true)
-				{
-					var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.jpg", new MemoryStream(currentSong.Tag.Pictures[0].Data.Data)).ConfigureAwait(false);
+				else if(currentSong.Tag.Pictures?.Any() == true && currentSong.Tag.Pictures[0].Data.Data.Length < 8388608)
+				{	
+					var coverStream = new MemoryStream(currentSong.Tag.Pictures[0].Data.Data);
+					var msg = await this.Program.Bot.CoverArtsChannel.SendFileAsync("cover.png", coverStream, "");
 					currentSong.Tag.Comment = msg.Attachments[0].Url;
 					currentSong.Save();
 					embed.ThumbnailUrl = currentSong.Tag.Comment;
